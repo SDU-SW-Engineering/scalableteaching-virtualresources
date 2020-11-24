@@ -1,0 +1,109 @@
+VM Brugt nu
+Grupper
+	Grupper - 3 maskiner pr gruppe
+	Fordeling - Manuel opretning af grupper, brugere og unikke passwords pr bruger på maskinerne, uddelling af passwords til grupperne over mail
+
+# Eksisterende interacktion med Virtual Machines
+* Bruger du, eller har du brugt servere/virtuelle maskiner i din undervisning.
+	ja
+* Enkelt server til hele klassen?
+	nej
+* Servere til grupper eller individuelt.
+	grupper
+* Flere maskiner pr gruppe?
+	3 pr gruppe
+* Kunne eksisterende undervisning forbedres ved brug af individuelle virtulle maskiner?
+	N/A
+* Hvordan navngiver du dine maskiner?
+	Fag-Gruppe-Maskine
+* Hvordan fordeler du VM´s
+	Manuelt opskrivning af grupper gennem E-Mail
+* Hvordan Håndtere du fordeling af credentials?
+	Email manuelt
+## Problemer
+* Har du/i haft problemer i forbindelse med eksisterende løsninger?
+	firewall lignende ting der gjorde at man ikke kunne komme på over ssh
+		Krævede manuel fix af problemet
+	Folk kunne ikke komme på grundet brug af google dns, krav om brug af sdu dns
+		Dette var nødvendigt da server navne resolves af sdu dns
+	Manglende viden omkring linux
+		De studerende havde et begrænset til ingen viden om linux og brugen deraf
+	Manglende kendskab til host filer
+		De studerende havde ingen kendskab til host filer til "local DNS"
+	Viden om netværk
+		De studerende havde begrænset viden omkrign netværk hvilket gav problemer.
+	Eksisterende løsninger scalere ikke særligt godt
+		Grupper, Passwords, Manuel opretning af maskiner gennem Email skalere ikke da det bliver en enorm arbejdsbyrde med mange studerende.
+* Har du/i haft behov for at nulstille individuelle virtuelle maskiner i forbindelse med at der er gået noget galt på maskinen
+	Besværligt at nulstille maskiner til initial specs
+		Grundet den manuelle håndtering af maskiner er der ikke en nem måde bare at nulstille maskinerne.
+# Ikke aktiv bruger af servere
+* Kunne du forestille dig at bruge virtuelle maskiner/servere i din undervisning?
+	N/A
+* Har du eksisterende problemer med software som ens forudopsatte systemer kunne løse?.
+	N/A
+# Creation af maskiner
+* Hvordan vlle du foretrække at kreere de virtuelle maskiner 
+	CSV for brugere?
+	Web interface, input af filer, Scripts.
+		Scripts, Manual entries, Web interface for ease of use
+* Hvor komfortabel ville du være med at bruge en terminal til at lave de virtuelle maskiner
+	Ja
+* Ville du foretrække en form for web interface.
+	Ville være mere praktisk end cli
+		Et web interface ville også give andre fordele så som håndtering af credential, distrobution og lignende
+# Credentials
+* Har du nogen preferancer for hvordan du og de studerende skal logge på (RSA-Key vs password)
+	Ville være prefferencielt at bruge shh nøgler, men kræver et nivou af automatisering til indsætning af filer for at undgå problemer med studerende
+	Opsætninger kan have problemer ved brug af mærkelige andre som cygwin og mingw.
+# Konfigurering af maskiner
+* Hvad har du brug for at forudkonfigurere? (Porte forwarded, software, startup scripts)
+	Forudinstallering af specielle versioner af software
+	wget liste af filer ind i home mappe
+	Porte:
+		Setup af predifinerede porte i forbindelse af oprettelse af creation
+		Port remapping i setup
+* Kunne du forestille dig situationer hvor du havde brug for mere plads.
+	Jep
+	Brug for mere plads under brug af maskinerne
+		Der er ikke plads nok til at starte med.
+		Mulighed for udviddelse gennem webinterfacet
+* Konfigurations filer? (Script / ui?)
+	sdu oauth noget. der holder styr på maskiner, 
+* Ændrigner til base images?
+	Configuration af base images gennem konfigurations.
+	Det er muligt, specificering af distors
+* Logins gennem udtræk fra blackboard?
+	Ville være fedt
+# Distrobution af credentials
+* Hvordan kunne du forstille dig at informere de studerende om deres adgang til systemet?
+	Oauth SDU Brugernavne.
+
+
+
+
+
+
+Andet:
+Anden vej ind på maskinen, eller reset, SSH Recovery mekanismer
+Opretning via csv?
+Automatisk opretning baseret på grupper
+Registrering af grupper indbygget i systemet?
+Problemer med ssh clienter der skaber problemer med configs.
+Vær opmærksom på mingw, cygwin, wsl, mac, linux, windows, putty
+SDU Oauth? - Brug sdu web interface
+	Samme system holder styr på grupper, servere, redeployment, sdudentrollback??.
+Avoid single public key 
+Marker reeksamen, sletnign af brugere, automatisk??, markering af elementer 
+Forsinket sletning med mulighed for override.
+Fælles ssh-key til vores webservices.
+Skal være muligt at begrænse brugernes adgang til kommandoer 
+Koder på ssh key er ikke nødvendig.
+
+Lære bruger med ssh key, Må gerne være samme bruger.
+Lære ssh config fil, med samme maskine navne og samme bruger navne der bliver logget på.
+Der skal være en admin bruger med kun terminal adgang. 
+
+
+
+ 
