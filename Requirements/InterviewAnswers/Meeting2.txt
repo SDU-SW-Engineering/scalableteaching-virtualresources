@@ -1,0 +1,52 @@
+# Creation af maskiner
+* Hvordan vlle du foretrække at kreere de virtuelle maskiner.
+Foretrække at lave egen iso, og så bare replikere den
+* Hvor komfortabel ville du være med at bruge en terminal til at lave de virtuelle maskiner.
+Meget komfortabel
+* Ville du foretrække en form for web interface.
+Et fedt
+# Credentials
+* Har du nogen preferancer for hvordan du og de studerende skal logge på (RSA-Key vs password)
+Begge er nødvendigt grundet hvad de studerende er vant til
+* Har du erfaring med at bruge gruppe systemet i blackboard.
+Ingen erfraring
+# Konfigurering af maskiner
+* Hvad har du brug for at forudkonfigurere? (Porte forwarded, software, startup scripts)
+Scripts og apt packages ville være forventet
+* Kunne du forestille dig situationer hvor du havde brug for mere plads.
+Ja
+* Ændrigner til base images?
+Det ville være forventet at det var muligt
+* Logins gennem udtræk fra blackboard?
+Jup
+* Kunne du forestille dig eller have brug for at begrænse rettighederne af brugernes systemer.
+Jo flere rettigheder jo mere fucker de op
+Jo færre rettigheder jo mindre 
+
+Seperate brugere. Og så køre til root når der skulle bruges sudo - Bliver Brugt i virkeligheden.
+
+# Distrobution af credentials
+* Hvordan kunne du forstille dig at informere de studerende om deres adgang til systemet?
+SSO
+Gennem web interfaced ville være det bedste
+
+Default images
+Custom image
+
+Forudkonfigurering 
+Configurer Interfaces - 
+Ram - 
+Storage - Expansion just in case
+
+Privacy problemer???
+
+Kun SSH en begrænsning
+Manglende forstand på netværk
+
+
+E-Science Center - dsup@imada.sdu.dk
+Chef IT-Service Udvikling - Pia Jensen  https://portal.findresearcher.sdu.dk/da/persons/pia
+
+
+
+
