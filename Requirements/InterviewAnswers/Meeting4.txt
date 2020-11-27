@@ -1,0 +1,72 @@
+# Eksisterende interacktion med Virtual Machines
+* Bruger du, eller har du brugt servere/virtuelle maskiner i din undervisning.
+Ja
+* Enkelt server til hele klassen?
+Nej
+* Servere til grupper eller individuelt.
+Induvudyekt
+* Flere maskiner pr gruppe?
+* Kunne eksisterende undervisning forbedres ved brug af individuelle virtulle maskiner?
+Det var håbet at der kunne laves netværk
+* Hvordan navngiver du dine maskiner som underviser, Hvordan logger DU ind?
+NavnPåFag+username
+* Hvordan fordeler du VM´s
+Under undervisning
+* Hvordan Håndtere du fordeling af credentials?
+Identiske maskiner så ingen individuel opsætning fra underviser
+
+## Problemer
+* Har du/i haft problemer i forbindelse med eksisterende løsninger?
+Det var et problem at det var ubuntu server i det at man ikke kan have gui.
+* Har du/i haft behov for at nulstille individuelle virtuelle maskiner i forbindelse med at der er gået noget galt på maskinen.
+Der var en maskine der blev eksperimenteret lidt for meget til
+
+# Ikke aktiv bruger af servere
+* Kunne du forestille dig at bruge virtuelle maskiner/servere i din undervisning?
+* Har du eksisterende problemer med software som ens forudopsatte systemer kunne løse?
+
+# Creation af maskiner
+* Hvordan vlle du foretrække at kreere de virtuelle maskiner.
+Det ville være rart at have mulighed for at bruge en cli også og også en gui
+* Hvor komfortabel ville du være med at bruge en terminal til at lave de virtuelle maskiner.
+Meget
+* Ville du foretrække en form for web interface.
+Så længe det ikke er per studerende der skulle laves en hel masse
+
+# Credentials
+* Har du nogen preferancer for hvordan du og de studerende skal logge på (RSA-Key vs password)
+Lad det være op til den studerende, men fedt med for konfigurerede keys
+* Har du erfaring med at bruge gruppe systemet i blackboard.
+Jup
+
+# Konfigurering af maskiner
+* Hvad har du brug for at forudkonfigurere? (Porte forwarded, software, startup scripts)
+Forudinstallering af software, både hentet, kompileret og gennem apt.
+Replikering efter konfigurering.
+* Kunne du forestille dig situationer hvor du havde brug for mere plads.
+Ingen plads problemer.
+* Konfigurations filer? (Script / ui?)
+Ville være at foretrække at have en config fil til at smide efter programmet
+* Ændrigner til base images?
+Ville være nemmere i tilfælde med meget software og konfigurering
+* Logins gennem udtræk fra blackboard?
+Har lavet udtræk af brugere fra blackboard
+* Kunne du forestille dig eller have brug for at begrænse rettighederne af brugernes systemer.
+Det er helt fint at fulde rettigheder, så fremt det er nemt at nulstille systemet.
+
+# Distrobution af credentials
+* Hvordan kunne du forstille dig at informere de studerende om deres adgang til systemet?
+Gennem web interface. 
+
+
+
+
+
+
+
+
+
+
+
+
+ 

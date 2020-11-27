@@ -1,0 +1,87 @@
+# Eksisterende interacktion med Virtual Machines
+* Bruger du, eller har du brugt servere/virtuelle maskiner i din undervisning.
+Ja
+* Enkelt server til hele klassen?
+Nej
+* Servere til grupper eller individuelt.
+Individuelle
+* Flere maskiner pr gruppe?
+N/A
+* Kunne eksisterende undervisning forbedres ved brug af individuelle virtulle maskiner?
+N/A
+* Hvordan navngiver du dine maskiner som underviser, Hvordan logger DU ind?
+N/A
+* Hvordan fordeler du VM´s
+Fordelt manuelt over email
+* Hvordan Håndtere du fordeling af credentials?
+Fordelt manuelt pr bruger over email
+
+## Problemer
+* Har du/i haft problemer i forbindelse med eksisterende løsninger?
+Opsætning af maskiner kan være komplekst
+Når studerende selv skal sætte maskiner op og de finder 10 forskellige løsninger til at lave opsætningen - Giver problemer
+* Har du/i haft behov for at nulstille individuelle virtuelle maskiner i forbindelse med at der er gået noget galt på maskinen.
+Der har i et enkelt tilfælde været brug for at nulstille en af maskinerne.
+# Ikke aktiv bruger af servere
+* Kunne du forestille dig at bruge virtuelle maskiner/servere i din undervisning?
+N/A
+* Har du eksisterende problemer med software som ens forudopsatte systemer kunne løse?
+Studerende sætter maskiner forkert op, og det er ikke processen at sætte dem op der har relevans
+
+# Creation af maskiner
+* Hvordan vlle du foretrække at kreere de virtuelle maskiner .
+Gennem visuel interface der derved guider dig igennem at lave maskiner, og ved at stille muligheder visuelt tilgængeligt oplyser det også derom
+* Hvor komfortabel ville du være med at bruge en terminal til at lave de virtuelle maskiner.
+Komfortabel med terminaler, men fortrækker UI
+* Ville du foretrække en form for web interface.
+Helt klart. Det er nemmere at bruge
+# Credentials
+* Har du nogen preferancer for hvordan du og de studerende skal logge på (RSA-Key vs password)
+Hvad end der er nemmest for de studerende, Det er bedst at have begge mulighede til gængelig.
+* Har du erfaring med at bruge gruppe systemet i blackboard.
+Nej
+
+# Konfigurering af maskiner
+* Hvad har du brug for at forudkonfigurere? (Porte forwarded, software, startup scripts)
+Porte, Software, X11 forwarding 
+* Kunne du forestille dig situationer hvor du havde brug for mere plads.
+N/A
+* Konfigurations filer? (Script / ui?)
+N/A
+* Ændrigner til base images?
+Ikke preferantielt
+* Logins gennem udtræk fra blackboard?
+At foretrække for nemheden
+* Kunne du forestille dig eller have brug for at begrænse rettighederne af brugernes systemer.
+Det ville være rart at have simple brugere med adgang til specifikke kommandoer.
+Specifikt adgang til at bruge docker uden brug af sudo
+
+# Distrobution af credentials
+* Hvordan kunne du forstille dig at informere de studerende om deres adgang til systemet?
+Gennem web interface er preferantielt.
+
+
+
+#Andet
+* Guides til Linux brug + cheatsheet
+* Mulighed for at sætte x11 forwarding op under konfiguration
+* Undervise med keypair tilknyttet maskinerne
+* Specifik bruger til underviser
+* Mulighed for at installere programmer der ikke er tilgængelig gennem apt
+* Guide til brug af x11 forwarding
+* Mulighed for forskællige brugere på gruppe maskiner
+* Mulighed for at tilføge og fjerne brugere fra maskiner gennem systemet
+* Undersøg problemer med ssh værende langsomt? gennem sdu vpn.
+* Fjerne behov for sudo på specifikke kommandoer
+
+
+
+
+
+
+
+
+
+
+
+ 
