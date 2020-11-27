@@ -1,0 +1,88 @@
+# Eksisterende interacktion med Virtual Machines
+* Bruger du, eller har du brugt servere/virtuelle maskiner i din undervisning.
+Både og, men det er gennem brugernes egen handlinger
+* Enkelt server til hele klassen?
+Nej
+* Servere til grupper eller individuelt.
+Grupper
+* Flere maskiner pr gruppe?
+Nej
+* Kunne eksisterende undervisning forbedres ved brug af individuelle virtulle maskiner?
+Det ville det.
+- Infrastukturs undervisning mangler og derved er maskiner der bliver gjort klar være til fordel for de studerende.
+- Det ville give en simplificering af ikke undervisnings relevant ting
+
+## Problemer
+* Har du/i haft problemer i forbindelse med eksisterende løsninger?
+Give eksempler på maskiner, da hosting 
+
+# Ikke aktiv bruger af servere
+* Kunne du forestille dig at bruge virtuelle maskiner/servere i din undervisning?
+Ja
+* Har du eksisterende problemer med software som ens forudopsatte systemer kunne løse?
+Ja - Opsætning kan være gjort forkert, og det kunne også give mere tid til undervisning i stedet for opsætning.
+
+
+# Creation af maskiner
+* Hvordan ville du foretrække at kreere de virtuelle maskiner.
+CLI skal være til gængelig, men web er ok.
+* Hvor komfortabel ville du være med at bruge en terminal til at lave de virtuelle maskiner.
+Ja
+* Ville du foretrække en form for web interface.
+Det ville være fint
+# Credentials
+* Har du nogen preferancer for hvordan du og de studerende skal logge på (RSA-Key vs password)
+Begge, det skal være muligt og det 
+Der skal være adgang til password.
+* Har du erfaring med at bruge gruppe systemet i blackboard.
+Jep
+
+# Konfigurering af maskiner
+* Hvad har du brug for at forudkonfigurere? (Porte forwarded, software, startup scripts)
+Det ville være rart at kunne gøre, men det er ikke et behov. Det ville være rart at kunne køre noget apt og noget wget.
+Åbne porte der ikke er til ssh da det der skal kommunikere ikke er deres computer og ikke er noget der er adgang til.
+* Kunne du forestille dig situationer hvor du havde brug for mere plads.
+Det har tidligere været et problem.
+* Konfigurations filer? (Script / ui?)
+
+* Ændrigner til base images?
+Det ville være rart at kunne
+* Logins gennem udtræk fra blackboard?
+Rart at have.
+* Kunne du forestille dig eller have brug for at begrænse rettighederne af brugernes systemer.
+Det ville være godt at have mulighed for
+
+
+# Distrobution af credentials
+* Hvordan kunne du forstille dig at informere de studerende om deres adgang til systemet?
+SSO web interface somethign something 
+
+
+
+Andet: 
+Deep packet inspection for at route andre pakker der skal med ind
+Virtuelt fil system til storage så det ikke crasher programmer.
+SDU Apt repository + guide til at 
+
+Virtuelle maskiner til examens situationer.
+
+Begrænse vlan til specifikke maskiner i grupper.
+
+Der skal være underviser bruger.
+
+Sådan forbinder du - guide
+
+Behov for at kunne lave egen image.
+
+
+
+
+
+
+
+
+
+
+
+
+ 
