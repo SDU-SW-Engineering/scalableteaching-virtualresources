@@ -28,7 +28,6 @@
 # Konfigurering af maskiner
 * Hvad har du brug for at forudkonfigurere? (Porte forwarded, software, startup scripts)
 * Kunne du forestille dig situationer hvor du havde brug for mere plads.
-* Konfigurations filer? (Script / ui?)
 * Ændrigner til base images?
 * Logins gennem udtræk fra blackboard?
 * Kunne du forestille dig eller have brug for at begrænse rettighederne af brugernes systemer.
