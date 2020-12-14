@@ -1,0 +1,68 @@
+# Existing interaction with virtual servers
+* Do you, or have you used virtual servers in your classes?
+Yes
+* A single server for the whole class?
+No
+* Servers for groups or for individuals?
+Individuals.
+* Multiple machines pr group?
+
+* Could class be improved by the introduction of individual virtual machines
+* How do you as an instructor navigate the virtual machines in play (do you have your own user, ssh, keypairs)?
+* How do you distribute the virtual machines?
+* How do you handle distribution of machine credentials?
+
+## Problems
+* Have you had problems with existing solutions?
+It was hard to use the virtual machines
+	Getting code out of the machine over usb and such
+* Have you had to reset machines(i.e. a rollback) due to an error on the machine such as a software issue?
+	NA
+
+# Not active user of servers
+* Could you imagine integrating virtual machines into your teaching, for things such as making Linux available or to provide preconfigured systems?
+	Possibly
+* Have you had problems in class that a preconfigured system could solve?
+
+
+# Creation of machines
+* How would you prefer to create virtual machines?
+	* Like thru a configuration file handed to a website or script
+	* Thru a website with configuration options
+	* Thru a shell script 
+Thru a website.
+* How comfortable would you be using a terminal to create virtual machines?
+	Yes, but it could be too complex for many, and the amout of 
+* Would you prefer a web interface?
+	
+# Credentials
+* Do you have a preference for keypairs vs passwords for signing in via ssh
+	Password is preffered. 
+* Do you have experience using the group system in blackboard(itslearning)
+	(yes)
+
+# Configuration of machines
+* What would you need to pre-configure?
+	* Software, ports, startup scripts?
+	Sure 
+* Could you imagine a situation where the machines would run out of space?
+	No - but yes as an edge case
+* Could you imagine needing to change the base image to have a more complex configuration?
+	Yes
+* How would you feel about creating machines based on groups and usernames extracted from blackboard(itslearnig)
+	Would be great
+* Could you see the need for restricting the access rights of the users to something less than full administrator on the individual machines
+		
+
+# Distribution of credentials
+* How could you imagine informing the students of how to access the system
+	* Like thru a website, Mail, direct messages thru blackboard(itslearning)
+	Thru the web interface 
+
+
+
+
+ncurses linux screen
+	Need to be able to go back
+If the machine halts there needs to be a way to simply reboot it.
+You need to be able to make your own image.

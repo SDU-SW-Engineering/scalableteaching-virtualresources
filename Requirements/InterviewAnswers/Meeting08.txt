@@ -1,0 +1,68 @@
+# Eksisterende interacktion med Virtual Machines
+* Bruger du, eller har du brugt servere/virtuelle maskiner i din undervisning.
+Ja - windows box til postgresql database
+* Enkelt server til hele klassen?
+
+* Servere til grupper eller individuelt.
+* Flere maskiner pr gruppe?
+* Kunne eksisterende undervisning forbedres ved brug af individuelle virtulle maskiner?
+* Hvordan navngiver du dine maskiner som underviser, Hvordan logger DU ind?
+Remote desktop
+* Hvordan fordeler du VM´s
+
+* Hvordan Håndtere du fordeling af credentials?
+
+
+## Problemer
+* Har du/i haft problemer i forbindelse med eksisterende løsninger?
+Ikke oplevet nogen problemer
+* Har du/i haft behov for at nulstille individuelle virtuelle maskiner i forbindelse med at der er gået noget galt på maskinen.
+Nej
+
+# Ikke aktiv bruger af servere
+* Kunne du forestille dig at bruge virtuelle maskiner/servere i din undervisning?
+Ja - Til at give en fælles server til klassen.
+Potentielt noget distrubiution gennem vm's
+* Har du eksisterende problemer med software som ens forudopsatte systemer kunne løse?
+
+
+# Creation af maskiner
+* Hvordan vlle du foretrække at kreere de virtuelle maskiner.
+Gennem noget simpelt interface 
+* Hvor komfortabel ville du være med at bruge en terminal til at lave de virtuelle maskiner.
+Det ville være ubehaligt.
+* Ville du foretrække en form for web interface.
+Ja
+
+# Credentials
+* Har du nogen preferancer for hvordan du og de studerende skal logge på (RSA-Key vs password)
+Så længe dokumentationen er god er der ikke et problem.
+* Har du erfaring med at bruge gruppe systemet i blackboard.
+nej
+
+# Konfigurering af maskiner
+* Hvad har du brug for at forudkonfigurere? (Porte forwarded, software, startup scripts)
+Det er nødvendigt, men ikke forstået.
+* Kunne du forestille dig situationer hvor du havde brug for mere plads.
+Det ville næppe være nødvendigt.
+* Ændrigner til base images?
+Library af præ konfigurerede images.
+	windows
+	linux 
+	sql
+	
+* Logins gennem udtræk fra blackboard?
+
+* Kunne du forestille dig eller have brug for at begrænse rettighederne af brugernes systemer.
+Det ville være rart at kunne, men det kommer an på use cased.
+
+# Distrobution af credentials
+* Hvordan kunne du forstille dig at informere de studerende om deres adgang til systemet?
+Auto mail possibly. for at mindske mængden af signins der bliver udført.
+Potentielt have management interfaced på et ansatte only vlan.
+
+
+EOL - Angivelse baseret på en given dato efter kurset
+	Det er behov for at vi enforcer at lukket dem igen efter givet dato. 
+Det ville være praktisk at man har mulighed for at sætte windows op på maskinerne.
+

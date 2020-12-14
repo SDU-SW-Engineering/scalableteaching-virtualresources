@@ -1,0 +1,72 @@
+# Eksisterende interacktion med Virtual Machines
+* Bruger du, eller har du brugt servere/virtuelle maskiner i din undervisning.
+Ja
+* Enkelt server til hele klassen?
+En til hele klasse
+* Kunne eksisterende undervisning forbedres ved brug af individuelle virtulle maskiner?
+Ja - Det ville være bedre at have individuelle maskiner da de så ikke kommer i vejen for hendanden.
+* Hvordan fordeler du VM´s
+Maskinen 
+* Hvordan Håndtere du fordeling af credentials?
+
+## Problemer
+* Har du/i haft problemer i forbindelse med eksisterende løsninger?
+Administrering af brugere og grupper var et problem både i forhold til credentials og til distrubuering af adgange.
+Hvem skal køre en service når en maskine skal deles af en gruppe.
+* Har du/i haft behov for at nulstille individuelle virtuelle maskiner i forbindelse med at der er gået noget galt på maskinen.
+Kun efter semestre 
+
+# Ikke aktiv bruger af servere
+* Har du eksisterende problemer med software som ens forudopsatte systemer kunne løse?
+Ja 
+
+
+# Creation af maskiner
+* Hvordan vlle du foretrække at kreere de virtuelle maskiner.
+Web interface ville være en fordel, da det ikke skulle bruges så tit.
+* Hvor komfortabel ville du være med at bruge en terminal til at lave de virtuelle maskiner.
+Ja det er fint.
+* Ville du foretrække en form for web interface.
+
+
+# Credentials
+* Har du nogen preferancer for hvordan du og de studerende skal logge på (RSA-Key vs password)
+Hip som hap
+* Har du erfaring med at bruge gruppe systemet i blackboard.
+Ikke meget, men ved det eksistere.
+
+# Konfigurering af maskiner
+* Hvad har du brug for at forudkonfigurere? (Porte forwarded, software, startup scripts)
+Meget kompleks software så det kræver hellere et image der er prækonfigureret
+* Kunne du forestille dig situationer hvor du havde brug for mere plads.
+Ja det kunne være relevant.
+* Ændrigner til base images?
+Det ville være rart at kunne supplere et image. Der er behov for meget komplekse software opsætninger.
+* Logins gennem udtræk fra blackboard?
+Det er blevet gjort, men ikke alt for nemt.
+* Kunne du forestille dig eller have brug for at begrænse rettighederne af brugernes systemer.
+Ja det ville være rart at kunne styre grupper og previlegier på brugerene for at konfigurere.
+
+# Distrobution af credentials
+* Hvordan kunne du forstille dig at informere de studerende om deres adgang til systemet?
+Så længe det ikke er manuelt email.
+Ville foretrække nemt web interface til studerende eller lignende så det kan automatiseres for at ungå kæmpe arbejds byrde.
+
+
+
+Der er et behov for en proxy lignende løsnign så man kan komme til vmen fra et eksternt nætværk der ikke har support for anyvpn da det er et mobilt netværk som ikke supporter anyvpn.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
