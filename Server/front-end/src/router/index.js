@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-import Machines from "@/components/Machines";
-import Administration from "@/components/Administration";
-import Management from "@/components/Management";
+import Machines from "@/views/Machines";
+import Administration from "@/views/Administration";
+import Management from "@/views/Management";
 
 Vue.use(VueRouter)
 
