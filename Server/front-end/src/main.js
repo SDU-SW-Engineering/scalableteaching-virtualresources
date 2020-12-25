@@ -16,4 +16,5 @@ new Vue({
   router,
   store,
   render: h => h(App)
+  //TODO: Change the page title
 }).$mount('#app')
