@@ -13,9 +13,29 @@
         </b-button>
       </b-col>
     </b-row>
-
+    <!--Class Name Selection And Input-->
+    <b-row v-if="creationStep===0 || advanced">
+      <b-col xl="6" offset-xl="3" align-self="center">
+        <b-form-group label="Select or input class name">
+          <b-form-select
+              v-model="settings.classname.selected"
+              :options="getClassnameOptions"
+          >
+            <b-form-select-option value="null">Class not on list</b-form-select-option>
+          </b-form-select>
+          <div id="ClassnameInput">
+            <b-form-input
+                v-model="settings.classname.newName"
+                placeholder="Enter new class name here"
+                :disabled.sync="settings.classname.selected !== 'null' "
+            ></b-form-input>
+          </div>
+          <b-tooltip target="ClassnameInput" triggers="hover" :disabled.sync="settings.classname.selected === 'null'">To enable select "Class not on list" from above</b-tooltip>
+        </b-form-group>
+      </b-col>
+    </b-row>
     <!--Machine Creation Directive-->
-    <b-row v-if="(creationStep===1 || advanced)">
+    <b-row v-if="(creationStep=== 1 || advanced)">
       <b-col>
         <b-form-group label="Select replication directive">
           <b-form-radio-group
@@ -27,10 +47,10 @@
         </b-form-group>
       </b-col>
     </b-row>
-
     <!--Machine amount-->
     <!--Multiple Shared-->
-    <b-row v-if="(creationStep===2 || advanced) && settings.replicationDirective.selected === 1" align-content="center">
+    <b-row v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 1"
+           align-content="center">
       <b-col xl="6" offset-xl="3" align-self="center">
         <b-form-group label="Select amount of share machines">
           <b-form-select
@@ -41,13 +61,55 @@
       </b-col>
     </b-row>
     <!--Per Group - Upload or create groups-->
-
+    <b-row v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 2"
+           align-content="center">
+      <b-col xl="6" offset-xl="3" align-self="center">
+        <b-form-group label="Select groups or upload a file containing groups">
+          <b-form-radio-group v-model="settings.groupMachines.useFile" :options="settings.groupMachines.options">
+          </b-form-radio-group>
+          <b-form-file
+              v-if="settings.groupMachines.useFile"
+              :key="settings.groupMachines.useFile"
+              v-model="settings.groupMachines.file"
+              :state="Boolean(settings.groupMachines.file)"
+              accept="application/activity+json"
+              v-on:input="debugText=2"
+          ></b-form-file><!--TODO: Implement validation of group file on change of file-->
+          <b-form-select
+              v-if="!settings.groupMachines.useFile"
+              :key="settings.groupMachines.useFile"
+              v-model="settings.groupMachines.selectedGroups"
+              :options="getGroupNames"
+              multiple
+          >
+          </b-form-select>
+        </b-form-group>
+      </b-col>
+    </b-row>
     <!--Per User - Upload or enter manually-->
+    <b-row v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 3"
+           align-content="center">
+      <b-col xl="6" offset-xl="3" align-self="center">
+        <b-form-group label="Upload list of students">
+          <b-form-file
+              v-model="settings.userMachines.file"
+              :state="Boolean(settings.userMachines.file)"
+              accept="application/activity+json"
+          ></b-form-file><!--TODO: Implement validation of group file on change of file-->
+        </b-form-group>
+      </b-col>
+    </b-row>
+<!--    &lt;!&ndash;Select programs to add&ndash;&gt;
+    <b-row v-if="(creationStep === 3 || advanced)" >
+      <b-col xl="6" offset-xl="3" align-self="center">
 
+      </b-col>
+    </b-row>-->
 
     <p>Debug Text: {{ debugText }}</p>
     <p>Settings: {{ settings }}</p>
     <p>Step: {{ creationStep }}</p>
+    <p>Group File: {{ settings.groupMachines.file }}</p>
   </div>
 </template>
 
@@ -56,7 +118,7 @@ export default {
   name: "MachineCreation",
   data() {
     return {
-      creationStep: 1,
+      creationStep: 0,
       advanced: false,
       finalCreationStep: 15,
       isDisabled: false,
@@ -70,12 +132,26 @@ export default {
             {text: "Per Group", value: 2},
             {text: "Per User", value: 3},
           ],
-          selected: "",
+          selected: 0,
         },
         sharedMachineAmount: {
           options: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
           selected: 1,
         },
+        groupMachines: {
+          file: "",
+          selectedGroups: [],
+          useFile: false,
+          options: [
+            {text: "Select Existing Groups", value:false},
+            {text: "Upload File for New Groups", value:true}
+          ]
+        },
+        userMachines: {},
+        classname: {
+          selected: "null",
+          newName: "",
+        }
       }
     }
   },
@@ -106,10 +182,29 @@ export default {
     resetFields() {
       this.creationStep = 1;
       //TODO: Implement field resets
-    }
+    },
+
   },
   computed: {
     console: () => console,
+    getClassnameOptions() {
+      //TODO: Implement class return
+      return [
+        {text: "ONK", value: "ONK"},
+        {text: "ADT", value: "ADT"},
+        {text: "YAO", value: "YAO"},
+        {text: "MUU", value: "MUU"}
+      ]
+    },
+    getGroupNames() {
+      //TODO: Implement The return of groups
+      return [
+        {text: "Group 1", value: "411c4f02-04a0-45fb-ba3b-fbe50784f592"},
+        {text: "Group 2", value: "b3f5aaa7-8747-4c07-8f5b-3db6c833b90a"},
+        {text: "Group 3", value: "2dff4822-79b1-40ff-85b9-185d5439384b"},
+        {text: "Group 4", value: "734da026-013e-4b3c-9c35-62729fe60832"}
+      ];
+    },
   }
 }
 
