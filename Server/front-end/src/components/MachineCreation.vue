@@ -3,13 +3,13 @@
     <!--Top of screen buttons-->
     <b-row>
       <b-col>
-        <b-button class="mb4 mr4" v-if="!advanced" :disabled="creationStep <= 1" v-on:click="creationStep--">Previous
+        <b-button class="mb4 mr4" :disabled="creationStep <= 1" v-on:click="creationStep--">←
         </b-button>
         <b-button class="mb4 mr2" variant="warning" v-on:click="resetVerification">Reset Machine Creation Forms
         </b-button>
         <b-button class="mb4 mr2" variant="info" v-on:click="advanced = !advanced">Advanced Mode</b-button>
-        <b-button class="mb4 ml2" v-if="!advanced" :disabled="creationStep >= finalCreationStep"
-                  v-on:click="creationStep++">Next
+        <b-button class="mb4 ml2" :disabled="creationStep >= finalCreationStep"
+                  v-on:click="creationStep++">→
         </b-button>
       </b-col>
     </b-row>
@@ -99,17 +99,22 @@
         </b-form-group>
       </b-col>
     </b-row>
-<!--    &lt;!&ndash;Select programs to add&ndash;&gt;
-    <b-row v-if="(creationStep === 3 || advanced)" >
-      <b-col xl="6" offset-xl="3" align-self="center">
+    <!--TODO: Select programs for installation-->
 
+    <!--Bottom of screen buttons-->
+    <b-row>
+      <b-col>
+        <b-button class="mb4 mr4" :disabled="creationStep <= 1" v-on:click="creationStep--">←
+        </b-button>
+        <b-button class="mb4 mr2" variant="warning" v-on:click="resetVerification">Reset Machine Creation Forms
+        </b-button>
+        <b-button class="mb4 mr2" v-if="creationStep===3" variant="primary" v-on:click="finish">Create Machines</b-button>
+        <b-button class="mb4 mr2" variant="info" v-on:click="advanced = !advanced">Advanced Mode</b-button>
+        <b-button class="mb4 ml2" :disabled="creationStep >= finalCreationStep"
+                  v-on:click="creationStep++">→
+        </b-button>
       </b-col>
-    </b-row>-->
-
-    <p>Debug Text: {{ debugText }}</p>
-    <p>Settings: {{ settings }}</p>
-    <p>Step: {{ creationStep }}</p>
-    <p>Group File: {{ settings.groupMachines.file }}</p>
+    </b-row>
   </div>
 </template>
 
@@ -120,7 +125,7 @@ export default {
     return {
       creationStep: 0,
       advanced: false,
-      finalCreationStep: 15,
+      finalCreationStep: 3,
       isDisabled: false,
       resetBox: '',
       debugText: 'No Debug Text Yet',
@@ -183,7 +188,9 @@ export default {
       this.creationStep = 1;
       //TODO: Implement field resets
     },
-
+    finish(){
+      //TODO: Verify all data entered correctly and submit to backend.
+    }
   },
   computed: {
     console: () => console,
