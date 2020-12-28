@@ -13,8 +13,17 @@ export default new Vuex.Store({
       account_type: "Administrator",
       email: "temus20@student.sdu.dk"
     },
+    isSignedIn: true,
   },
   mutations: {
+    login(state, user){
+      state.user = user;
+      state.isSignedIn = true;
+    },
+    logout(state){
+      state.user = {};
+      state.isSignedIn = false;
+    }
   },
   actions: {
   },
