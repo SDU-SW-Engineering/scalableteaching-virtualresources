@@ -1,11 +1,11 @@
 import { urlConfig } from "../config/urlConfig"
 import { parseResponse } from "../helpers/apiHelper"
 
-export const authAPI = {
+export default {
     login
 }
 
-export function login(username, hashedPassword) {
+export function login(SSOToken) {
     return fetch(urlConfig.login, {
         method: "POST",
         headers: new Headers({
@@ -13,6 +13,7 @@ export function login(username, hashedPassword) {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }),
-        body: JSON.stringify({username, hashedPassword})
+        body: JSON.stringify({token: SSOToken})
+
     }).then(res => parseResponse(res))
 }

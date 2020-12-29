@@ -6,11 +6,11 @@
 
     <b-collapse id="nav-collapse" is-nav>
       <!--Left aligned nav items-->
-      <b-navbar-nav>
+      <b-navbar-nav >
 
-        <b-nav-item href="/">My Machines</b-nav-item>
-        <b-nav-item href="/Management" v-if="user.account_type === 'Educator' || user.account_type === 'Administrator'">Machine Management</b-nav-item>
-        <b-nav-item href="/Administration" v-if="user.account_type === 'Administrator'">User Administration</b-nav-item>
+        <b-nav-item href="/Machines" v-if="isLoggedIn">My Machines</b-nav-item>
+        <b-nav-item href="/Management" v-if="isLoggedIn &&(user.account_type === 'Educator' || user.account_type === 'Administrator')">Machine Management</b-nav-item>
+        <b-nav-item href="/Administration" v-if="isLoggedIn &&(user.account_type === 'Administrator')">User Administration</b-nav-item>
       </b-navbar-nav>
       <!-- Right aligned nav items -->
       <b-navbar-nav class="ml-auto">
@@ -26,13 +26,16 @@
 </template>
 
 <script>
-import store from "@/store";
+import store from "@/store/store";
 
 export default {
   name: "NavBar",
   computed: {
     user(){
       return store.state.user
+    },
+    isLoggedIn(){
+      return store.state.isSignedIn
     }
   }
 }

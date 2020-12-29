@@ -1,76 +1,95 @@
-/*// eslint-disable-next-line no-unused-vars
-import {store, parseUser} from '@/store/index.js'
-import router from '@/router/index.js'
+// eslint-disable-next-line no-unused-vars
+import store from '@/store/store'
+import router from '@/router/router'
 import jwt from 'jsonwebtoken'
 import authAPI from '@/api/authAPI'
 import {clearJWT, loadJWT, saveJWT} from '@/helpers/tokenHelper'
 
-export const authService =
-    {
-        login,
-        automaticReLogin,
-    }
+export default {
+    login,
+    logout,
+    automaticReLogin,
+    validateIsSignedIn
+}
 
-async function login(username, password) {
+async function logout() {
     // eslint-disable-next-line no-useless-catch
     try {
-        const response = await authAPI.login(username, password);
+        clearJWT();
+        store.commit('logout')
+    } catch (e) {
+        throw e
+    }
+}
+
+/**
+ *
+ * @param SSOToken
+ * @returns {Promise<boolean>}
+ */
+async function login(SSOToken) {
+    // eslint-disable-next-line no-useless-catch
+    try {
+        const response = await authAPI.login(SSOToken);
         const token = response.jwt;
-        // eslint-disable-next-line no-unused-var
-        const user = jwt.decode(token);
 
-        store.commit('login', 'parseUser(user)')
-
-        saveJWT(token);
-
-        router.push({path: '/machines'})
-    } catch (error) {
-        throw error
-    }
-}
-
-function automaticReLogin() {
-    const token = loadJWT();
-    if (token) {
-        const user = jwt.decode(token);
-
-    }
-}
-
-function validateTokenDate(user) {
-    const expDate = new Date(0);
-    expDate.setSeconds(user.exp)
-}*/
-
-/*
-function handleAutomaticLogin() {
-    const token = getJWTTokenFromLocalStorage();
-    if (token) {
-        // TODO: Verify token endpoint?
-        const user = jwt.decode(getJWTTokenFromLocalStorage());
-
-        const expDate = new Date(0);
-        expDate.setSeconds(user.exp);
-
-        const isExpired = new Date().getTime() > expDate.getTime();
-
-        if (isExpired) { // Token is invalid.
-            clearJWTTokenFromLocalStorage();
-            throw new Error("Login expired");
+        if(!token){
+            return false
         }
-        globalStore.commit('login', user);
-        router.push({ path: '/' });
+
+        try{
+            jwt.verify(token)
+        }catch(error){
+            if(error instanceof jwt.JsonWebTokenError){
+                window.console.log(error);
+                clearJWT();
+                store.commit('logout');
+                return
+            }else if(error instanceof jwt.NotBeforeError){
+                window.console.log("Token Not yet valid: REJECTED");
+                clearJWT();
+                store.commit('logout');
+                return
+            }else if(error instanceof jwt.TokenExpiredError){
+                window.console.log("Token Expired: REJECTED");
+                clearJWT();
+                store.commit('logout');
+                return
+            }else{
+                window.console.log(error);
+            }
+        }
+        //Cant find evidence that this will produce an error, but it might so try-catch it is.
+        const user = jwt.decode(token);
+        store.commit('login', parseUser(user))
+        saveJWT(token);
+        await router.push({path: '/machines'})
+    } catch (error) {
+        return false
+    }
+    return true
+}
+
+function parseUser(userToken) {
+    return {
+        gn: userToken.gn,
+        sn: userToken.sn,
+        cn: userToken.cn,
+        uname: userToken.uname,
+        account_type: userToken.account_type,
+        email: userToken.email
     }
 }
 
-function logout() {
-    clearJWTTokenFromLocalStorage();
-    globalStore.commit('logout');
-    router.push({ path: '/login' });
+function validateTokenExpiration() {
+    try {
+        const token = loadJWT();
+        return jwt.verify(token) === null;
+    }catch (e) {
+        return false;
+    }
 }
 
-export const authService = {
-    login,
-    handleAutomaticLogin,
-    logout
-}*/
+function validateIsSignedIn() {
+    return store.state.isSignedIn && validateTokenExpiration()
+}

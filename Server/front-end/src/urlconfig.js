@@ -5,6 +5,7 @@ const creation = "/api/creation"
 const management = "/api/management"
 const credentials = "/api/my_machines"
 const login = "/api/login"
+const loginTokenReturnString = protocol + "%3A%2F%2F" + base + "%3A" + port + "%2Flogin"
 
 
 export const urlConfig = {
@@ -14,5 +15,6 @@ export const urlConfig = {
     creation,
     management,
     credentials,
-    login
+    login,
+    loginTokenReturnString
 }
