@@ -5,13 +5,18 @@
 
 <script>
 import AuthService from '@/services/AuthService'
+import router from "@/router/router";
 export default {
 
   name: 'login',
   methods: {
     redirect() {
-      AuthService.login(this.props.token);
-    },
+      if(AuthService.login(this.props.token)){
+        router.push({name: 'Machines'})
+      }else{
+        this.redirect();
+      }
+    }
   }
 }
 </script>

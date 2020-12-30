@@ -1,6 +1,5 @@
 // eslint-disable-next-line no-unused-vars
 import store from '@/store/store'
-import router from '@/router/router'
 import jwt from 'jsonwebtoken'
 import authAPI from '@/api/authAPI'
 import {clearJWT, loadJWT, saveJWT} from '@/helpers/tokenHelper'
@@ -8,7 +7,6 @@ import {clearJWT, loadJWT, saveJWT} from '@/helpers/tokenHelper'
 export default {
     login,
     logout,
-    automaticReLogin,
     validateIsSignedIn
 }
 
@@ -63,7 +61,6 @@ async function login(SSOToken) {
         const user = jwt.decode(token);
         store.commit('login', parseUser(user))
         saveJWT(token);
-        await router.push({path: '/machines'})
     } catch (error) {
         return false
     }
