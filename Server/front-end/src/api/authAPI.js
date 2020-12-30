@@ -1,11 +1,11 @@
-import { urlConfig } from "../config/urlConfig"
-import { parseResponse } from "../helpers/apiHelper"
+import apiHelper from "@/helpers/apiHelper"
+import urlConfig from "@/config/urlconfig";
 
 export default {
     login
 }
 
-export function login(SSOToken) {
+function login(SSOToken) {
     return fetch(urlConfig.login, {
         method: "POST",
         headers: new Headers({
@@ -15,5 +15,5 @@ export function login(SSOToken) {
         }),
         body: JSON.stringify({token: SSOToken})
 
-    }).then(res => parseResponse(res))
+    }).then(res => apiHelper.parseResponse(res))
 }

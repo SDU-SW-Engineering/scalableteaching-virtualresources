@@ -8,7 +8,7 @@ const login = "/api/login"
 const loginTokenReturnString = protocol + "%3A%2F%2F" + base + "%3A" + port + "%2Flogin"
 
 
-export const urlConfig = {
+export default {
     port,
     protocol,
     base,
