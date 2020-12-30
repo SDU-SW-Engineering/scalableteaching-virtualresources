@@ -58,7 +58,6 @@ const router = new VueRouter({
 
 // eslint-disable-next-line no-unused-vars
 router.beforeEach((to, from, next) => {
-
     if (AuthService.validateIsSignedIn()) {
         if (to.name === 'Login') {
             next({name: 'Machines'})
@@ -69,6 +68,4 @@ router.beforeEach((to, from, next) => {
     } else {
         next({name: 'login'})
     }
-})
-
-export default router
+});
