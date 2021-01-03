@@ -13,6 +13,10 @@ import urlConfig from "@/config/urlconfig";
 
 Vue.use(VueRouter)
 
+export default {
+    router
+}
+
 const routes = [
     {
         path: '/Machines',
