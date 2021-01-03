@@ -1,0 +1,15 @@
+@startuml
+start
+    if (Single Machine)
+
+    elseif (Multiple Shared)
+
+    elseif (Per Group Machines)
+
+    else 
+        :Per User Machines
+
+stop
+
+
+@enduml

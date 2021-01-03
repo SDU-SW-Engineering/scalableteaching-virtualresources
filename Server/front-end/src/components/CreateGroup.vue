@@ -1,10 +1,10 @@
 <template>
-  <div></div>
+<div></div>
 </template>
 
 <script>
 export default {
-name: "Machines"
+name: "CreateGroup"
 }
 </script>
 
