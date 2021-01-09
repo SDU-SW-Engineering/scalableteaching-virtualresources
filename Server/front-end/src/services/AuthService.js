@@ -2,8 +2,8 @@
 import store from '@/store/store'
 import jwt from 'jsonwebtoken'
 import authAPI from '@/api/authAPI'
-import {clearJWT, loadJWT, saveJWT} from '@/helpers/tokenHelper'
-
+import {clearJWT, saveJWT} from '@/helpers/tokenHelper'
+//import {clearJWT, loadJWT, saveJWT} from '@/helpers/tokenHelper'
 export default {
     login,
     logout,
@@ -42,17 +42,17 @@ async function login(SSOToken) {
                 window.console.log(error);
                 clearJWT();
                 store.commit('logout');
-                return
+                return false;
             }else if(error instanceof jwt.NotBeforeError){
                 window.console.log("Token Not yet valid: REJECTED");
                 clearJWT();
                 store.commit('logout');
-                return
+                return false;
             }else if(error instanceof jwt.TokenExpiredError){
                 window.console.log("Token Expired: REJECTED");
                 clearJWT();
                 store.commit('logout');
-                return
+                return false;
             }else{
                 window.console.log(error);
             }
@@ -78,15 +78,15 @@ function parseUser(userToken) {
     }
 }
 
-function validateTokenExpiration() {
-    try {
-        const token = loadJWT();
-        return jwt.verify(token) === null;
-    }catch (e) {
-        return false;
-    }
-}
+// function validateTokenExpiration() {
+//     try {
+//         const token = loadJWT();
+//         return jwt.verify(token) === null;
+//     }catch (e) {
+//         return false;
+//     }
+// }
 
 function validateIsSignedIn() {
-    return store.state.isSignedIn && validateTokenExpiration()
+    return true;//store.state.isSignedIn && validateTokenExpiration() TODO: Return to functional
 }
