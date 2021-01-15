@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "NWuGJG9gTl1NxXKf/KpXPM2MjYE3INqYHaniPTS1xSU3vDIJAWUxP5MNa4Hod5J4d042gjS4nFll9u7AiISNDg==",
+  "dgSpecHash": "8/8tCSq+vyba122HtVZtxsjcmPhso/pidE4ePHimIXPzfm4LXmAIIZXNUfefN59O4r/eflLf98hWvPfT/OCftg==",
   "success": true,
   "projectFilePath": "C:\\Users\\frede\\Documents\\Programming\\ScalableTeachingInSTEM-VM-Deployment\\Server\\backend\\backend.csproj",
   "expectedPackageFiles": [
@@ -53,6 +53,7 @@
     "C:\\Users\\frede\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.0\\microsoft.netcore.platforms.3.1.0.nupkg.sha512",
     "C:\\Users\\frede\\.nuget\\packages\\microsoft.netcore.targets\\1.1.3\\microsoft.netcore.targets.1.1.3.nupkg.sha512",
     "C:\\Users\\frede\\.nuget\\packages\\microsoft.openapi\\1.2.3\\microsoft.openapi.1.2.3.nupkg.sha512",
+    "C:\\Users\\frede\\.nuget\\packages\\microsoft.visualstudio.azure.containers.tools.targets\\1.10.9\\microsoft.visualstudio.azure.containers.tools.targets.1.10.9.nupkg.sha512",
     "C:\\Users\\frede\\.nuget\\packages\\microsoft.visualstudio.web.codegeneration\\5.0.1\\microsoft.visualstudio.web.codegeneration.5.0.1.nupkg.sha512",
     "C:\\Users\\frede\\.nuget\\packages\\microsoft.visualstudio.web.codegeneration.contracts\\5.0.1\\microsoft.visualstudio.web.codegeneration.contracts.5.0.1.nupkg.sha512",
     "C:\\Users\\frede\\.nuget\\packages\\microsoft.visualstudio.web.codegeneration.core\\5.0.1\\microsoft.visualstudio.web.codegeneration.core.5.0.1.nupkg.sha512",
