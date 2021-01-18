@@ -1,8 +1,8 @@
 <template>
   <div id="app">
-    <!--TODO: Handle sign in verification-->
+    <!--TODO: Handle sign in verification v-if="isSignedIn()" -->
     <NavBar/>
-    <router-view v-if="isSignedIn"/>
+    <router-view />
   </div>
 
 </template>
@@ -24,7 +24,7 @@
     components: {NavBar},
     computed: {
       isSignedIn (){
-        return store.state.isSignedIn();
+        return store.state.isSignedIn;
       }
     }
   }

@@ -1,6 +1,6 @@
 const port = "8080"
 const protocol = "http"
-const base = "localhost"
+const base = "vmdeployment.hounsvad.dk"
 const creation = "/api/creation"
 const management = "/api/management"
 const credentials = "/api/my_machines"
