@@ -51,7 +51,7 @@ namespace backend.Controllers
             }
         }
 
-        [HttpGet("key")]
+        [HttpGet]
         public ActionResult GetKey()
         {
             return Ok(CryptoHelper.Instance.GetPublicKeyPem());

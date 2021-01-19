@@ -1,0 +1,24 @@
+2021/01/17 16:06:25 [emerg] 1#1: invalid port in upstream "backend:/api" in /etc/nginx/nginx.conf:31
+2021/01/17 16:06:26 [emerg] 1#1: invalid port in upstream "backend:/api" in /etc/nginx/nginx.conf:31
+2021/01/17 16:08:15 [emerg] 1#1: invalid port in upstream "backend:/api" in /etc/nginx/nginx.conf:31
+2021/01/17 16:08:23 [emerg] 1#1: invalid port in upstream "backend:/api" in /etc/nginx/nginx.conf:31
+2021/01/17 16:18:35 [emerg] 1#1: invalid port in upstream "backend:/api" in /etc/nginx/nginx.conf:31
+2021/01/17 16:19:56 [emerg] 1#1: invalid port in upstream "backend:/api" in /etc/nginx/nginx.conf:31
+2021/01/17 16:29:46 [emerg] 1#1: invalid port in upstream "backend:/api" in /etc/nginx/nginx.conf:31
+2021/01/17 16:30:12 [emerg] 1#1: invalid port in upstream "backend:/api" in /etc/nginx/nginx.conf:31
+2021/01/17 16:31:03 [emerg] 1#1: invalid port in upstream "backend:/api" in /etc/nginx/nginx.conf:31
+2021/01/17 16:37:45 [emerg] 1#1: invalid port in upstream "backend:/api" in /etc/nginx/nginx.conf:31
+2021/01/17 16:42:33 [emerg] 1#1: cannot load certificate "/etc/vmdeployment/cert/fullchain.pem": BIO_new_file() failed (SSL: error:02001002:system library:fopen:No such file or directory:fopen('/etc/vmdeployment/cert/fullchain.pem','r') error:2006D080:BIO routines:BIO_new_file:no such file)
+2021/01/17 16:44:19 [emerg] 1#1: BIO_new_file("/etc/letsencrypt/ssl-dhparams.pem") failed (SSL: error:02001002:system library:fopen:No such file or directory:fopen('/etc/letsencrypt/ssl-dhparams.pem','r') error:2006D080:BIO routines:BIO_new_file:no such file)
+2021/01/17 17:11:26 [emerg] 1#1: unknown log format "full" in /etc/nginx/nginx.conf:27
+2021/01/18 14:58:34 [emerg] 1#1: unknown log format "full" in /etc/nginx/nginx.conf:27
+2021/01/18 15:42:38 [error] 30#30: *4 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: , request: "GET /sdk/vimServiceVersions.xml HTTP/1.1", upstream: "http://172.17.0.1:8080/sdk/vimServiceVersions.xml", host: "192.168.0.10"
+2021/01/18 15:42:39 [error] 30#30: *6 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: , request: "GET /rvm/version HTTP/1.1", upstream: "http://172.17.0.1:8080/rvm/version", host: "192.168.0.10"
+2021/01/18 15:53:58 [error] 30#30: *12 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: , request: "GET /robots.txt HTTP/1.0", upstream: "http://172.17.0.1:8080/robots.txt", host: "vmdeployment.hounsvad.dk"
+2021/01/18 15:53:58 [error] 30#30: *14 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: , request: "GET /swaggerhubb HTTP/1.0", upstream: "http://172.17.0.1:8080/swaggerhubb", host: "vmdeployment.hounsvad.dk"
+2021/01/18 15:53:59 [error] 30#30: *16 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: , request: "GET /favicon.ico HTTP/1.0", upstream: "http://172.17.0.1:8080/favicon.ico", host: "vmdeployment.hounsvad.dk", referrer: "https://vmdeployment.hounsvad.dk/swaggerhubb"
+2021/01/18 15:54:06 [error] 30#30: *18 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: , request: "GET /swaggerhubb HTTP/1.0", upstream: "http://172.17.0.1:8080/swaggerhubb", host: "vmdeployment.hounsvad.dk"
+2021/01/18 15:54:10 [error] 30#30: *20 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: , request: "GET /swagger HTTP/1.0", upstream: "http://172.17.0.1:8080/swagger", host: "vmdeployment.hounsvad.dk"
+2021/01/18 15:55:55 [error] 23#23: *21 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: , request: "GET /robots.txt HTTP/1.0", upstream: "http://172.17.0.1:8080/robots.txt", host: "vmdeployment.hounsvad.dk"
+2021/01/18 17:35:55 [error] 22#22: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: , request: "GET / HTTP/1.0", upstream: "http://192.168.0.10:8080/", host: "vmdeployment.hounsvad.dk"
+2021/01/18 17:36:50 [error] 22#22: *3 connect() failed (111: Connection refused) while connecting to upstream, client: 172.18.0.1, server: , request: "GET / HTTP/1.0", upstream: "http://192.168.0.10:8080/", host: "vmdeployment.hounsvad.dk"

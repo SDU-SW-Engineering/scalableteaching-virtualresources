@@ -66,9 +66,9 @@ namespace backend
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("Administrator", policy => policy.RequireClaim("account_type", "Administrator"));
-                options.AddPolicy("Manager", policy => policy.RequireClaim("account_type", "Manager","Administrator"));
+                options.AddPolicy("Manager", policy => policy.RequireClaim("account_type", "Manager", "Administrator"));
                 options.AddPolicy("User", policy => policy.RequireClaim("account_type", "User", "Manager", "Administrator"));
-            })
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
