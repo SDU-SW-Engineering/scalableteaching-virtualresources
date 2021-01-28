@@ -18,8 +18,14 @@
 
 <script>
 import NavBar from "@/components/NavBar";
+import store from "@/store/store";
 
 export default {
-  components: {NavBar}
+  components: {NavBar},
+  computed: {
+    isSimpleSignedIn(){
+      return store.state.isSignedIn;
+    }
+  }
 }
 </script>

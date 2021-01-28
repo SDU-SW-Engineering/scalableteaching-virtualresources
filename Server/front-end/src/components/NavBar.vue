@@ -1,6 +1,6 @@
 <template>
     <b-navbar sticky toggleable="md" type="dark" variant="primary">
-      <b-navbar-brand to="/">VM Deployment</b-navbar-brand>
+      <b-navbar-brand to="Machines">VM Deployment</b-navbar-brand>
 
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
@@ -13,14 +13,17 @@
           <b-nav-item to="Administration" v-if="(isAdministrator)">User Administration</b-nav-item>
         </b-navbar-nav>
         <!-- Right aligned nav items -->
-        <b-navbar-nav class="ml-auto">
-          <b-nav-item-dropdown right>
-            <template #button-content>
-              <em v-if="isSignedInSimple">{{username}}</em>
-            </template>
-            <b-dropdown-item v-on:click="signOut">Sign Out</b-dropdown-item><!--TODO: Validate that this works-->
-          </b-nav-item-dropdown>
-        </b-navbar-nav>
+          <b-navbar-nav class="ml-auto" v-if="isSignedInSimple">
+            <b-nav-item-dropdown right>
+              <template #button-content>
+                <em>{{username}}</em>
+              </template>
+              <b-dropdown-item v-on:click="signOut">Sign Out</b-dropdown-item>
+            </b-nav-item-dropdown>
+          </b-navbar-nav>
+          <b-navbar-nav class="ml-auto" v-else>
+              <b-nav-item right active v-on:click="login">Login</b-nav-item>
+          </b-navbar-nav>
       </b-collapse>
     </b-navbar>
 </template>
@@ -28,6 +31,7 @@
 <script>
 import store from "@/store/store";
 import AuthService from "@/services/AuthService";
+import urlconfig from "@/config/urlconfig";
 
 export default {
   name: "NavBar",
@@ -54,9 +58,14 @@ export default {
   methods: {
     signOut(){
       AuthService.logout();
+      window.location.reload();
     },
+    login(){
+      return window.location.href = `https://sso.sdu.dk/login?service=${urlconfig.loginTokenReturnString}`;
+    }
   }
 }
+
 </script>
 
 <style scoped>

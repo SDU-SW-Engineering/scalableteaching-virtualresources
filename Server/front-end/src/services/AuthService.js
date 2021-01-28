@@ -3,15 +3,12 @@ import store from '@/store/store.js'
 import jwt from 'jsonwebtoken'
 import authAPI from '@/api/authAPI'
 
-import {clearJWT, loadJWT, saveJWT} from '@/helpers/tokenHelper'
+import StorageHelper, {names} from '@/helpers/StorageHelper'
 import router from "@/router/router";
-
-const keyloc = "API-PublicKey";
-
 function logout() {
     // eslint-disable-next-line no-useless-catch
     try {
-        clearJWT();
+        StorageHelper.clear(names.jwtName);
         store.commit('logout')
         router.push({name: 'InitialSpace'});
     } catch (e) {
@@ -29,7 +26,7 @@ async function login(SSOToken) {
         const response = await authAPI.login(SSOToken);
         const token = response.jwt;
         const key = await getRemotePublicKey();
-        sessionStorage.setItem(keyloc,key);
+        StorageHelper.set(names.tokenPublicKey, key);
         if(!token){
             return false;
         }
@@ -38,7 +35,7 @@ async function login(SSOToken) {
         const userTokenObject = jwt.decode(token);
         const parsedUser = parseUser(userTokenObject)
         store.commit('login', parsedUser)
-        saveJWT(token);
+        StorageHelper.set(names.jwtName, token);
     } catch (error) {
         return false
     }
@@ -46,8 +43,8 @@ async function login(SSOToken) {
 }
 
 function re_login(){
-    const key = sessionStorage.getItem(keyloc);
-    const token = loadJWT();//TODO: Either add keyloc to jwthelper and rename to storage helper (possibly implement cookie auth) or remove jwthelper entirely
+    const key = StorageHelper.get(names.tokenPublicKey);
+    const token = StorageHelper.get(names.jwtName);
     if(token !== null && key !== null){
         const userTokenObject = jwt.decode(token);
         if(validateToken(token)){
@@ -74,7 +71,7 @@ function validateToken(token) {
         return false;
     }
     try{
-        let key = sessionStorage.getItem(keyloc)
+        let key = StorageHelper.get(names.tokenPublicKey)
         if(key == null){
             console.log("ValidateToken - No key in store ie, the user has not logged in in this session")
             return false;
@@ -83,23 +80,23 @@ function validateToken(token) {
     }catch(error){
         if(error instanceof jwt.JsonWebTokenError){
             window.console.log(error);//TODO: Remove Error logging from class
-            clearJWT();
+            StorageHelper.clear(names.jwtName);
             store.commit('logout');
             return false;
         }else if(error instanceof jwt.NotBeforeError){
             window.console.log("Token Not yet valid: REJECTED");
-            clearJWT();
+            StorageHelper.clear(names.jwtName);
             store.commit('logout');
             return false;
         }else if(error instanceof jwt.TokenExpiredError){
             window.console.log("Token Expired: REJECTED");
-            clearJWT();
+            StorageHelper.clear(names.jwtName);
             store.commit('logout');
             return false;
         }else{
             console.log(error.message);
             window.console.log("Unknown JWT Error occurred");
-            clearJWT();
+            StorageHelper.clear(names.jwtName);
             store.commit('logout');
             return false;
         }
@@ -108,14 +105,14 @@ function validateToken(token) {
 }
 
 function validateIsSignedIn() {
-    return store.state.isSignedIn && validateToken(loadJWT());
+    return store.state.isSignedIn && validateToken(StorageHelper.get(names.jwtName));
 }
 
 async function getRemotePublicKey(){
-    let key = sessionStorage.getItem(keyloc);
+    let key = StorageHelper.get(names.tokenPublicKey)
     if(key === null){
         key = (await authAPI.getPublicKey()).Key;
-        sessionStorage.setItem(keyloc, key);
+        StorageHelper.set(names.tokenPublicKey, key)
     }
     return key;
 }
