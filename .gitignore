@@ -3,3 +3,7 @@
 Server/backup/
 .idea
 .vs/
+*/.vs/
+Server/*/.vs/
+Server/backend/obj/
+Server/backend/proxy/logs/
