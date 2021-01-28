@@ -2,7 +2,8 @@ import apiHelper from "@/helpers/apiHelper"
 import urlConfig from "@/config/urlconfig";
 
 export default {
-    login
+    login,
+    getPublicKey
 }
 
 function login(SSOToken) {
@@ -13,7 +14,13 @@ function login(SSOToken) {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }),
-        body: JSON.stringify({token: SSOToken})
+        body: JSON.stringify({Token: SSOToken, ServiceEndpoint: urlConfig.loginTokenReturnString})
 
+    }).then(res => apiHelper.parseResponse(res))
+}
+
+async function getPublicKey(){
+    return await fetch(urlConfig.login, {
+        method: "GET"
     }).then(res => apiHelper.parseResponse(res))
 }
