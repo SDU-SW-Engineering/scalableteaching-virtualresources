@@ -22,7 +22,7 @@ namespace backend.Helpers
                 new Claim("mail", User.Mail),
                 new Claim("sn", User.Sn),
                 new Claim("gn", User.Gn),
-                new Claim("Cn", User.Cn),
+                new Claim("cn", User.Cn),
                 new Claim("account_type", User.AccountType)
             };
             var token = new JwtSecurityToken(

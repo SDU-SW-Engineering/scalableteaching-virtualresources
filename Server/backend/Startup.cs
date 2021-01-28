@@ -44,8 +44,12 @@ namespace backend
             });
             services.AddDbContext<VmDeploymentContext>(options =>
             {
-                //options.UseNpgsql(Environment.GetEnvironmentVariable("VmDeploymentDB"));
-                options.UseNpgsql("Host=hattie.db.elephantsql.com;Database=wasirwtm;Username=wasirwtm;Password=1xZJJyQDw6N4UR0xZ7sXmsff2Qq3hj_Y");
+                options.UseNpgsql(
+                    "Host=" + Environment.GetEnvironmentVariable("dbhost") +
+                    ";Database=" + Environment.GetEnvironmentVariable("db") +
+                    ";Username=" + Environment.GetEnvironmentVariable("dbuser") +
+                    ";Password=" + Environment.GetEnvironmentVariable("dbpass")
+                    );
             });
             services.AddAuthentication(x =>
             {

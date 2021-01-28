@@ -55,10 +55,10 @@ namespace backend.Helpers
 
         public String GetPublicKeyPem()
         {
-            return "-----BEGIN RSA PUBLIC KEY-----" + Environment.NewLine + Convert.ToBase64String(Rsa.ExportRSAPublicKey()) + Environment.NewLine + "-----END RSA public KEY-----";
+            return "-----BEGIN RSA PUBLIC KEY-----" + Environment.NewLine + Convert.ToBase64String(Rsa.ExportRSAPublicKey()) + Environment.NewLine + "-----END RSA PUBLIC KEY-----";
         }
 
-        internal byte[] GetPrivateKey()
+        internal byte[] GetPsttrivateKey()
         {
             return Rsa.ExportRSAPublicKey();
         }
@@ -93,22 +93,6 @@ namespace backend.Helpers
 
         private void ImportKey()
         {
-            //TODO: Cleanup
-            //var data = "";
-            //var fileStream = new FileStream("./PrivateKey.pem", FileMode.OpenOrCreate);
-            //using (var reader = new StreamReader(fileStream))
-            //{
-            //    reader.ReadLine();
-
-            //    var line = reader.ReadLine();
-            //    do
-            //    {
-            //        data += line.Trim();
-            //        line = reader.ReadLine();
-            //    } while (!line.Contains("END RSA PRIVATE KEY"));
-            //    Console.Out.Write(data);
-            //}
-            //rsa.ImportRSAPrivateKey(rsa.ExportRSAPrivateKey);
             using(var filestream = new FileStream(PRIVATE_KEY_LOCATION, FileMode.Open))
             {
                 using(var reader = new StreamReader(filestream))

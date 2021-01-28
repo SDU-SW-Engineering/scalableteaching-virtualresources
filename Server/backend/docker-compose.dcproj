@@ -5,7 +5,7 @@
     <DockerTargetOS>Linux</DockerTargetOS>
     <ProjectGuid>de770e74-9246-410a-877f-cc30928385e4</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
-    <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
+    <DockerServiceUrl>https://vmdeployment.hounsvad.dk</DockerServiceUrl>
     <DockerServiceName>backend</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>

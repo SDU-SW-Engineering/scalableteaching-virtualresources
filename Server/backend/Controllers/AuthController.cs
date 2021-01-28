@@ -9,10 +9,13 @@ using backend.DTO;
 using backend.Helpers;
 using Microsoft.Extensions.Configuration;
 using backend.Data;
+using System.Text.Json;
+using backend.Models;
 
 namespace backend.Controllers
 {
     [Route("/api/login")]
+    [ApiController]
     public class AuthController : ControllerBase
     {
         private readonly VmDeploymentContext context;
@@ -26,13 +29,14 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<ActionResult> PostToken(SSOTokenDTO tokendata)
         {
+            Console.WriteLine(tokendata);
             try
             {
                 UserDTO user = await SSOHelper.GetSSOData(tokendata);
-                user.AccountType = context.Users.Find(user.Username).AccountType;
-                if(user.AccountType == null)
+                User DatabaseUserReturn = context.Users.Find(user.Username);
+                if(DatabaseUserReturn == null)
                 {
-                    context.Users.Add(new Models.User()
+                    context.Users.Add(new User()
                     {
                         AccountType = "User",
                         Mail = user.Mail,
@@ -41,6 +45,10 @@ namespace backend.Controllers
                     });
                     _ = await context.SaveChangesAsync();
                     user.AccountType = "User";
+                }
+                else
+                {
+                    user.AccountType = DatabaseUserReturn.AccountType;
                 }
                 var response = new { jwt = JwtHelper.Create(user, configuration.GetValue<String>("APIHostName")) };
                 return Ok(response);
@@ -54,16 +62,8 @@ namespace backend.Controllers
         [HttpGet]
         public ActionResult GetKey()
         {
-            return Ok(CryptoHelper.Instance.GetPublicKeyPem());
+            var json = JsonSerializer.Serialize(new PubKey(CryptoHelper.Instance.GetPublicKeyPem()));
+            return Ok(json);
         }
-
-        //[HttpGet("refresh")]
-        //public ActionResult GetRefresh()
-        //{
-
-        //}
-
-
-
     }
 }

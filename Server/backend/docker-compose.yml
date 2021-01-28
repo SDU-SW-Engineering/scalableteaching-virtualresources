@@ -9,6 +9,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./keys:/etc/vmdeployment/cert
+    env_file:
+      - ./environment.env
   proxy:
     image: nginx:alpine
     container_name: proxy
