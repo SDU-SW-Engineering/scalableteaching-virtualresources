@@ -1,35 +1,46 @@
 <template>
-  <div v-if="isSignedInSimple === false">
-    <div v-on:load="doRedirect()">
-      <p>On Login page</p>
-    </div>
-  </div>
-  <div v-else>
-    <p>You are all ready signed in</p>
-  </div>
+  <div></div>
 </template>
-
 <script>
 import AuthService from '@/services/AuthService'
 import router from "@/router/router";
 import store from "@/store/store";
+import urlconfig from "@/config/urlconfig";
+import StorageHelper from "@/helpers/StorageHelper";
 
 export default {
-
+  props: ['ticket'],
   name: 'login',
   mounted() {
     this.doRedirect();
   },
   methods: {
-    async doRedirect() {
+    doRedirect() {
+      const loginComponent = this;
+
+      /*If the user is not signed in, go through signin procedures.
+      * If the user is signed in then route the to Machines*/
       if (!store.state.isSignedIn) {
-        if (await AuthService.login(this.$route.query.ticket)) {
-          router.push('Machines')
+        /*If no ticket is provided, attempt to acquire ticket
+        * If ticket is available, attempts login*/
+        if (this.ticket === undefined) {
+          window.location.href = `https://sso.sdu.dk/login?service=${urlconfig.loginTokenReturnString}`;
         } else {
-          this.doRedirect();
+          (async () => {
+            if (await AuthService.login(loginComponent.ticket)) {
+              let attemptLocation = StorageHelper.get(StorageHelper.names.attemptedLocation)
+              if(attemptLocation !== null){
+                router.push({name: attemptLocation});
+              }
+              router.push({name: 'Machines'});
+            } else {
+              console.log("Login Error")
+              router.push({name: 'InitialSpace'})
+            }
+          })();
         }
       } else {
-        router.push('Machines');
+        router.push({name: 'Machines'});
       }
     }
   },
@@ -38,6 +49,5 @@ export default {
       return store.state.isSignedIn;
     }
   }
-
 }
 </script>
