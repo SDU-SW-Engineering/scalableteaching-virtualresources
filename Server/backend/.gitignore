@@ -6,3 +6,4 @@
 *.pem
 **/keys/
 *.env
+backend.csproj.user
