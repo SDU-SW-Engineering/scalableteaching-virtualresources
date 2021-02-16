@@ -11,16 +11,17 @@ using Microsoft.Extensions.Configuration;
 using backend.Data;
 using System.Text.Json;
 using backend.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace backend.Controllers
 {
     [Route("/api/login")]
-    [ApiController]
+    [ApiController]    
     public class AuthController : ControllerBase
     {
         private readonly VmDeploymentContext context;
         private readonly IConfiguration configuration;
-        public AuthController(IConfiguration configuration, VmDeploymentContext context) 
+        public AuthController(IConfiguration configuration, VmDeploymentContext context)
         {
             this.configuration = configuration;
             this.context = context;
@@ -34,7 +35,7 @@ namespace backend.Controllers
             {
                 UserDTO user = await SSOHelper.GetSSOData(tokendata);
                 User DatabaseUserReturn = context.Users.Find(user.Username);
-                if(DatabaseUserReturn == null)
+                if (DatabaseUserReturn == null)
                 {
                     context.Users.Add(new User()
                     {
@@ -57,6 +58,27 @@ namespace backend.Controllers
             {
                 return Unauthorized("Authentication Failed");
             }
+        }
+
+        [HttpPost("validate/user")]
+        [Authorize(Policy = "UserLevel")]
+        public async Task<ActionResult> PostValidateUser()
+        {
+            return Ok("Valid - Your credentials are valid for this level of access");
+        }
+
+        [HttpPost("validate/manager")]
+        [Authorize(Policy = "ManagerLevel")]
+        public async Task<ActionResult> PostValidateManager()
+        {
+            return Ok("Valid - Your credentials are valid for this level of access");
+        }
+
+        [HttpPost("validate/administrator")]
+        [Authorize(Policy = "AdministratorLevel")]
+        public async Task<ActionResult> PostValidateAdministrator()
+        {
+            return Ok("Valid - Your credentials are valid for this level of access");
         }
 
         [HttpGet]

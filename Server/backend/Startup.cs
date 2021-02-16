@@ -12,6 +12,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Configuration;
+using Serilog.Filters;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -55,8 +58,7 @@ namespace backend
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-                .AddJwtBearer(x =>
+            }).AddJwtBearer(x =>
                 {
                     x.RequireHttpsMetadata = false; //TODO: Set to true for production
                     x.TokenValidationParameters = new TokenValidationParameters
@@ -69,14 +71,17 @@ namespace backend
                 });
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("Administrator", policy => policy.RequireClaim("account_type", "Administrator"));
-                options.AddPolicy("Manager", policy => policy.RequireClaim("account_type", "Manager", "Administrator"));
-                options.AddPolicy("User", policy => policy.RequireClaim("account_type", "User", "Manager", "Administrator"));
+                options.AddPolicy("AdministratorLevel", policy => policy.RequireClaim("account_type", "Administrator"));
+                options.AddPolicy("ManagerLevel", policy => policy.RequireClaim("account_type", "Manager", "Administrator"));
+                options.AddPolicy("UserLevel", policy => policy.RequireClaim("account_type", "User", "Manager", "Administrator"));
             });
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.File(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + $"/ScalableTeachingLogs/log-.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime)
         {
             if (env.IsDevelopment())
             {
@@ -89,12 +94,21 @@ namespace backend
 
             app.UseRouting();
 
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+
+            lifetime.ApplicationStopped.Register(OnShutdown);
+        }
+
+        private void OnShutdown()
+        {
+            Log.CloseAndFlush();
         }
     }
 }

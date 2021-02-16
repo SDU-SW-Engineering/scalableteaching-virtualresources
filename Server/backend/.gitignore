@@ -1,8 +1,8 @@
-obj/
-bin/
-.vs/
-*/.vs/
-*/proxy/logs/
+**/obj/
+**/bin/
+**/.vs/
+**/.vs/
+**/proxy/logs/
 *.pem
-keys/
+**/keys/
 *.env
