@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using backend.Helpers;
 using System.Text.Json;
+using backend.DTO;
 
 namespace backend.Controllers
 {
@@ -26,63 +27,44 @@ namespace backend.Controllers
             _context = context;
         }
 
-        // GET: api/group
+        // GET: api/group - Return all groups for a given user
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Group>>> GetGroups()
         {
-            IEnumerable<Group> groups = await Task.Factory.StartNew<IEnumerable<Group>>(async () => 
-            {
-                var TokenUser = JwtHelper.Decode(await HttpContext.GetTokenAsync("Bearer", "access_token"));
-                var manager = _context.Users.Where<User>(User => User.Username == TokenUser.Username).First<User>();
-                var courses = _context.Courses.Where<Course>(Course => Course.UserID == manager.UserID);
-                return await _context.Group.Where<Group>(Group => 
-                { 
-                    foreach (var course in courses) 
-                    { 
-                        if(course.CouseID == Group.CourseID)
-                        {
-                            return true;
-                        }
-                    }
-                    return false;
-                });
-            });
+            IEnumerable<Group> groups = _context.Group.Where(group => group.Course.User.Username == getUsername());
             return groups.Any() ? Ok(groups) : NoContent();
+
         }
 
-        // GET: api/group/5
+        // GET: api/group/5 - Return requested group by id
         [HttpGet("{id}")]
         public async Task<ActionResult<Group>> GetGroup(Guid id)
         {
-            var @group = await Task.Factory.StartNew<Group>(async () =>
-            {
-                var TokenUser = JwtHelper.Decode(await HttpContext.GetTokenAsync("Bearer", "access_token"));
-                var manager = _context.Users.Where<User>(User => User.Username == TokenUser.Username).First<User>();
-                var foundGroup = await _context.Group.FindAsync(id);
-            });
+            var @group = _context.Group.Where(group => group.GroupID == id && group.Course.User.Username == getUsername()).First<Group>();
 
             if (@group == null)
             {
                 return NotFound();
             }
 
-            return @group;
+            return group == null ? NotFound() : @group;
         }
 
         // PUT: api/group/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutGroup(Guid id, Group @group)
+        public async Task<IActionResult> PutGroup(Guid id, GroupNameDTO groupNameDTO)
         {
-            if (id != @group.GroupID)
-            {
-                return BadRequest();
-            }
 
-            _context.Entry(@group).State = EntityState.Modified;
+            //Validate the request
+            if (id != groupNameDTO.GroupID) return BadRequest();
+            //Validate course
+            if (!_context.Courses.Where<Course>(Course => Course.User.Username == getUsername() && Course.CouseID == groupNameDTO.CourseID).Any()) return BadRequest();
 
             try
             {
+                var group = await _context.Group.FindAsync(id);
+                group.GroupName = groupNameDTO.GroupName;
+                _context.Entry(group).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -96,26 +78,45 @@ namespace backend.Controllers
                     throw;
                 }
             }
+            catch (NullReferenceException)
+            {
+                return NotFound();
+            }
 
             return NoContent();
         }
 
         // POST: api/group
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Group>> PostGroup(Group @group)
+        public async Task<ActionResult<Group>> PostGroup(GroupDTO GroupDTO)
         {
-            _context.Group.Add(@group);
-            await _context.SaveChangesAsync();
+            //Validate the course
+            if(!_context.Courses.Where(Course => Course.User.Username == getUsername() && Course.CouseID == GroupDTO.CourseID).Any()) return BadRequest();
+            //Validate the group
+            if (_context.Group.Any(Group => Group.GroupName == GroupDTO.GroupName))
+            {
+                return Conflict();
+            }
+            else
+            {
+                var group = new Group()
+                {
+                    GroupName = GroupDTO.GroupName,
+                    CourseID = GroupDTO.CourseID,
+                    GroupID = Guid.NewGuid()  
+                };
+                _context.Group.Add(group);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetGroup", new { id = @group.GroupID }, @group);
+                return CreatedAtAction("GetGroup", new { id = @group.GroupID }, @group);
+            }
         }
 
         // DELETE: api/group/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGroup(Guid id)
         {
-            var @group = await _context.Group.FindAsync(id);
+            var @group = _context.Group.Where(Group => Group.Course.User.Username == getUsername() && Group.GroupID == id).First();
             if (@group == null)
             {
                 return NotFound();
@@ -130,6 +131,12 @@ namespace backend.Controllers
         private bool GroupExists(Guid id)
         {
             return _context.Group.Any(e => e.GroupID == id);
+        }
+
+        public string getUsername()
+        {
+            ////var TokenUser = JwtHelper.Decode(await HttpContext.GetTokenAsync("Bearer", "access_token"));
+            return HttpContext.User.Claims.Where(claim => claim.Type == "username").First().Value;
         }
     }
 }

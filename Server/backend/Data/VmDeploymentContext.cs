@@ -15,11 +15,15 @@ namespace backend.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Port> Ports { get; set; }
         public DbSet<Course> Courses { get; set; }
+        public DbSet<Group> Groups { get; set; }
+        public DbSet<GroupAssignment> GroupAssignments { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Port>().HasKey(c => new { c.MachineID, c.PortNumber });
             modelBuilder.Entity<MachineCredentail>().HasKey(c => new { c.MachineID, c.UserID });
+            modelBuilder.Entity<GroupAssignment>().HasKey(c => new { c.GroupID, c.UserID });
             //modelBuilder.Entity<User>().HasKey(c => new { c.UserID, c.Username });
         }
 

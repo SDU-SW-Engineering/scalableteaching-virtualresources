@@ -75,9 +75,10 @@ namespace backend
                 options.AddPolicy("ManagerLevel", policy => policy.RequireClaim("account_type", "Manager", "Administrator"));
                 options.AddPolicy("UserLevel", policy => policy.RequireClaim("account_type", "User", "Manager", "Administrator"));
             });
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.File(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + $"/ScalableTeachingLogs/log-.txt", rollingInterval: RollingInterval.Day)
-                .CreateLogger();
+
+            //Log.Logger = new LoggerConfiguration()
+            //    .WriteTo.File(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + $"/ScalableTeachingLogs/log-.txt", rollingInterval: RollingInterval.Day)
+            //    .CreateLogger();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -98,17 +99,19 @@ namespace backend
 
             app.UseAuthorization();
 
+
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
 
-            lifetime.ApplicationStopped.Register(OnShutdown);
+            //lifetime.ApplicationStopped.Register(OnShutdown);
         }
 
-        private void OnShutdown()
-        {
-            Log.CloseAndFlush();
-        }
+        //private void OnShutdown()
+        //{
+        //    Log.CloseAndFlush();
+        //}
     }
 }
