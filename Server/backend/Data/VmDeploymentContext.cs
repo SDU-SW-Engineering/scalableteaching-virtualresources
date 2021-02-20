@@ -27,7 +27,5 @@ namespace backend.Data
             //modelBuilder.Entity<User>().HasKey(c => new { c.UserID, c.Username });
         }
 
-        public DbSet<backend.Models.Group> Group { get; set; }
-
     }
 }

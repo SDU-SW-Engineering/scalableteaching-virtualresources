@@ -44,6 +44,25 @@ namespace backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Groups",
+                columns: table => new
+                {
+                    GroupID = table.Column<Guid>(type: "uuid", nullable: false),
+                    GroupName = table.Column<string>(type: "text", nullable: true),
+                    CourseID = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Groups", x => x.GroupID);
+                    table.ForeignKey(
+                        name: "FK_Groups_Courses_CourseID",
+                        column: x => x.CourseID,
+                        principalTable: "Courses",
+                        principalColumn: "CouseID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Machines",
                 columns: table => new
                 {
@@ -68,6 +87,31 @@ namespace backend.Migrations
                         principalTable: "Users",
                         principalColumn: "Username",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GroupAssignments",
+                columns: table => new
+                {
+                    GroupID = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserID = table.Column<Guid>(type: "uuid", nullable: false),
+                    Username = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GroupAssignments", x => new { x.GroupID, x.UserID });
+                    table.ForeignKey(
+                        name: "FK_GroupAssignments_Groups_GroupID",
+                        column: x => x.GroupID,
+                        principalTable: "Groups",
+                        principalColumn: "GroupID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_GroupAssignments_Users_Username",
+                        column: x => x.Username,
+                        principalTable: "Users",
+                        principalColumn: "Username",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -120,6 +164,16 @@ namespace backend.Migrations
                 column: "Username");
 
             migrationBuilder.CreateIndex(
+                name: "IX_GroupAssignments_Username",
+                table: "GroupAssignments",
+                column: "Username");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Groups_CourseID",
+                table: "Groups",
+                column: "CourseID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_MachineCredentails_MachineID1",
                 table: "MachineCredentails",
                 column: "MachineID1");
@@ -143,10 +197,16 @@ namespace backend.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "GroupAssignments");
+
+            migrationBuilder.DropTable(
                 name: "MachineCredentails");
 
             migrationBuilder.DropTable(
                 name: "Ports");
+
+            migrationBuilder.DropTable(
+                name: "Groups");
 
             migrationBuilder.DropTable(
                 name: "Machines");

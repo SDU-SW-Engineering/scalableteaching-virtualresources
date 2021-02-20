@@ -31,7 +31,7 @@ namespace backend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Group>>> GetGroups()
         {
-            IEnumerable<Group> groups = _context.Group.Where(group => group.Course.User.Username == getUsername());
+            IEnumerable<Group> groups = await Task.Factory.StartNew< IEnumerable < Group >>(() => _context.Groups.Where(group => group.Course.User.Username == getUsername()));
             return groups.Any() ? Ok(groups) : NoContent();
 
         }
@@ -40,7 +40,7 @@ namespace backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Group>> GetGroup(Guid id)
         {
-            var @group = _context.Group.Where(group => group.GroupID == id && group.Course.User.Username == getUsername()).First<Group>();
+            var @group = _context.Groups.Where(group => group.GroupID == id && group.Course.User.Username == getUsername()).First<Group>();
 
             if (@group == null)
             {
@@ -62,7 +62,7 @@ namespace backend.Controllers
 
             try
             {
-                var group = await _context.Group.FindAsync(id);
+                var group = await _context.Groups.FindAsync(id);
                 group.GroupName = groupNameDTO.GroupName;
                 _context.Entry(group).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
@@ -93,7 +93,7 @@ namespace backend.Controllers
             //Validate the course
             if(!_context.Courses.Where(Course => Course.User.Username == getUsername() && Course.CouseID == GroupDTO.CourseID).Any()) return BadRequest();
             //Validate the group
-            if (_context.Group.Any(Group => Group.GroupName == GroupDTO.GroupName))
+            if (_context.Groups.Any(Group => Group.GroupName == GroupDTO.GroupName))
             {
                 return Conflict();
             }
@@ -105,7 +105,7 @@ namespace backend.Controllers
                     CourseID = GroupDTO.CourseID,
                     GroupID = Guid.NewGuid()  
                 };
-                _context.Group.Add(group);
+                _context.Groups.Add(group);
                 await _context.SaveChangesAsync();
 
                 return CreatedAtAction("GetGroup", new { id = @group.GroupID }, @group);
@@ -116,13 +116,13 @@ namespace backend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGroup(Guid id)
         {
-            var @group = _context.Group.Where(Group => Group.Course.User.Username == getUsername() && Group.GroupID == id).First();
+            var @group = _context.Groups.Where(Group => Group.Course.User.Username == getUsername() && Group.GroupID == id).First();
             if (@group == null)
             {
                 return NotFound();
             }
 
-            _context.Group.Remove(@group);
+            _context.Groups.Remove(@group);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -130,7 +130,7 @@ namespace backend.Controllers
 
         private bool GroupExists(Guid id)
         {
-            return _context.Group.Any(e => e.GroupID == id);
+            return _context.Groups.Any(e => e.GroupID == id);
         }
 
         public string getUsername()

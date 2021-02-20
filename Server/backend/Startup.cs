@@ -41,10 +41,6 @@ namespace backend
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "backend", Version = "v1" });
             });
-            services.AddAuthentication(options =>
-            {
-                //options.DefaultAuthenticateScheme = JwtBearerDefaults.Authg
-            });
             services.AddDbContext<VmDeploymentContext>(options =>
             {
                 options.UseNpgsql(
