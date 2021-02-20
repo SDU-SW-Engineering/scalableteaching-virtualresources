@@ -13,7 +13,7 @@ import MachineCreation from "@/components/MachineCreation";
 import MachineManagement from "@/components/MachineManagement";
 import GroupManagement from "@/components/GroupManagement";
 export default {
-name: "Management",
+  name: "Management",
   components: {MachineManagement, MachineCreation, GroupManagement}
 }
 
