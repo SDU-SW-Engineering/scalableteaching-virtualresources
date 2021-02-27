@@ -10,11 +10,12 @@ namespace backend.Models
     public class Machine
     {
         [Key]
-        public int MachineID { get; set; }
+        public Guid MachineID { get; set; }
         [Required]
         public string Name { get; set; }
+        public string HostName { get; set; }
         [Required]
-        public string UserID  { get; set; }
+        public Guid UserID  { get; set; }
         [Required]
         public Guid CourseID { get; set; }
 

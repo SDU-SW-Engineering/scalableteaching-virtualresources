@@ -10,8 +10,8 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(VmDeploymentContext))]
-    [Migration("20210220194932_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20210227114243_Initial-Migration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -88,27 +88,31 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Models.Machine", b =>
                 {
-                    b.Property<int>("MachineID")
+                    b.Property<Guid>("MachineID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("CourseID")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("HostName")
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("UserID")
-                        .IsRequired()
+                    b.Property<Guid>("UserID")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Username")
                         .HasColumnType("text");
 
                     b.HasKey("MachineID");
 
                     b.HasIndex("CourseID");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("Username");
 
                     b.ToTable("Machines");
                 });
@@ -121,15 +125,10 @@ namespace backend.Migrations
                     b.Property<Guid>("UserID")
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("MachineID1")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Username")
                         .HasColumnType("text");
 
                     b.HasKey("MachineID", "UserID");
-
-                    b.HasIndex("MachineID1");
 
                     b.HasIndex("Username");
 
@@ -138,8 +137,8 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Models.Port", b =>
                 {
-                    b.Property<int>("MachineID")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("MachineID")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("PortNumber")
                         .HasColumnType("integer");
@@ -217,9 +216,7 @@ namespace backend.Migrations
 
                     b.HasOne("backend.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("Username");
 
                     b.Navigation("Course");
 
@@ -230,7 +227,9 @@ namespace backend.Migrations
                 {
                     b.HasOne("backend.Models.Machine", "Machine")
                         .WithMany()
-                        .HasForeignKey("MachineID1");
+                        .HasForeignKey("MachineID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("backend.Models.User", "User")
                         .WithMany()

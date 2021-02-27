@@ -1,10 +1,9 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace backend.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class InitialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -66,11 +65,12 @@ namespace backend.Migrations
                 name: "Machines",
                 columns: table => new
                 {
-                    MachineID = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    MachineID = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    UserID = table.Column<string>(type: "text", nullable: false),
-                    CourseID = table.Column<Guid>(type: "uuid", nullable: false)
+                    HostName = table.Column<string>(type: "text", nullable: true),
+                    UserID = table.Column<Guid>(type: "uuid", nullable: false),
+                    CourseID = table.Column<Guid>(type: "uuid", nullable: false),
+                    Username = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -82,11 +82,11 @@ namespace backend.Migrations
                         principalColumn: "CouseID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Machines_Users_UserID",
-                        column: x => x.UserID,
+                        name: "FK_Machines_Users_Username",
+                        column: x => x.Username,
                         principalTable: "Users",
                         principalColumn: "Username",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -120,18 +120,17 @@ namespace backend.Migrations
                 {
                     MachineID = table.Column<Guid>(type: "uuid", nullable: false),
                     UserID = table.Column<Guid>(type: "uuid", nullable: false),
-                    Username = table.Column<string>(type: "text", nullable: true),
-                    MachineID1 = table.Column<int>(type: "integer", nullable: true)
+                    Username = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MachineCredentails", x => new { x.MachineID, x.UserID });
                     table.ForeignKey(
-                        name: "FK_MachineCredentails_Machines_MachineID1",
-                        column: x => x.MachineID1,
+                        name: "FK_MachineCredentails_Machines_MachineID",
+                        column: x => x.MachineID,
                         principalTable: "Machines",
                         principalColumn: "MachineID",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_MachineCredentails_Users_Username",
                         column: x => x.Username,
@@ -145,7 +144,7 @@ namespace backend.Migrations
                 columns: table => new
                 {
                     PortNumber = table.Column<int>(type: "integer", nullable: false),
-                    MachineID = table.Column<int>(type: "integer", nullable: false)
+                    MachineID = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -174,11 +173,6 @@ namespace backend.Migrations
                 column: "CourseID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MachineCredentails_MachineID1",
-                table: "MachineCredentails",
-                column: "MachineID1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_MachineCredentails_Username",
                 table: "MachineCredentails",
                 column: "Username");
@@ -189,9 +183,9 @@ namespace backend.Migrations
                 column: "CourseID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Machines_UserID",
+                name: "IX_Machines_Username",
                 table: "Machines",
-                column: "UserID");
+                column: "Username");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

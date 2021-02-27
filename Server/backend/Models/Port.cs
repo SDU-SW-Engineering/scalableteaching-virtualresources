@@ -9,7 +9,7 @@ namespace backend.Models
     public class Port
     {
         public int PortNumber { get; set; }
-        public int MachineID { get; set; }
+        public Guid MachineID { get; set; }
         public virtual Machine Machine { get; set; }
 
     }
