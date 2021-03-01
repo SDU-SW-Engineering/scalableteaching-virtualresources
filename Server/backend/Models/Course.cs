@@ -18,6 +18,11 @@ namespace backend.Models
         [Required]
         public string CourseName { get; set; }
         [Required]
+        [Comment("Should be between 3 and 6 characters")]
+        [MinLength(3)]
+        [MaxLength(6)]
+        public string ShortCourseName { get; set; }
+        [Required]
         public string SDUCourseID { get; set; }
         public virtual User User { get; set; }
     }

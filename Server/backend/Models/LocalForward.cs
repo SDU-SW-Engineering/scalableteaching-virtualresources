@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace backend.Models
 {
-    public class Port
+    public class LocalForward
     {
         public int PortNumber { get; set; }
         public Guid MachineID { get; set; }

@@ -102,12 +102,6 @@ namespace backend.Helpers
                     rsa.ImportFromPem(span);
                 }
             }
-
-
-
-
-            
         }
-
     }
 }
