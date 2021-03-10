@@ -15,7 +15,7 @@ namespace backend.Models
         public string Name { get; set; }
         public string HostName { get; set; }
         [Required]
-        public Guid UserID  { get; set; }
+        public string UserUsername  { get; set; }
         [Required]
         public Guid CourseID { get; set; }
 

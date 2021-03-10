@@ -39,22 +39,24 @@ namespace backend.Controllers
                 {
                     context.Users.Add(new User()
                     {
-                        AccountType = "User",
+                        AccountType = Models.User.UserType.User,
                         Mail = user.Mail,
-                        UserID = Guid.NewGuid(),
                         Username = user.Username
                     });
-                    _ = await context.SaveChangesAsync();
-                    user.AccountType = "User";
+                    await context.SaveChangesAsync();
+                    user.AccountType = nameof(Models.User.UserType.User);
                 }
                 else
                 {
-                    user.AccountType = DatabaseUserReturn.AccountType;
+                    if (DatabaseUserReturn.Mail == null) DatabaseUserReturn.Mail = user.Mail;
+                    await context.SaveChangesAsync();
+                    user.AccountType = DatabaseUserReturn.AccountType.ToString();
                 }
+                
                 var response = new { jwt = JwtHelper.Create(user, configuration.GetValue<String>("APIHostName")) };
                 return Ok(response);
             }
-            catch (ArgumentException e)
+            catch (ArgumentException)
             {
                 return Unauthorized("Authentication Failed");
             }

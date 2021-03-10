@@ -23,7 +23,7 @@ namespace backend.Helpers
         /// <param name="credential">The credential object representing a credential pair for a user</param>
         /// <param name="includeClassName">True indicates that the host name will be prefixed with the short vertion of the course name</param>
         /// <returns>Config string for specified machine</returns>
-        public async Task<string> GetSingleMachineCredentialStringAsync(MachineCredentail credential, bool includeClassName = false)
+        public async Task<string> GetMachineCredentialStringAsync(MachineCredentail credential, bool includeClassName = false)
         {
             Machine machine = await _context.Machines.FindAsync(credential.MachineID);
             var machineName = machine.Name;

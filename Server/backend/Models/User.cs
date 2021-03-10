@@ -9,12 +9,18 @@ namespace backend.Models
 {
     public class User
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid UserID { get; set; }
         [Key]
         public String Username { get; set; }
         public String Mail { get; set; }
         [Required]
-        public String AccountType { get; set; }
+        public UserType AccountType { get; set; }
+        public enum UserType
+        {
+            User,
+            Manager,
+            Administrator,
+        }
     }
+
+    
 }

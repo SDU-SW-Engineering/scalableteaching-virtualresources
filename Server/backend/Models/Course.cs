@@ -14,7 +14,7 @@ namespace backend.Models
         public Guid CouseID { get; set; }
         [Required]
         [Comment("The user responsible for the course i.e. the user that can make machines associated with the course")]
-        public Guid UserID { get; set; }
+        public string UserUsername { get; set; }
         [Required]
         public string CourseName { get; set; }
         [Required]

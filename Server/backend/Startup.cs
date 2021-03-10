@@ -3,23 +3,16 @@ using backend.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Serilog;
-using Serilog.Configuration;
-using Serilog.Filters;
+using static backend.Models.User.UserType;
+
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+
 
 namespace backend
 {
@@ -66,10 +59,11 @@ namespace backend
                 });
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("AdministratorLevel", policy => policy.RequireClaim("account_type", "Administrator"));
-                options.AddPolicy("ManagerLevel", policy => policy.RequireClaim("account_type", "Manager", "Administrator"));
-                options.AddPolicy("UserLevel", policy => policy.RequireClaim("account_type", "User", "Manager", "Administrator"));
+                options.AddPolicy("AdministratorLevel", policy => policy.RequireClaim("account_type", nameof(Administrator)));
+                options.AddPolicy("ManagerLevel", policy => policy.RequireClaim("account_type", nameof(Manager), nameof(Administrator)));
+                options.AddPolicy("UserLevel", policy => policy.RequireClaim("account_type", nameof(User), nameof(Manager), nameof(Administrator)));
             });
+            
 
             services.AddSingleton<IConfiguration>(Configuration);
             services.AddScoped<SshConfigBuilder>();

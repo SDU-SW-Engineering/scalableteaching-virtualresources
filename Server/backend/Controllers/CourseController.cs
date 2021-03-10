@@ -80,14 +80,14 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<ActionResult<Course>> PostCourse(CourseDTO course)
         {
-            if (course.CourseName == null || course.SDUCourseID == null || (await _context.Users.FindAsync(course.UserID)) != null || !course.CourseName.Any() || !course.SDUCourseID.Any() )  return BadRequest();
+            if (course.CourseName is null || course.SDUCourseID is null || (await _context.Users.FindAsync(course.OwnerUsername)) != null || !course.CourseName.Any() || !course.SDUCourseID.Any() )  return BadRequest();
 
             _context.Courses.Add(new Course() 
             { 
                 CourseName = course.CourseName,
                 CouseID = Guid.NewGuid(),
                 SDUCourseID = course.SDUCourseID,
-                UserID = course.UserID
+                UserUsername = course.OwnerUsername
             });
             await _context.SaveChangesAsync();
 
@@ -114,7 +114,7 @@ namespace backend.Controllers
         {
             return _context.Courses.Any(e => e.CouseID == id);
         }
-        public string getUsername()
+        private string getUsername()
         {
             return HttpContext.User.Claims.Where(claim => claim.Type == "username").First().Value;
         }

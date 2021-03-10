@@ -14,5 +14,7 @@ namespace backend.Models
         public Guid CourseID { get; set; }
         public virtual Course Course { get; set; }
 
+        public virtual List<GroupAssignment> GroupAssignments {get;set;}
+
     }
 }
