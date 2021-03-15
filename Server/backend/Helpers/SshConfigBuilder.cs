@@ -20,17 +20,17 @@ namespace backend.Helpers
         /// <summary>
         /// Generates a configuration string for an ssh config
         /// </summary>
-        /// <param name="credential">The credential object representing a credential pair for a user</param>
-        /// <param name="includeClassName">True indicates that the host name will be prefixed with the short vertion of the course name</param>
+        /// <param name="assignment">The credential object representing a credential pair for a user</param>
+        /// <param name="includeClassName">True indicates that the host name will be prefixed with the short version of the course name</param>
         /// <returns>Config string for specified machine</returns>
-        public async Task<string> GetMachineCredentialStringAsync(MachineCredentail credential, bool includeClassName = false)
+        public async Task<string> GetMachineCredentialStringAsync(MachineAssignment assignment, bool includeClassName = false)
         {
-            Machine machine = await _context.Machines.FindAsync(credential.MachineID);
+            Machine machine = await _context.Machines.FindAsync(assignment.MachineID);
             var machineName = machine.Name;
             var hostName = machine.HostName;
             var username = machine.User.Username;
             var course = machine.Course;
-            List<LocalForward> LocalForwards = _context.LocalForwards.Where(port => port.MachineID == credential.MachineID).ToList();
+            List<LocalForward> LocalForwards = _context.LocalForwards.Where(port => port.MachineID == assignment.MachineID).ToList();
 
             StringBuilder credentialBuilder = new StringBuilder();
 
@@ -55,11 +55,16 @@ namespace backend.Helpers
             }
 
             //Insert Identityfile string
-            credentialBuilder.Append('\t').Append("IdentityFile ").Append("~/.ssh/id_rsa_");
-            if (includeClassName) credentialBuilder.Append(course.ShortCourseName).Append('_');
-            credentialBuilder.Append(machineName).Append('\n');
+            credentialBuilder.Append('\t').Append("IdentityFile ").Append("~/.ssh/id_rsa_scalable_").Append(assignment.UserUsername);
 
             return credentialBuilder.ToString();
+        }
+
+        public void BuildAuthorisedKeysFile(Machine machine)
+        {
+            var assignments = _context.MachineAssignments.Where(assignment =>
+                assignment.MachineID == machine.MachineID);
+            //TODO : Continue this
         }
     }
 }

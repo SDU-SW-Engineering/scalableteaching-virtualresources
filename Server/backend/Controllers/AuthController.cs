@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using backend.DTO;
 using backend.Helpers;
@@ -19,12 +20,12 @@ namespace backend.Controllers
     [ApiController]    
     public class AuthController : ControllerBase
     {
-        private readonly VmDeploymentContext context;
-        private readonly IConfiguration configuration;
+        private readonly VmDeploymentContext _context;
+        private readonly IConfiguration _configuration;
         public AuthController(IConfiguration configuration, VmDeploymentContext context)
         {
-            this.configuration = configuration;
-            this.context = context;
+            _configuration = configuration;
+            _context = context;
         }
         // post: AuthController
         [HttpPost]
@@ -34,26 +35,27 @@ namespace backend.Controllers
             try
             {
                 UserDTO user = await SSOHelper.GetSSOData(tokendata);
-                User DatabaseUserReturn = context.Users.Find(user.Username);
-                if (DatabaseUserReturn == null)
+                User databaseUserReturn = _context.Users.Find(user.Username);
+                if (databaseUserReturn == null)
                 {
-                    context.Users.Add(new User()
+                    _context.Users.Add(new User()
                     {
                         AccountType = Models.User.UserType.User,
                         Mail = user.Mail,
-                        Username = user.Username
+                        Username = user.Username,
+                        UserPrivateKey = SSHKeyHelper.ExportKeyAsPEM(RSA.Create(2048))
                     });
-                    await context.SaveChangesAsync();
+                    await _context.SaveChangesAsync();
                     user.AccountType = nameof(Models.User.UserType.User);
                 }
                 else
                 {
-                    if (DatabaseUserReturn.Mail == null) DatabaseUserReturn.Mail = user.Mail;
-                    await context.SaveChangesAsync();
-                    user.AccountType = DatabaseUserReturn.AccountType.ToString();
+                    if (databaseUserReturn.Mail == null) databaseUserReturn.Mail = user.Mail;
+                    await _context.SaveChangesAsync();
+                    user.AccountType = databaseUserReturn.AccountType.ToString();
                 }
                 
-                var response = new { jwt = JwtHelper.Create(user, configuration.GetValue<String>("APIHostName")) };
+                var response = new { jwt = JwtHelper.Create(user, _configuration.GetValue<String>("APIHostName")) };
                 return Ok(response);
             }
             catch (ArgumentException)
@@ -64,21 +66,21 @@ namespace backend.Controllers
 
         [HttpPost("validate/user")]
         [Authorize(Policy = "UserLevel")]
-        public async Task<ActionResult> PostValidateUser()
+        public ActionResult PostValidateUser()
         {
             return Ok("Valid - Your credentials are valid for this level of access");
         }
 
         [HttpPost("validate/manager")]
         [Authorize(Policy = "ManagerLevel")]
-        public async Task<ActionResult> PostValidateManager()
+        public ActionResult PostValidateManager()
         {
             return Ok("Valid - Your credentials are valid for this level of access");
         }
 
         [HttpPost("validate/administrator")]
         [Authorize(Policy = "AdministratorLevel")]
-        public async Task<ActionResult> PostValidateAdministrator()
+        public ActionResult PostValidateAdministrator()
         {
             return Ok("Valid - Your credentials are valid for this level of access");
         }

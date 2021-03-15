@@ -7,11 +7,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backend.Data;
 using backend.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Razor.Language;
 
 namespace Backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Policy = "ManagerLevel")]
     public class GroupAssignmentController : ControllerBase
     {
         private readonly VmDeploymentContext _context;
@@ -21,13 +24,13 @@ namespace Backend.Controllers
             _context = context;
         }
 
-        [HttpGet("members/{groupid}")]
-        public async Task<ActionResult> GetGroupMembers(Guid groupID)
+        [HttpGet("{groupid}")]
+        public async Task<ActionResult> GetGroupMembers(Guid groupId)
         {
-            if (!_context.Groups.Where(group => group.Course.User.Username == getUsername() && group.GroupID == groupID).Any()) return BadRequest("You are no associated with any group with this id");
-            var assignments = _context.GroupAssignments.Where(assignment => assignment.GroupID == groupID).ToList();
-            var outputStructure = new { GroupID = groupID, Members = new List<string>() };
-            foreach(var assignment in assignments)
+            if (! await _context.Groups.AnyAsync(group => group.Course.User.Username == getUsername() && group.GroupID == groupId)) return BadRequest("You are no associated with any group with this id");
+            var assignments = _context.GroupAssignments.Where(assignment => assignment.GroupID == groupId).ToListAsync();
+            var outputStructure = new { GroupID = groupId, Members = new List<string>() };
+            foreach(var assignment in await assignments)
             {
                 outputStructure.Members.Add(assignment.UserUsername);
             }
@@ -35,30 +38,54 @@ namespace Backend.Controllers
         }
 
         [HttpPost("assign")]
-        public async Task<ActionResult> AddMemberToGroup(AddGroupMemberDTO dto)
+        public async Task<ActionResult> AddMemberToGroup(SingleGroupMemberDTO dto)
         {
             //Validate DTO
-            if(dto.GroupID == Guid.Empty || dto.UserUsername is null || dto.UserUsername.Any()) return BadRequest("All fields must contain valid values");
+            if (!dto.Validate()) return BadRequest("All fields must contain valid values");
             //Prevent duplicate
-            if((await _context.GroupAssignments.FindAsync(dto.GroupID, dto.UserUsername)) is not null)
+            if ((await _context.GroupAssignments.FindAsync(dto.GroupID, dto.UserUsername)) is not null)
             {
                 return Conflict("Assignment already exists");
             }
-            if (
-                !_context.Groups.Where(group =>
-                    group.GroupID == dto.GroupID &&
-                    group.Course.User.Username == getUsername()).Any()
-            ) 
+            if (!_context.Groups.Any(group => group.GroupID == dto.GroupID &&
+                                              group.Course.User.Username == getUsername())) 
             { 
                 return BadRequest("Either group does not exist or the group is not on a course owned by you"); 
             }
 
             await _context.GroupAssignments.AddAsync(new GroupAssignment() { GroupID=dto.GroupID,UserUsername=dto.UserUsername});
             await _context.SaveChangesAsync();
-            return CreatedAtAction("assign", new {groupid = dto.GroupID});
+            // ReSharper disable once Mvc.ActionNotResolved
+            return CreatedAtAction("members", new {groupid = dto.GroupID});
         }
 
+        [HttpDelete("unassign")]
+        public async Task<ActionResult> RemoveMemberFromGroup(SingleGroupMemberDTO dto)
+        {
+            //Validate DTO
+            if (!dto.Validate()) return BadRequest("All fields must contain valid values");
+            //Ensure Existence
+            var assignment = await _context.GroupAssignments.FindAsync(dto.GroupID, dto.UserUsername);
+            if (assignment is null)
+            {
+                return NotFound("No Such Assignment");
+            }
+            if (
+                !_context.Groups.Any(group => @group.GroupID == dto.GroupID &&
+                                              @group.Course.User.Username == getUsername())
+            )
+            {
+                return BadRequest("Either group does not exist or the group is not on a course owned by you");
+            }
 
+            _context.GroupAssignments.Remove(assignment);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        
+        
+        
         private bool GroupAssignmentExists(Guid id)
         {
             return _context.GroupAssignments.Any(e => e.GroupID == id);
@@ -68,5 +95,6 @@ namespace Backend.Controllers
         {
             return HttpContext.User.Claims.Where(claim => claim.Type == "username").First().Value;
         }
+        
     }
 }

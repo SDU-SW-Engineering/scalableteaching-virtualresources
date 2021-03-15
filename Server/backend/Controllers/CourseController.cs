@@ -13,7 +13,7 @@ namespace backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Policy = "Administrator")]
+    [Authorize(Policy = "AdministratorLevel")]
     public class CourseController : ControllerBase
     {
         private readonly VmDeploymentContext _context;
