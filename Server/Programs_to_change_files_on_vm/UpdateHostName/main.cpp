@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <boost/json.hpp>
+#include <format>
 #define HOSTS_FILE "/etc/hosts"
 #define HOSTNAME_FILE "/etc/hostname"
 
@@ -105,6 +106,8 @@ int updateHostname(int& argc, char **argv){
     }
 }
 
-int addSystemUser(){
-
+int addSystemUser(std::string username, std::string userpassword){
+    std::string command = std::format()
+    command.append( )
+    system("useradd ")
 }
