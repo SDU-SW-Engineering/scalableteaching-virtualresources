@@ -17,7 +17,7 @@ using namespace scalable;
 using nlohmann::json;
 
 scalable::configuration::configuration parseConfigurationToConfigurationStruct(const char* configFile);
-int parseConfiguration(json& config);
+int parseConfiguration(scalable::configuration::configuration& config);
 
 ///
 /// Errors:
@@ -33,7 +33,8 @@ int main(int argc, char **argv) {
         println("The configurator requires a path to a valid configuration file");
     }
     json jsonData{ parseConfigurationToConfigurationStruct(argv[1])};
-    return parseConfiguration(jsonData);
+    scalable::configuration::configuration data = jsonData;
+    return parseConfiguration(data);
 }
 
 ///
