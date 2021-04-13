@@ -8,6 +8,9 @@
 #include <json.hpp>
 #include <vector>
 #include <string>
+#include <iostream>
+
+#include "print.h"
 
 using nlohmann::json;
 namespace scalable::configuration::user {
@@ -19,19 +22,29 @@ namespace scalable::configuration::user {
     };
 
     void to_json(json &j, const user &u) {
-        j = json{
-                {"username",      u.username},
-                {"userPassword",  u.userPassword},
-                {"userPublicKey", u.userPublicKey},
-                {"groups",        u.groups}
-        };
+        try {
+            j = json{
+                    {"username",      u.username},
+                    {"userPassword",  u.userPassword},
+                    {"userPublicKey", u.userPublicKey},
+                    {"groups",        u.groups}
+            };
+        } catch (std::exception &e) {
+            println("Error in to json on user");
+            perror(e.what());
+        }
     }
 
     void from_json(const json &j, user &u) {
-        j.at("username").get_to(u.username);
-        j.at("userPassword").get_to(u.userPassword);
-        j.at("userPublicKey").get_to(u.userPublicKey);
-        j.at("groups").get_to(u.groups);
+        try {
+            j.at("username").get_to(u.username);
+            j.at("userPassword").get_to(u.userPassword);
+            j.at("userPublicKey").get_to(u.userPublicKey);
+            j.at("groups").get_to(u.groups);
+        } catch (std::exception &e) {
+            println("Error in from json on user");
+            perror(e.what());
+        }
     }
 }
 
@@ -46,20 +59,32 @@ namespace scalable::configuration {
     };
 
     void to_json(json &j, const configuration &c) {
-        j = json{
-                {"hostname",    c.hostname},
-                {"groups",      c.groups},
-                {"users",       c.users},
-                {"aptPPA",      c.aptPPA},
-                {"aptPackages", c.aptPackages}};
+        try {
+            j = json{
+                    {"hostname",    c.hostname},
+                    {"groups",      c.groups},
+                    {"users",       c.users},
+                    {"aptPPA",      c.aptPPA},
+                    {"aptPackages", c.aptPackages}};
+        } catch (std::exception &e) {
+            println("Error in to json on config");
+            perror(e.what());
+        }
     }
 
+
     void from_json(const json &j, configuration &c) {
-        j.at("hostname").get_to(c.hostname);
-        j.at("groups").get_to(c.groups);
-        j.at("users").get_to(c.users);
-        j.at("aptPPA").get_to(c.aptPPA);
-        j.at("aptPackages").get_to(c.aptPackages);
+        try {
+            std::cout << "Json parsed to from json in config: " << j << std::endl;
+            j.at("hostname").get_to(c.hostname);
+            j.at("groups").get_to(c.groups);
+            j.at("users").get_to(c.users);
+            j.at("aptPPA").get_to(c.aptPPA);
+            j.at("aptPackages").get_to(c.aptPackages);
+        } catch (std::exception &e) {
+            println("Error in from json on config");
+            perror(e.what());
+        }
     }
 }
 #endif //SYSTEMCONFIGURATOR_CONFIGURATION_H

@@ -31,10 +31,10 @@ int parseConfiguration(scalable::configuration::configuration& config);
 int main(int argc, char **argv) {
     if(argc < 2){
         println("The configurator requires a path to a valid configuration file");
+        return 1;
     }
-    json jsonData{ parseConfigurationToConfigurationStruct(argv[1])};
-    scalable::configuration::configuration data = jsonData;
-    return parseConfiguration(data);
+    auto config = parseConfigurationToConfigurationStruct(argv[1]);
+    return parseConfiguration(config);
 }
 
 ///
@@ -104,8 +104,19 @@ parseConfigurationToConfigurationStruct(const char* configFile){
         perror("Error occurred upon reading the configfile");
     }
     std::string fileText {std::istreambuf_iterator<char>(inputFileStream), std::istreambuf_iterator<char>()};
+    if(inputFileStream.bad()){
+        perror("Error occurred upon reading the configfile");
+    }
     inputFileStream.close();
-    scalable::configuration::configuration config = json::parse(fileText);
+    json parsedJson = json::parse(fileText);
+
+    scalable::configuration::configuration config;
+    try {
+        config = parsedJson;
+    }
+    catch (std::exception& e){
+        perror(e.what());
+    }
     return config;
 }
 
