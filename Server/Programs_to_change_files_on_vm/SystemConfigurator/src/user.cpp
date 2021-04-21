@@ -26,10 +26,10 @@ namespace scalable{
         //Specify a random salt
         passcmd.append(randomAlphaNumString(10));
         //Specify user password
-        passcmd.append(" -p ");
+        passcmd.append(" ");
         passcmd.append(userPassword);
         //Execute the password command
-        std::string hashedPassword = scalable::runAndGetResult(passcmd.c_str());
+        std::string hashedPassword = scalable::runAndGetResult(passcmd.c_str(), false, true);
 
 
         //Creat initial command
@@ -39,7 +39,7 @@ namespace scalable{
         usercmd.append(" ");
         //Add username of new user
         usercmd.append(username);
-        system(usercmd.c_str());
+        run(usercmd.c_str());
         return 0;
     }
 
@@ -51,7 +51,7 @@ namespace scalable{
         //Create initial command
         std::string groupcmd  {"groupadd "};
         groupcmd.append(groupName);
-        system(groupcmd.c_str());
+        run(groupcmd.c_str());
         return 0;
     }
 
@@ -69,7 +69,7 @@ namespace scalable{
             assigncmd.append(username);
             assigncmd.append(" -G ");
             assigncmd.append(groupname);
-            system(assigncmd.c_str());
+            run(assigncmd.c_str());
             return 0;
         }else{
             return 1;

@@ -4,6 +4,7 @@
 #include "print.h"
 #include "user.h"
 #include "configuration.h"
+#include "run.h"
 //Third party headers
 #include <json.hpp>
 //STD headers
@@ -73,26 +74,31 @@ int parseConfiguration(scalable::configuration::configuration& config){
     }
 
     //Update apt
-    system("apt update");
+    run("apt update");
 
+    bool addedRepo = false;
     //Add PPA's
     for(const std::string& ppa : config.aptPPA){
+        addedRepo = true;
         std::string ppaCommandString{"add-apt-repository -y "};
         ppaCommandString.append(ppa);
-        system(ppaCommandString.c_str());
+        run(ppaCommandString.c_str());
     }
-    //Update to include PPA's
-    system("apt update");
+    //Update any included ppa
+    if(addedRepo) run("apt update");
+
+    //Install all updates
+    run("apt upgrade -y");
 
     //Install apt packages
     for(const std::string& package : config.aptPackages){
         std::string aptInstallString{"apt install -y "};
         aptInstallString.append(package);
-        system(aptInstallString.c_str());
+        run(aptInstallString.c_str());
     }
 
-    //Install all updates
-    system("apt upgrade -y");
+    //Apt Cleanup
+    run("sudo apt autoremove -y");
 
     return errorCode;
 }
