@@ -1,0 +1,19 @@
+{
+  "hostname": "scalable-teaching",
+  "groups": ["group1", "group2", "system-group"],
+  "users": [{
+    "username": "st-user",
+    "userPassword": "scalable",
+    "userPublicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDGPUFzPIPtgfXKDa5Yj490yOvws6bLNLcWp/n1dNswMZjSmNIJx73D55SZKe07fMJPMDmXp2AWQlddRBz+UKmX/Cw9GE85Om4Ela/PDYXKkI6zaafS5auju4a265rwN5HQ8k3OwMf+Hxa6zJDmCp2cph63gt+w97y1Z7hlsBE+yLzK9qkfZdOpyUI9VRmA2LTTZVg+JBh8ngV+ZvKKjrmjfE75KTkSdLNghm5lRXp0Z4xAYEEDkibbnPAXnrSITuMDGNzpA7YtrlhJVEJwSAqXKTXE825sln5P10oyPfYtF5INfBkVD1SS6zYPiBu+hxvQzIFGfB7Pr21il3zLxeV1 frederik@DungeonCore",
+    "groups": ["system-group"]
+  },
+    {
+      "username": "bob",
+      "userPassword": "bob-password",
+      "userPublicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDGPUFzPIPtgfXKDa5Yj490yOvws6bLNLcWp/n1dNswMZjSmNIJx73D55SZKe07fMJPMDmXp2AWQlddRBz+UKmX/Cw9GE85Om4Ela/PDYXKkI6zaafS5auju4a265rwN5HQ8k3OwMf+Hxa6zJDmCp2cph63gt+w97y1Z7hlsBE+yLzK9qkfZdOpyUI9VRmA2LTTZVg+JBh8ngV+ZvKKjrmjfE75KTkSdLNghm5lRXp0Z4xAYEEDkibbnPAXnrSITuMDGNzpA7YtrlhJVEJwSAqXKTXE825sln5P10oyPfYtF5INfBkVD1SS6zYPiBu+hxvQzIFGfB7Pr21il3zLxeV1 frederik@DungeonCore",
+      "groups": ["student"]
+    }
+  ],
+  "aptPPA": [],
+  "aptPackages": ["git", "vim"]
+}
