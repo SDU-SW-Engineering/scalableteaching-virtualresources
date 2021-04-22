@@ -1,8 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Machines from "@/views/Machines";
-import Administration from "@/views/Administration";
-import Management from "@/views/Management";
 import Login from "@/views/Login";
 
 import AuthService from "@/services/AuthService";
@@ -25,7 +23,7 @@ const routes = [
     {
         path: '/Management',
         name: 'Management',
-        component: Management,
+        component: () => import("@/views/Management"),
         meta: {
             requiresAuth: true,
             requiredType: ["Educator", "Administrator"]
@@ -34,7 +32,7 @@ const routes = [
     {
         path: '/Administration',
         name: 'Administration',
-        component: Administration,
+        component: () => import("@/views/Administration"),
         meta: {
             requiresAuth: true,
             requiredType: ["Administrator"]
