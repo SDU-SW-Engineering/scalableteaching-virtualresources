@@ -13,6 +13,7 @@ using backend.Helpers;
 using System.Text.Json;
 using backend.DTO;
 using Backend.DTO;
+using System.Security.Cryptography;
 
 namespace backend.Controllers
 {
@@ -33,7 +34,12 @@ namespace backend.Controllers
         public async Task<ActionResult<IEnumerable<Group>>> GetGroups()
         {
             var groups = await Task.Factory.StartNew< IEnumerable < Group >>(() => _context.Groups.Where(group => group.Course.User.Username == GetUsername()));
-            return groups.Any() ? Ok(groups) : NoContent();
+            var returnList = new List<GroupOutDTO>();
+            foreach (var group in groups)
+            {
+                returnList.Add((GroupOutDTO)group);
+            } 
+            return groups.Any() ? Ok(returnList) : NoContent();
 
         }
 
@@ -54,7 +60,7 @@ namespace backend.Controllers
             //Validate the request
             if (id != dto.GroupID) return BadRequest();
             //Validate course
-            if (!_context.Courses.Any(course => course.User.Username == GetUsername() && course.CouseID == dto.CourseID)) return BadRequest();
+            if (!_context.Courses.Any(course => course.User.Username == GetUsername() && course.CourseID == dto.CourseID)) return BadRequest();
 
             try
             {
@@ -87,7 +93,7 @@ namespace backend.Controllers
         public async Task<ActionResult<Group>> PostGroup(GroupDTO dto)
         {
             //Validate the course
-            if(!_context.Courses.Any(course => course.User.Username == GetUsername() && course.CouseID == dto.CourseID)) return BadRequest();
+            if(!_context.Courses.Any(course => course.User.Username == GetUsername() && course.CourseID == dto.CourseID)) return BadRequest();
             //Validate the group
             if (_context.Groups.Any(group => group.GroupName == dto.GroupName))
             {
@@ -128,12 +134,12 @@ namespace backend.Controllers
         public async Task<IActionResult> PostEntireGroup(FilledGroupDTO dto)
         {
             //Ensure that group does not exist
-            if (_context.Groups.Any(g => g.CourseID == dto.CourseId && g.GroupName == dto.GroupName)) return Conflict();
-            var course = await _context.Courses.FindAsync(dto.CourseId);
+            if (_context.Groups.Any(g => g.CourseID == dto.CourseID && g.GroupName == dto.GroupName)) return Conflict();
+            var course = await _context.Courses.FindAsync(dto.CourseID);
             //Ensure that course is valid and assigned to requesting user
             if (course is null || course.User.Username != GetUsername()) return BadRequest();
             //Create Group
-            var group = new Group() { CourseID = dto.CourseId, GroupID = Guid.NewGuid(), GroupName = dto.GroupName };
+            var group = new Group() { CourseID = dto.CourseID, GroupID = Guid.NewGuid(), GroupName = dto.GroupName };
             //Create task for adding group to optimise code
             var groupAddingTask = _context.Groups.AddAsync(group);
 
@@ -141,7 +147,7 @@ namespace backend.Controllers
             //Create list for the assignment of users
             var groupAssignments = new List<GroupAssignment>();
             //Users allready existing in system
-            var existingUsers = _context.Users.Where(user => dto.Users.Contains(user.Username)).AsEnumerable();
+            var existingUsers = await _context.Users.Where(user => dto.Users.Contains(user.Username)).ToListAsync();
 
             //Create group assignment objects for already existing users and remove them from the input dto to use for sorting for non existant users
             foreach (var user in existingUsers)
@@ -154,7 +160,7 @@ namespace backend.Controllers
             var usersToBeCreated = new List<User>();
             foreach (string username in dto.Users)
             {
-                usersToBeCreated.Add(new User() { AccountType = Models.User.UserType.User });
+                usersToBeCreated.Add(new User() { AccountType = Models.User.UserType.User, Username = username, UserPrivateKey = SSHKeyHelper.ExportKeyAsPEM(RSA.Create(2048)) });
             }
 
             //Await group creation and the adding of users, and save these data points
@@ -172,7 +178,13 @@ namespace backend.Controllers
             await _context.GroupAssignments.AddRangeAsync(groupAssignments);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetGroup", new { id = @group.GroupID }, new { group = group, assignments = groupAssignments });
+            var returnedAssignments = new List<GroupAssignmentDTO>();
+            foreach(var assignment in groupAssignments)
+            {
+                returnedAssignments.Add(assignment);
+            }
+
+            return CreatedAtAction(nameof(GetGroup), new { id = group.GroupID }, (GroupOutDTO)group);
         }
 
         private bool GroupExists(Guid id)

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using backend.Data;
 using backend.Models;
 using Microsoft.AspNetCore.Authorization;
+using Backend.DTO;
 
 namespace backend.Controllers
 {
@@ -25,14 +26,15 @@ namespace backend.Controllers
 
         // GET: api/Course
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Course>>> GetCourses()
+        [Authorize(Policy = "ManagerLevel")]
+        public async Task<ActionResult<IEnumerable<CourseDTO>>> GetCourses()
         {
-            return await _context.Courses.ToListAsync();
+            return await _context.Courses.AsQueryable().Cast<CourseDTO>().ToListAsync();
         }
 
         // GET: api/Course/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Course>> GetCourse(Guid id)
+        public async Task<ActionResult<CourseDTO>> GetCourse(Guid id)
         {
             var course = await _context.Courses.FindAsync(id);
 
@@ -41,7 +43,7 @@ namespace backend.Controllers
                 return NotFound();
             }
 
-            return course;
+            return (CourseDTO)course;
         }
 
         // PUT: api/Course/5
@@ -78,20 +80,24 @@ namespace backend.Controllers
         // POST: api/Course
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Course>> PostCourse(CourseDTO course)
+        public async Task<ActionResult<Course>> PostCourse(CourseCreationDTO courseDTO)
         {
-            if (course.CourseName is null || course.SDUCourseID is null || (await _context.Users.FindAsync(course.OwnerUsername)) != null || !course.CourseName.Any() || !course.SDUCourseID.Any() )  return BadRequest();
+            if (courseDTO.CourseName is null || courseDTO.ShortCourseName is null || courseDTO.SDUCourseID is null) return BadRequest("Field is null");
+            if (await _context.Users.FindAsync(courseDTO.OwnerUsername) == null) return BadRequest("User Does not exist");
+            if(!courseDTO.ShortCourseName.Any() || !courseDTO.CourseName.Any() || !courseDTO.SDUCourseID.Any())  return BadRequest("Field Empty");
 
-            _context.Courses.Add(new Course() 
-            { 
-                CourseName = course.CourseName,
-                CouseID = Guid.NewGuid(),
-                SDUCourseID = course.SDUCourseID,
-                UserUsername = course.OwnerUsername
-            });
+            var course = new Course()
+            {
+                CourseName = courseDTO.CourseName,
+                ShortCourseName = courseDTO.ShortCourseName,
+                CourseID = Guid.NewGuid(),
+                SDUCourseID = courseDTO.SDUCourseID,
+                UserUsername = courseDTO.OwnerUsername
+            };
+            var entity = _context.Courses.Add(course);
             await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetCourse", new { id = course.CouseID }, course);
+            
+            return CreatedAtAction("GetCourse", new { id = course.CourseID }, course);
         }
 
         // DELETE: api/Course/5
@@ -112,7 +118,7 @@ namespace backend.Controllers
 
         private bool CourseExists(Guid id)
         {
-            return _context.Courses.Any(e => e.CouseID == id);
+            return _context.Courses.Any(e => e.CourseID == id);
         }
         private string getUsername()
         {

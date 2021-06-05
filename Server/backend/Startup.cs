@@ -35,7 +35,7 @@ namespace backend
             });
             services.AddDbContext<VmDeploymentContext>(options =>
             {
-                options.UseNpgsql(
+                options.UseLazyLoadingProxies().UseNpgsql(
                     "Host=" + Environment.GetEnvironmentVariable("dbhost") +
                     ";Database=" + Environment.GetEnvironmentVariable("db") +
                     ";Username=" + Environment.GetEnvironmentVariable("dbuser") +
