@@ -12,6 +12,8 @@ namespace backend.Models
         [Required]
         public string UserUsername { get; set; }
         
+        public string? OneTimePassword { get; set; }
+        
         public Guid? GroupID { get; set; }
         
         public virtual User User { get; set; }
