@@ -1,5 +1,6 @@
 import apiHelper from "@/helpers/apiHelper"
 import urlConfig from "@/config/urlconfig";
+import StorageHelper from "@/helpers/StorageHelper";
 
 export default {
     login,
@@ -10,7 +11,7 @@ function login(SSOToken) {
     return fetch(urlConfig.login, {
         method: "POST",
         headers: new Headers({
-            // 'Authorization': 'Bearer ' + getToken(),
+            'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }),

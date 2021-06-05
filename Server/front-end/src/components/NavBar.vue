@@ -9,7 +9,7 @@
         <b-navbar-nav v-if="isSignedInSimple">
 
           <b-nav-item to="Machines" >My Machines</b-nav-item>
-          <b-nav-item to="Management" v-if="(isEducator || isAdministrator)">Machine Management</b-nav-item>
+          <b-nav-item to="Management" v-if="(isEducator || isAdministrator)">Management</b-nav-item>
           <b-nav-item to="Administration" v-if="(isAdministrator)">Administration</b-nav-item>
         </b-navbar-nav>
         <!-- Right aligned nav items -->

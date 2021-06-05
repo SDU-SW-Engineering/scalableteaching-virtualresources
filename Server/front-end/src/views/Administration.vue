@@ -1,7 +1,7 @@
 <template>
   <b-tabs>
-    <b-tab title="Manage User"><UserAdministration/></b-tab>
-    <b-tab title="Manage Courses"><CourseAdministration/></b-tab>
+    <b-tab id="user" title="Manage User"><UserAdministration/></b-tab>
+    <b-tab id="course" active title="Manage Courses"><CourseAdministration/></b-tab>
   </b-tabs>
 </template>
 
