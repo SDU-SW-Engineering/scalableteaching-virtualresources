@@ -27,12 +27,12 @@ http {
             #access_log /var/log/nginx/manual.log full;
             return 500;
         }
-        location / {
-            proxy_pass http://192.168.0.63:8080;
-        }
         location /api {
             proxy_pass https://backend/api;
             client_max_body_size 4096M;
+        }
+        location / {
+            proxy_pass http://192.168.0.63:8080;
         }
         location /swagger {
             proxy_pass https://backend/swagger;

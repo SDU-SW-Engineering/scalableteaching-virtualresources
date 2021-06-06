@@ -7,3 +7,4 @@ Server/backup/
 Server/*/.vs/
 Server/backend/obj/
 Server/backend/proxy/logs/
+**CMakeFiles/
