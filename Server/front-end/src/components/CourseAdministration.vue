@@ -2,7 +2,7 @@
   <div>
     <b-container fluid="sm">
 
-      <b-form @submit="onSubmit" @reset="resetFields">
+      <b-form @submit="onSubmit" @reset="resetFields" autocomplete="false">
 
         <b-form-group
             id="input-group-1"
@@ -38,6 +38,7 @@
           </b-form-invalid-feedback>
 
           <b-form-input
+              autocomplete="false"
               id="input-courseid"
               v-model="form.SDUCourseID"
               type="text"
@@ -52,6 +53,7 @@
           </b-form-invalid-feedback>
 
           <b-form-input
+              autocomplete="false"
               id="input-owner-username"
               v-model="form.ownerUsername"
               type="text"
@@ -79,7 +81,7 @@
           <b-button pill variant="success" v-on:click="onSubmit">Submit</b-button>
           <b-button pill variant="secondary">Reset</b-button>
         </b-button-group>
-        <p style="color:#ff0000" v-if="formInvalidResponse">{{ InvalidResponseReason }}</p>
+        <p style="color:#ff0000" v-if="formInvalidResponse">An error occurred</p>
       </b-form>
 
       <hr>
@@ -94,7 +96,7 @@
         </b-col>
       </b-row>
       <b-modal id="remove-course-modal" title="Confirm Removal" hide-footer>
-        <p>IF YOU REMOVE A COURSE <span style="color:red; font-weight: bold;">ALL MACHINES</span> ASSOSIATED WITH THE
+        <p>IF YOU REMOVE A COURSE <span style="color:red; font-weight: bold;">ALL MACHINES AND GROUPS</span> ASSOSIATED WITH THE
           COURSE WILL <span style="color:red; font-weight: bold;">IMMEDIATELY BE DELETED </span></p>
         <b-button style="margin: 0 5px 0 0" variant="secondary" @click="$bvModal.hide('remove-course-modal')">Cancel
         </b-button>
@@ -192,6 +194,8 @@ export default {
         this.form.shortCourseName = this.selectedRow[0].shortCourseName
         this.form.courseName = this.selectedRow[0].courseName
         this.form.ownerUsername = this.selectedRow[0].ownerUsername
+      }else{
+        this.resetFields()
       }
     },
     async removeSelectedCourse() {
@@ -227,11 +231,10 @@ export default {
         respOk = resp === 201
       }
 
+      this.formInvalidResponse = !respOk
       if (respOk) {
         this.resetFields()
         await this.loadTableData()
-      }else{
-        this.formInvalidResponse = !respOk
       }
 
     },

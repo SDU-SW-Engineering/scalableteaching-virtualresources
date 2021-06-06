@@ -2,7 +2,7 @@
   <div>
     <b-container fluid="sm">
 
-      <b-form @submit="onSubmit" @reset="resetFields">
+      <b-form @submit="onSubmit" @reset="resetFields" autocomplete="false">
 
         <b-form-group
             id="input-group-1"
@@ -17,6 +17,7 @@
               placeholder="Associated Course"
               v-b-tooltip.hover title="Associated Course"
               aria-describedby="coursename-live-feedback"
+              :state="validateFormItem('course')"
           ></b-form-select>
 
           <b-form-invalid-feedback id="coursename-live-feedback">
@@ -40,18 +41,18 @@
               aria-describedby="groupname-live-feedback"
               required
           ></b-form-input>
+
+
+          <b-form-invalid-feedback id="groupname-live-feedback">
+            You must enter a group name
+          </b-form-invalid-feedback>
         </b-form-group>
 
-        <b-form-invalid-feedback id="groupname-live-feedback">
-          You must enter a group name
-        </b-form-invalid-feedback>
-
-
         <b-button-group>
-          <b-button pill type="Create" variant="success" v-on:click="onSubmit">Submit</b-button>
-          <b-button pill type="Reset Form" variant="secondary">Reset</b-button>
+          <b-button pill type="submit" variant="success">Submit</b-button>
+          <b-button pill type="reset" variant="secondary">Reset</b-button>
         </b-button-group>
-        <p style="color:#ff0000" v-if="formInvalidResponse">Insert text</p>
+        <p style="color:#ff0000" v-if="formInvalidResponse">An error occurred</p>
       </b-form>
 
       <hr>
@@ -84,6 +85,7 @@
           :fields="fields"
           @row-selected="onRowSelected"
           v-on:load="loadTableData"
+          :busy="tableIsLoading"
       ></b-table>
     </b-container>
   </div>
@@ -101,13 +103,14 @@ export default {
   },
   data() {
     return {
+      tableIsLoading: true,
       form: {
         groupname: '',
         selectedCourse: null,
       },
       defaultSelectedCourse: null,
       defaultSelectableCourses: [{value: null, text: 'Select a course'}],
-      selectableCourses: [],
+      selectableCourses: [{value: null, text: 'Select a course'}],
       formInvalidResponse: false,
       fields: [
         {
@@ -126,7 +129,18 @@ export default {
     }
   },
   methods: {
+    tableLoading(state) {
+      if (state === true) {
+        this.tableIsLoading = true
+      } else if (state === false) {
+        this.tableIsLoading = false
+      } else {
+        this.tableIsLoading = !this.tableIsLoading
+      }
+    },
     async loadTableData() {
+      this.resetFields()
+      this.tableLoading(true)
       this.groups = []
       //Get all groups
       const result = await GroupAPI.getGroups();
@@ -148,46 +162,53 @@ export default {
           }
         }
       }
-      console.log("Groups: ", this.groups)
+      this.tableLoading(false)
     },
     onRowSelected(items) {
       this.selectedRow = items
-    },
-    removeSelectedCourse() {
-      console.log(this.selectedRow[0])
-      alert(`Selected Index ${this.selectedRow[0].courseName}`) //TODO: Actually delete item
-      // if(selected)
-      // selected[0]
-    },
-    // eslint-disable-next-line
-    validateFormItem(item) { //TODO: fix Form Validation
-      // switch (item){
-      //   case 'shortCourseName':
-      //     return this.form.shortCourseName.length >= 3 && this.form.shortCourseName.length <= 6
-      //   case 'ownerUsername':
-      //     return this.form.ownerUsername.length >= 3
-      //   default:
-      //     return false;
-      // }
-      return false;
-    },
-    async onSubmit(event) { //TODO: Implement for groups not courses
-      event.preventDefault()
-      let resp = await CourseAPI.postCourse(this.form.ownerUsername, this.form.courseName, this.form.shortCourseName, this.form.SDUCourseID)
-      let respoOk = resp === 200
-      this.formInvalidResponse = respoOk
-      if (respoOk) {
+      if(this.selectedRow.length > 0){
+        this.form.selectedCourse = this.selectedRow[0].courseID
+        this.form.groupname = this.selectedRow[0].groupName
+      }else{
         this.resetFields()
       }
+    },
+    async removeSelectedCourse() {
+      await GroupAPI.deleteGroup(this.selectedRow[0].groupID)
+    },
+    validateFormItem(item) {
+      console.log(this.form)
+      switch (item) {
+        case 'course':
+          return this.form.selectedCourse !== null && this.form.selectedCourse !== undefined
+        case 'groupname':
+          return this.form.groupname.length > 0
+        default:
+          return false;
+      }
+    },
+    async onSubmit(event) {
+      let respOk = 0;
+      event.preventDefault()
 
-      //TODO:  Print error response and clear screen
+      if (this.selectedRow.length > 0) {
+        console.log("Put", this.form.groupname, this.form.selectedCourse, this.selectedRow[0].groupID)
+        let resp = await GroupAPI.putGroup(this.form.groupname, this.form.selectedCourse, this.selectedRow[0].groupID)
+        respOk = resp === 204
+      } else {
+        let resp = await GroupAPI.postGroup(this.form.groupname, this.form.selectedCourse)
+        respOk = resp === 200
+      }
+      this.formInvalidResponse = !respOk
+      if (respOk) {
+        this.resetFields()
+        await this.loadTableData()
+      }
     },
     resetFields() {
       this.form = {
-        courseID: '',
-        ownerUsername: '',
-        courseName: '',
-        shortCourseName: ''
+        groupname: '',
+        selectedCourse: null
       }
     },
     getSelectableCourses: async function () {
@@ -195,7 +216,7 @@ export default {
       const result = await CourseAPI.getCourses();
       if (result.status === 200) {
         for (let i = 0; i < result.body.length; i++) {
-          this.selectableCourses.push({value: result.body[i].couseID, text: result.body[i].courseName})
+          this.selectableCourses.push({value: result.body[i].courseID, text: result.body[i].courseName})
         }
       }
     }
