@@ -14,7 +14,7 @@ async function getGroups() {
 
 async function getGroup(id) {
     return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.group}/${id}`,{
-        method: "PUT",
+        method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
             'Content-Type': 'application/json'

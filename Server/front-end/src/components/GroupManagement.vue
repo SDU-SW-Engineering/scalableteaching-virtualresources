@@ -2,7 +2,7 @@
   <div>
     <b-container fluid="sm">
 
-      <b-form @submit="onSubmit" @reset="resetFields" autocomplete="off">
+      <b-form @submit="onSubmit" @reset="resetFields">
 
         <b-form-group
             id="input-group-1"
@@ -76,7 +76,7 @@
       <hr>
       <!--TODO: Implement busy state https://bootstrap-vue.org/docs/components/table#table-busy-state-->
       <b-table
-          sticky-header
+          sticky-header="true"
           striped
           selectable
           select-mode="single"
@@ -97,6 +97,7 @@ export default {
   name: "GroupManagement",
   mounted() {
     this.getSelectableCourses()
+    this.loadTableData()
   },
   data() {
     return {
