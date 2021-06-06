@@ -104,7 +104,6 @@
       </b-modal>
 
       <hr>
-      <!--TODO: Implement busy state https://bootstrap-vue.org/docs/components/table#table-busy-state-->
       <b-table
           sticky-header="true"
           striped

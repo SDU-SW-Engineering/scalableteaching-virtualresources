@@ -75,7 +75,6 @@
       </b-modal>
 
       <hr>
-      <!--TODO: Implement busy state https://bootstrap-vue.org/docs/components/table#table-busy-state-->
       <b-table
           sticky-header="true"
           striped
@@ -166,10 +165,10 @@ export default {
     },
     onRowSelected(items) {
       this.selectedRow = items
-      if(this.selectedRow.length > 0){
+      if (this.selectedRow.length > 0) {
         this.form.selectedCourse = this.selectedRow[0].courseID
         this.form.groupname = this.selectedRow[0].groupName
-      }else{
+      } else {
         this.resetFields()
       }
     },
