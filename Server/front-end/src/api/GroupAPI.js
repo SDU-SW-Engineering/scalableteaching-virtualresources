@@ -14,7 +14,7 @@ async function getGroups() {
 
 async function getGroup(id) {
     return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.group}/${id}`,{
-        method: "PUT",
+        method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
             'Content-Type': 'application/json'
@@ -50,9 +50,8 @@ async function putGroup(GroupName, CourseID, GroupID) {
  * @returns {Promise<number>}
  * @param GroupName
  * @param CourseID
- * @param GroupID
  */
-async function postGroup(GroupName, CourseID, GroupID) {
+async function postGroup(GroupName, CourseID) {
     return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.group}`,{
         method: "POST",
         headers: new Headers({
@@ -60,7 +59,6 @@ async function postGroup(GroupName, CourseID, GroupID) {
             'Content-Type': 'application/json'
         }),
         body: JSON.stringify({
-            GroupID: GroupID,
             GroupName: GroupName,
             CourseID: CourseID
         })

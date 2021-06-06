@@ -32,7 +32,7 @@ async function getCourse(id) {
  * @param CourseID
  */
 async function putCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseID, CourseID) {
-    const response = await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}/${CourseID}`,{
+    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}/${CourseID}`,{
         method: "PUT",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -45,8 +45,7 @@ async function putCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseID
             SDUCourseID: SDUCourseID,
             CourseID: CourseID
         })
-    })
-    return response.status;
+    }).then(response => response.status)
 }
 
 /**
@@ -79,15 +78,14 @@ async function postCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseI
  * @returns Status code
  */
 async function deleteCourse(id) {
-    const response = await fetch(urlconfig.base + urlconfig.course + id,
+    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}/${id}`,
         {
             method: 'DELETE',
             headers: new Headers({
                 'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
                 'Content-Type': 'application/json'
             })
-        });
-    return response.status
+        }).then(response => response.status)
 }
 
 
