@@ -51,12 +51,29 @@ namespace backend.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCourse(Guid id, CourseDTO courseDTO)
         {
-            if (id != courseDTO.CouseID)
+            //Validate Request
+            if (id != courseDTO.CourseID)
             {
                 return BadRequest();
             }
+            if (courseDTO.CourseName is null || courseDTO.ShortCourseName is null || courseDTO.SDUCourseID is null) return BadRequest("Field is null");
+            if (await _context.Users.FindAsync(courseDTO.OwnerUsername) == null) return BadRequest("User Does not exist");
+            if (!courseDTO.ShortCourseName.Any() || !courseDTO.CourseName.Any() || !courseDTO.SDUCourseID.Any()) return BadRequest("Field Empty");
+
+            var CourseValidationResponse = Course.validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
+            if (CourseValidationResponse.Item1 != true)
+            {
+                return BadRequest(CourseValidationResponse.Item2);
+            }
+
+            //Perform Request
             var course = await _context.Courses.FindAsync(id);
             _context.Entry(course).State = EntityState.Modified;
+
+            course.UserUsername = courseDTO.OwnerUsername;
+            course.ShortCourseName = courseDTO.ShortCourseName;
+            course.SDUCourseID = courseDTO.SDUCourseID;
+            course.CourseName = courseDTO.CourseName;
 
             try
             {
@@ -86,6 +103,11 @@ namespace backend.Controllers
             if (await _context.Users.FindAsync(courseDTO.OwnerUsername) == null) return BadRequest("User Does not exist");
             if(!courseDTO.ShortCourseName.Any() || !courseDTO.CourseName.Any() || !courseDTO.SDUCourseID.Any())  return BadRequest("Field Empty");
 
+            var CourseValidationResponse = Course.validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
+            if (CourseValidationResponse.Item1 != true)
+            {
+                return BadRequest(CourseValidationResponse.Item2);
+            }
             var course = new Course()
             {
                 CourseName = courseDTO.CourseName,

@@ -33,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="XML-RPC_DTO\" />
     <Folder Include="Data\" />
     <Folder Include="proxy\logs\" />
   </ItemGroup>
