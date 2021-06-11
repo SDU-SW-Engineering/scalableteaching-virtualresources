@@ -10,3 +10,4 @@ Server/backend/proxy/logs/
 **CMakeFiles/
 **obj/
 **bin/
+/Server/XmlRpcRequestResults
