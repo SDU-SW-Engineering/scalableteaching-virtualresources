@@ -1,12 +1,10 @@
-﻿using backend.DTO;
+﻿using ScalableTeaching.DTO;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace backend.Helpers
+namespace ScalableTeaching.Helpers
 {
     public class SSOHelper
     {
@@ -29,7 +27,7 @@ namespace backend.Helpers
         }
         private async static Task<UserDTO> ResolveSSOReponse(HttpResponseMessage ResponseData)
         {
-            XmlDocument document = new XmlDocument();
+            XmlDocument document = new();
             string XmlBody = await ResponseData.Content.ReadAsStringAsync();
             document.LoadXml(XmlBody);
             if (document.GetElementsByTagName("cas:authenticationFailure").Count != 0)
@@ -38,16 +36,19 @@ namespace backend.Helpers
             }
             else
             {
-                UserDTO User = null;
+                UserDTO User;
                 try
                 {
-                    User = new UserDTO();
-                    User.Username = getValueFromXml(document, "cas:user");
-                    User.Mail = getValueFromXml(document, "mail");
-                    User.Sn = getValueFromXml(document, "sn");
-                    User.Gn = getValueFromXml(document, "gn");
-                    User.Cn = getValueFromXml(document, "cn");
-                }catch (NullReferenceException)
+                    User = new UserDTO
+                    {
+                        Username = GetValueFromXml(document, "cas:user"),
+                        Mail = GetValueFromXml(document, "mail"),
+                        Sn = GetValueFromXml(document, "sn"),
+                        Gn = GetValueFromXml(document, "gn"),
+                        Cn = GetValueFromXml(document, "cn")
+                    };
+                }
+                catch (NullReferenceException)
                 {
                     throw new ArgumentException("Invalid response from SSO Server - Missing required tag");
                 }
@@ -55,7 +56,7 @@ namespace backend.Helpers
             }
         }
 
-        private static String getValueFromXml(XmlDocument xml, String SearchString)
+        private static String GetValueFromXml(XmlDocument xml, String SearchString)
         {
             return xml.GetElementsByTagName(SearchString).Item(0).InnerText;
         }

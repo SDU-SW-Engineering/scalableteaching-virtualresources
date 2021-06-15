@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Xml;
+﻿using System.Xml;
 
-namespace Backend.XmlRpc
+namespace ScalableTeaching.OpenNebula
 {
-    public class XmlRpcResultStringCleaner
+    public class OpenNebulaResultStringCleaner
     {
         public static XmlDocument Clean(string DirtyXmlString)
         {

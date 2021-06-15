@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace backend.Controllers
+namespace ScalableTeaching.DTO
 {
     public class GroupNameDTO
     {

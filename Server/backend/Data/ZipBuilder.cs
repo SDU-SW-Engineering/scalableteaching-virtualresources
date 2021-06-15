@@ -3,7 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 
-namespace backend.Data
+namespace ScalableTeaching.Data
 {
     public class ZipBuilder
     {

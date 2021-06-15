@@ -1,12 +1,12 @@
-﻿using backend.Data;
-using backend.Models;
+﻿using ScalableTeaching.Data;
+using ScalableTeaching.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace backend.Helpers
+namespace ScalableTeaching.Helpers
 {
     public class SshConfigBuilder
     {
@@ -32,7 +32,7 @@ namespace backend.Helpers
             var course = machine.Course;
             List<LocalForward> LocalForwards = _context.LocalForwards.Where(port => port.MachineID == assignment.MachineID).ToList();
 
-            StringBuilder credentialBuilder = new StringBuilder();
+            StringBuilder credentialBuilder = new();
 
             //Insert host name string
             credentialBuilder.Append("Host ");

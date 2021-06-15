@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.IO;
 
-namespace backend.Helpers
+namespace ScalableTeaching.Helpers
 {
     public class SSHKeyHelper
     {

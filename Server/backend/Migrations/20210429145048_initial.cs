@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Backend.Migrations
+namespace ScalableTeaching.Migrations
 {
     public partial class initial : Migration
     {

@@ -1,26 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml;
-using Backend.XmlRpc;
+using ScalableTeaching.OpenNebula.Models;
 
-namespace Backend.XmlRpc
+namespace ScalableTeaching.OpenNebula.Containers
 {
-    public class VmPoolInfoExtendedModel : XmlRpcModel
+    public class VmPoolInfoExtendedReturnContainer : OpenNebulaReturnContainer
     {
-        readonly List<VmModel> VmModelList = new();
-        private VmPoolInfoExtendedModel() { }
+        public readonly List<VmModel> VmModelList = new();
 
-        protected override bool Parse<T>(object[] input)
+        public VmPoolInfoExtendedReturnContainer(object[] input)
         {
             XmlDocument ResultDocument;
-            try
-            {
-                ResultDocument = GetCleanXmlDocument(input);
-            }
-            catch (InvalidOperationException)
-            {
-                return false;
-            }
+            ResultDocument = GetCleanXmlDocument(input);
             
             XmlNodeList VmTemplateNodes = ResultDocument.GetElementsByTagName("VM");
 
@@ -31,19 +23,14 @@ namespace Backend.XmlRpc
                     int.Parse(VmNode.SelectSingleNode("ID").InnerText),
                     VmNode.SelectSingleNode("NAME").InnerText,
                     DateTimeOffset.FromUnixTimeSeconds(long.Parse(VmNode.SelectSingleNode("LAST_POLL").InnerText)),
-                    (MachineState)int.Parse(VmNode.SelectSingleNode("STATE").InnerText),
+                    (MachineStates)int.Parse(VmNode.SelectSingleNode("STATE").InnerText),
+                    (LCMStates)int.Parse(VmNode.SelectSingleNode("LCM_STATE").InnerText),
                     Decimal.Parse(monitoringNode.SelectSingleNode("CPU").InnerText),
                     int.Parse(monitoringNode.SelectSingleNode("MEMORY").InnerText),
                     monitoringNode.SelectSingleNode("GUEST_IP_ADDRESSES").InnerText.Split(',')[0],
                     VmNode.SelectSingleNode("TEMPLATE").SelectSingleNode("NIC").SelectSingleNode("MAC").InnerText
                     ));
             }
-            return true;
-        }
-
-        public bool Succeded()
-        {
-            throw new NotImplementedException();
         }
     }
 }

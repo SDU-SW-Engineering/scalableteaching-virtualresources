@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using Microsoft.AspNetCore.Mvc;
 
-namespace backend.Data
+namespace ScalableTeaching.Data
 {
     public class InMemoryFile
     {

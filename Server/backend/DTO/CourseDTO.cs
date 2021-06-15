@@ -1,7 +1,7 @@
-﻿using backend.Models;
+﻿using ScalableTeaching.Models;
 using System;
 
-namespace backend.Controllers
+namespace ScalableTeaching.DTO
 {
     public class CourseDTO
     {

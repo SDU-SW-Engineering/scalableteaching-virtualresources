@@ -1,4 +1,4 @@
-﻿namespace backend.Controllers
+﻿namespace ScalableTeaching.DTO
 {
     internal class PubKey
     {

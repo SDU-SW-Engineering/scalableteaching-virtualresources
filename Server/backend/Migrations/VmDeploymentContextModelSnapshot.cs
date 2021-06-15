@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using backend.Data;
+using ScalableTeaching.Data;
 
-namespace Backend.Migrations
+namespace ScalableTeaching.Migrations
 {
     [DbContext(typeof(VmDeploymentContext))]
     partial class VmDeploymentContextModelSnapshot : ModelSnapshot

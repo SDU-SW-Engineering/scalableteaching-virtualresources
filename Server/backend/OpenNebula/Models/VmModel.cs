@@ -1,27 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Backend.XmlRpc
+namespace ScalableTeaching.OpenNebula.Models
 {
     public struct VmModel
     {
         //TODO: Possibly implement DiskUtilization if parameters available
-        public int MachineId { get; }
-        public string MachineName { get; }
-        public DateTimeOffset LastPoll { get; }
-        public MachineState MachineState { get; }
-        public decimal MachineCpuUtilizationPercent { get; }
-        public int MachineMemmoryUtilizationBytes { get; }
-        public string MachineIp { get; }
-        public string MachineMac { get; }
+        public readonly int MachineId { get; }
+        public readonly string MachineName { get; }
+        public readonly DateTimeOffset LastPoll { get; }
+        public readonly MachineStates MachineState { get; }
+        public readonly LCMStates MachineLCMState { get; }
+        public readonly decimal MachineCpuUtilizationPercent { get; }
+        public readonly int MachineMemmoryUtilizationBytes { get; }
+        public readonly string MachineIp { get; }
+        public readonly string MachineMac { get; }
 
         public VmModel(
             int machineId,
             string machineName,
             DateTimeOffset lastPoll,
-            MachineState machineState,
+            MachineStates machineState,
+            LCMStates LCMState,
             decimal machineCpuUtilizationPercent,
             int machineMemmoryUtilizationBytes,
             string machineIp,
@@ -31,6 +30,7 @@ namespace Backend.XmlRpc
             MachineName = machineName;
             LastPoll = lastPoll;
             MachineState = machineState;
+            MachineLCMState = LCMState;
             MachineCpuUtilizationPercent = machineCpuUtilizationPercent;
             MachineMemmoryUtilizationBytes = machineMemmoryUtilizationBytes;
             MachineIp = machineIp;

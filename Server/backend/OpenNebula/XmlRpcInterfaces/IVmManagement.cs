@@ -1,10 +1,7 @@
-﻿using CookComputing.XmlRpc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System;
+using CookComputing.XmlRpc;
 
-namespace Backend.XmlRpc
+namespace ScalableTeaching.OpenNebula.XmlRpcInterfaces
 {
     public interface IVmManagement : IXmlRpcProxy
     {

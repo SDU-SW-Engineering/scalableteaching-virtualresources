@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Backend.XmlRpc
+﻿namespace ScalableTeaching.OpenNebula.Models
 {
     public struct VmTemplateModel
     {
-        public int TemplateId { get; }
-        public string TemplateName { get; }
-        public string Description { get; }
-        public int TemplateCpuCores { get; }
-        public int TemplateStorageMegabytes { get; }
+        public readonly int TemplateId { get; }
+        public readonly string TemplateName { get; }
+        public readonly string Description { get; }
+        public readonly int TemplateCpuCores { get; }
+        public readonly int TemplateStorageMegabytes { get; }
 
 
         public VmTemplateModel(

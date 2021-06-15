@@ -1,26 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml;
-using Backend.XmlRpc;
+using ScalableTeaching.OpenNebula.Models;
 
-namespace Backend.XmlRpc
+namespace ScalableTeaching.OpenNebula.Containers
 {
-    public class VmTemplatepoolInfoModel : XmlRpcModel
+    public class VmTemplatepoolInfoReturnContainer : OpenNebulaReturnContainer
     {
-        readonly List<VmTemplateModel> VmTemplateModelList = new();
-        private VmTemplatepoolInfoModel() { }
+        public readonly List<VmTemplateModel> VmTemplateModelList = new();
+        private VmTemplatepoolInfoReturnContainer() { }
 
-        protected override bool Parse<T>(object[] input)
+        public VmTemplatepoolInfoReturnContainer (object[] input)
         {
-            XmlDocument ResultDocument;
-            try
-            {
-                ResultDocument = GetCleanXmlDocument(input);
-            }
-            catch (InvalidOperationException)
-            {
-                return false;
-            }
+            var ResultDocument = GetCleanXmlDocument(input);
 
             XmlNodeList VmTemplateNodes = ResultDocument.GetElementsByTagName("VMTEMPLATE");
 
@@ -36,12 +28,6 @@ namespace Backend.XmlRpc
                     int.Parse(templateNode.SelectSingleNode("MEMORY").InnerText)
                     ));
             }
-            return true;
-        }
-
-        public bool Succeded()
-        {
-            throw new NotImplementedException();
         }
     }
 }

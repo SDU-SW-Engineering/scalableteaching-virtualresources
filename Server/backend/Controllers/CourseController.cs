@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using backend.Data;
-using backend.Models;
+using ScalableTeaching.Data;
+using ScalableTeaching.Models;
 using Microsoft.AspNetCore.Authorization;
-using Backend.DTO;
+using ScalableTeaching.DTO;
 
-namespace backend.Controllers
+namespace ScalableTeaching.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -60,7 +60,7 @@ namespace backend.Controllers
             if (await _context.Users.FindAsync(courseDTO.OwnerUsername) == null) return BadRequest("User Does not exist");
             if (!courseDTO.ShortCourseName.Any() || !courseDTO.CourseName.Any() || !courseDTO.SDUCourseID.Any()) return BadRequest("Field Empty");
 
-            var CourseValidationResponse = Course.validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
+            var CourseValidationResponse = Course.Validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
             if (CourseValidationResponse.Item1 != true)
             {
                 return BadRequest(CourseValidationResponse.Item2);
@@ -103,7 +103,7 @@ namespace backend.Controllers
             if (await _context.Users.FindAsync(courseDTO.OwnerUsername) == null) return BadRequest("User Does not exist");
             if(!courseDTO.ShortCourseName.Any() || !courseDTO.CourseName.Any() || !courseDTO.SDUCourseID.Any())  return BadRequest("Field Empty");
 
-            var CourseValidationResponse = Course.validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
+            var CourseValidationResponse = Course.Validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
             if (CourseValidationResponse.Item1 != true)
             {
                 return BadRequest(CourseValidationResponse.Item2);
@@ -116,7 +116,7 @@ namespace backend.Controllers
                 SDUCourseID = courseDTO.SDUCourseID,
                 UserUsername = courseDTO.OwnerUsername
             };
-            var entity = _context.Courses.Add(course);
+            _ = _context.Courses.Add(course);
             await _context.SaveChangesAsync();
             
             return CreatedAtAction("GetCourse", new { id = course.CourseID }, course);

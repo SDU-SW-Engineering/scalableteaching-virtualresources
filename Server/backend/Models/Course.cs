@@ -1,12 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace backend.Models
+namespace ScalableTeaching.Models
 {
     public class Course
     {
@@ -32,7 +29,7 @@ namespace backend.Models
         public string SDUCourseID { get; set; }
         public virtual User User { get; set; }
 
-        public static (bool, string) validate(string UserUsername, string CourseName, string ShortCourseName, string SDUCourseID)
+        public static (bool, string) Validate(string UserUsername, string CourseName, string ShortCourseName, string SDUCourseID)
         {
             if (UserUsername == null ) return (false, "UserUsername null");
             if (CourseName == null) return (false, "CourseName null");

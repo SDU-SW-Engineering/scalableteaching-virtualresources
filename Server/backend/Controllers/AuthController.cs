@@ -1,20 +1,16 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using backend.DTO;
-using backend.Helpers;
+using ScalableTeaching.DTO;
+using ScalableTeaching.Helpers;
 using Microsoft.Extensions.Configuration;
-using backend.Data;
+using ScalableTeaching.Data;
 using System.Text.Json;
-using backend.Models;
+using ScalableTeaching.Models;
 using Microsoft.AspNetCore.Authorization;
 
-namespace backend.Controllers
+namespace ScalableTeaching.Controllers
 {
     [Route("/api/login")]
     [ApiController]    

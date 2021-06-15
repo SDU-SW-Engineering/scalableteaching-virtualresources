@@ -5,17 +5,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using backend.Data;
-using backend.Models;
+using ScalableTeaching.Data;
+using ScalableTeaching.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication;
-using backend.Helpers;
-using System.Text.Json;
-using backend.DTO;
-using Backend.DTO;
+using ScalableTeaching.Helpers;
+using ScalableTeaching.DTO;
 using System.Security.Cryptography;
 
-namespace backend.Controllers
+namespace ScalableTeaching.Controllers
 {
     [Route("api/group")]
     [ApiController]

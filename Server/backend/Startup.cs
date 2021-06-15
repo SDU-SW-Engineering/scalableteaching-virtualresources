@@ -1,5 +1,5 @@
-using backend.Data;
-using backend.Helpers;
+using ScalableTeaching.Data;
+using ScalableTeaching.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,12 +9,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using static backend.Models.User.UserType;
+using static ScalableTeaching.Models.User.UserType;
 
 using System;
 
 
-namespace backend
+namespace ScalableTeaching
 {
     public class Startup
     {

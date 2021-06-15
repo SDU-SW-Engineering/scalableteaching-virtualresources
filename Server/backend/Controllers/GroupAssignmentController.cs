@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using backend.Data;
-using backend.Models;
+using ScalableTeaching.Data;
+using ScalableTeaching.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Razor.Language;
+using ScalableTeaching.DTO;
 
-namespace Backend.Controllers
+namespace ScalableTeaching.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

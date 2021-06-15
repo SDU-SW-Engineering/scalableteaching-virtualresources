@@ -1,18 +1,17 @@
-﻿using backend.Data;
-using backend.Helpers;
+﻿using ScalableTeaching.Data;
+using ScalableTeaching.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using backend.Models;
+using ScalableTeaching.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Controllers
+namespace ScalableTeaching.Controllers
 {
     [Authorize(Policy = "UserLevel")]
     [Route("api/[controller]")]
