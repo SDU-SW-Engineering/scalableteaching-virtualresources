@@ -3,13 +3,16 @@
     <!--Top of screen buttons-->
     <b-row>
       <b-col>
-        <b-button class="mb4 mr4" :disabled="creationStep <= 1" v-on:click="creationStep--">←
+        <b-button class="mb4 mr4" v-if="!advanced" :disabled="creationStep < 1" v-on:click="creationStep--">←
         </b-button>
         <b-button class="mb4 mr2" variant="warning" v-on:click="resetVerification">Reset Machine Creation Forms
         </b-button>
         <b-button class="mb4 mr2" variant="info" v-on:click="advanced = !advanced">Advanced Mode</b-button>
-        <b-button class="mb4 ml2" :disabled="creationStep >= finalCreationStep"
-                  v-on:click="creationStep++">→
+        <b-button class="mb4 mr2" v-if="creationStep===3" variant="primary" v-on:click="finish">Create Machines
+        </b-button>
+        <b-button class="mb4 ml2" :disabled="creationStep >= availableCreationStep"
+                  v-on:click="creationStep++"
+                  v-if="!advanced">→
         </b-button>
       </b-col>
     </b-row>
@@ -23,20 +26,10 @@
           >
             <b-form-select-option value="null">Class not on list</b-form-select-option>
           </b-form-select>
-          <div id="ClassnameInput">
-            <b-form-input
-                v-model="settings.classname.newName"
-                placeholder="Enter new class name here"
-                :disabled.sync="settings.classname.selected !== 'null' "
-            ></b-form-input>
-          </div>
-          <b-tooltip target="ClassnameInput" triggers="hover" :disabled.sync="settings.classname.selected === 'null'">To
-            enable select "Class not on list" from above
-          </b-tooltip>
         </b-form-group>
       </b-col>
     </b-row>
-    <!--Machine Creation Directive-->
+    <!--Machine Replication Directive-->
     <b-row v-if="(creationStep=== 1 || advanced)">
       <b-col>
         <b-form-group label="Select replication directive">
@@ -49,100 +42,57 @@
         </b-form-group>
       </b-col>
     </b-row>
-    <!--Machine amount-->
-    <!--Multiple Shared-->
-    <b-row v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 1"
-           align-content="center">
-      <b-col xl="6" offset-xl="3" align-self="center">
-        <b-form-group label="Select amount of share machines">
-          <b-form-select
-              v-model="settings.sharedMachineAmount.selected"
-              :options="settings.sharedMachineAmount.options"
-          ></b-form-select>
-        </b-form-group>
-      </b-col>
-    </b-row>
-    <!--Per Group - Upload or create groups-->
-    <b-row v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 2"
-           align-content="center">
-      <b-col md="6" offset-md="3" align-self="center">
-        <b-form-group label="Select groups or upload a file containing groups">
-          <b-form-radio-group v-model="settings.groupMachines.useFile" :options="settings.groupMachines.options">
-          </b-form-radio-group>
-          <b-form-file
-              v-if="settings.groupMachines.useFile"
-              :key="settings.groupMachines.useFile"
-              v-model="settings.groupMachines.file"
-              :state="Boolean(settings.groupMachines.file)"
-              accept="application/activity+json"
-              v-on:input="debugText=2"
-          ></b-form-file><!--TODO: Implement validation of group file on change of file-->
-          <b-form-select
-              v-if="!settings.groupMachines.useFile"
-              :key="settings.groupMachines.useFile"
-              v-model="settings.groupMachines.selectedGroups"
-              :options="getGroupNames"
-              multiple
-          >
-          </b-form-select>
-        </b-form-group>
-        <!--Allow for multiple machines pr group-->
-        <b-form-select
-            v-model="settings.groupMachines.amountPerGroup"
-            :options="getGroupNames"
-        >
-        </b-form-select>
-        <!--TODO: Allow for port configuration of the individual machines-->
-        <!--TODO: Allow for the software configuration of individual machines-->
-      </b-col>
-    </b-row>
-    <!--Per User - Upload or enter manually-->
-    <b-row v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 3"
-           align-content="center">
-      <b-col md="6" offset-md="3" align-self="center">
-        <b-form-group label="Upload list of students">
-          <b-form-file
-              v-model="settings.userMachines.file"
-              :state="Boolean(settings.userMachines.file)"
-              accept="application/activity+json"
-              v-on:input="debugText = 'File Change in user file'"
-          ></b-form-file><!--TODO: Implement validation of group file on change of file-->
-        </b-form-group>
-      </b-col>
-    </b-row>
-    <!--TODO: Select programs for installation-->
-    <!--TODO: Allow for port configuration-->
-    <!--TODO: Allow for user, group, permission configuration-->
-    <!--Bottom of screen buttons-->
-    <b-row>
-      <b-col>
-        <b-button class="mb4 mr4" :disabled="creationStep <= 1" v-on:click="creationStep--">←
-        </b-button>
-        <b-button class="mb4 mr2" variant="warning" v-on:click="resetVerification">Reset Machine Creation Forms
-        </b-button>
-        <b-button class="mb4 mr2" v-if="creationStep===3" variant="primary" v-on:click="finish">Create Machines
-        </b-button>
-        <b-button class="mb4 mr2" variant="info" v-on:click="advanced = !advanced">Advanced Mode</b-button>
-        <b-button class="mb4 ml2" :disabled="creationStep >= finalCreationStep"
-                  v-on:click="creationStep++">→
-        </b-button>
-      </b-col>
-    </b-row>
+
+    <MultipleSharedMachineCreation
+        v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 1"
+        ref="MultipleSharedMachineCreation"
+    />
+
+    <PerGroupMachineCreation
+        v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 2"
+        ref="PerGroupMachineCreation"
+    />
+
+    <PerUserMachineCreation
+        v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 3"
+        ref="PerUserMachineCreation"
+    />
+
+    <EndOfCreationTable
+
+        ref="EndOfCreationTable"
+    />
+
   </div>
 </template>
 
 <script>
+import PerGroupMachineCreation from "@/components/MachineCreationComponents/PerGroupMachineCreation";
+import PerUserMachineCreation from "@/components/MachineCreationComponents/PerUserMachineCreation";
+import MultipleSharedMachineCreation from "@/components/MachineCreationComponents/MultipleSharedMachineCreation";
+import EndOfCreationTable from "@/components/MachineCreationComponents/EndOfCreationTable";
 export default {
   name: "MachineCreation",
+  components: {EndOfCreationTable, MultipleSharedMachineCreation, PerUserMachineCreation, PerGroupMachineCreation},
   data() {
     return {
       creationStep: 0,
       advanced: false,
-      finalCreationStep: 3,
+      availableCreationStep: 0,
       /*isDisabled: false,*/
       resetBox: '',
       debugText: 'No Debug Text Yet',
       settings: {
+        machinesToBeCreated: {
+          items: [
+              {machineName:'ONK-frhou18-01-E21', courseName: 'Onk Not Known', users: ['frhou18'], groups: ['sudo', 'onk'], ports: [1234, 8456], PPAs: ['ppa:kubuntu-ppa/staging-plasma'], APTs:['vim', 'git']}
+          ],
+          fields: [
+              {key: 'machineName', label: 'Machine Name', sortable: true},
+              {key: 'users', label: 'Users', sortable: false},
+              {key: 'details', label: 'Details', sortable: false}
+          ],
+        },
         replicationDirective: {
           options: [
             {text: "Single Machine", value: 0},
@@ -156,34 +106,24 @@ export default {
           options: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
           selected: 1,
         },
-        groupMachines: {
-          file: "",
-          selectedGroups: [],
-          useFile: false,
-          options: [
-            {text: "Select Existing Groups", value: false},
-            {text: "Upload File for New Groups", value: true}
-          ],
-          amountPerGroup: 1,
-          amountPerGroupOptions: [
-            {text: 1, value: 1},
-            {text: 2, value: 2},
-            {text: 3, value: 3},
-            {text: 4, value: 4},
-            {text: 5, value: 5},
-          ]
-        },
-        userMachines: {
-          file: "",
-        },
         classname: {
           selected: "null",
           newName: "",
         }
-      }
+      },
+
     }
   },
   methods: {
+    setAvailableCreationStep() {
+      if (this.availableCreationStep === 0 && this.settings.classname.selected !== "null") {
+        this.availableCreationStep = 2
+      }
+      if (this.availableCreationStep === 2) {
+        let a = 1
+      }
+
+    },
     resetVerification() {
       //Reset forms
       this.resetBox = '';
