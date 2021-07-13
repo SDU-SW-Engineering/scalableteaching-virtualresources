@@ -117,7 +117,7 @@
         <b-form-group label="Enter list of ports to forward">
           <b-form-textarea
               id="textarea"
-              v-model="userMachineSettings.ports"
+              v-model="userMachineSettings.portsField"
               placeholder="Enter list of ports to forward, split by spaces, commas or linebreaks"
               rows="3"
               max-rows="6"
@@ -137,7 +137,8 @@ export default {
         enteredUsersField: "",
         useUsersFile: true,
         machineNamingDirective: "",
-        ports: "",
+        portsField: "",
+        ports: [],
         apt: "",
         ppa: "",
         groups: "",
@@ -147,6 +148,39 @@ export default {
         ],
         usersFile: null,
       },
+    }
+  },
+  methods: {
+    validateMachineName(){
+      let name = this.userMachineSettings.machineNamingDirective
+      let regex = /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/
+      return name.search(regex) !== -1
+    },
+    validateUserFile(){
+
+    },
+    validateUserList(){
+
+    },
+    validateGroups(){
+
+    },
+    validatePPA(){
+
+    },
+    validateAPT(){
+
+    },
+    validatePorts(){
+      let initialSplit = this.userMachineSettings.portsField.split(/[\s,]/);
+      this.userMachineSettings.ports = []
+      for(let token in initialSplit){
+        if(token.match(/[0,9]{1,5}/) && (parseInt(token) > 0 && parseInt(token) < 65535))
+          this.userMachineSettings.ports.push(parseInt(token))
+        else
+          return false
+      }
+      return true
     }
   }
 }

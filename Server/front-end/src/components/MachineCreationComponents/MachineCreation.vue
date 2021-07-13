@@ -23,6 +23,7 @@
           <b-form-select
               v-model="settings.classname.selected"
               :options="getClassnameOptions"
+              state="false"
           >
             <b-form-select-option value="null">Class not on list</b-form-select-option>
           </b-form-select>
@@ -165,6 +166,9 @@ export default {
     },
     finish() {
       //TODO: Verify all data entered correctly and submit to backend.
+    },
+    validateClassField(){
+
     }
   },
   computed: {
