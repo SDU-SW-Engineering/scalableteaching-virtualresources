@@ -134,6 +134,7 @@ export default {
   data() {
     return {
       userMachineSettings: {
+        portsValidation:null,
         enteredUsersField: "",
         useUsersFile: true,
         machineNamingDirective: "",
@@ -171,16 +172,18 @@ export default {
     validateAPT(){
 
     },
-    validatePorts(){
-      let initialSplit = this.userMachineSettings.portsField.split(/[\s,]/);
-      this.userMachineSettings.ports = []
-      for(let token in initialSplit){
-        if(token.match(/[0,9]{1,5}/) && (parseInt(token) > 0 && parseInt(token) < 65535))
-          this.userMachineSettings.ports.push(parseInt(token))
-        else
-          return false
-      }
-      return true
+    validatePorts(){ //TODO: Implement functional validation for all fields
+    //   if(this.userMachineSettings.portsField.length === 0) return null
+    //   let initialSplit = this.userMachineSettings.portsField.split(/[\s,]/);
+    //   this.userMachineSettings.ports = []
+    //   for(let token in initialSplit){
+    //     token = token.replace(/[\s]/, "")
+    //     if(token.match(/[0-9]{1,5}/) != null && (parseInt(token) > 0 && parseInt(token) < 65535))
+    //       this.userMachineSettings.ports.push(parseInt(token))
+    //     else
+    //       return false
+    //   }
+    //   return true
     }
   }
 }
