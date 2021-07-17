@@ -10,6 +10,7 @@
             label-for="input-1"
         >
           <b-form-select
+              v-on:change="updateFilter"
               autocomplete="false"
               v-model="form.selectedCourse"
               :options="selectableCourses"
@@ -85,6 +86,8 @@
           @row-selected="onRowSelected"
           v-on:load="loadTableData"
           :busy="tableIsLoading"
+          :filter="tableFilter"
+          :filter-included-fields="courseName"
       ></b-table>
     </b-container>
   </div>
@@ -102,6 +105,7 @@ export default {
   },
   data() {
     return {
+      tableFilter: null,
       tableIsLoading: true,
       form: {
         groupname: '',
@@ -218,6 +222,9 @@ export default {
           this.selectableCourses.push({value: result.body[i].courseID, text: result.body[i].courseName})
         }
       }
+    },
+    updateFilter(){
+      this.tableFilter = this.form.selectedCourse
     }
   },
 
