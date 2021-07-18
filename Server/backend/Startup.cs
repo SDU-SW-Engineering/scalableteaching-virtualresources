@@ -12,7 +12,7 @@ using Microsoft.OpenApi.Models;
 using static ScalableTeaching.Models.User.UserType;
 
 using System;
-
+using Serilog;
 
 namespace ScalableTeaching
 {
@@ -67,9 +67,9 @@ namespace ScalableTeaching
 
             services.AddSingleton<IConfiguration>(Configuration);
             services.AddScoped<SshConfigBuilder>();
-            //Log.Logger = new LoggerConfiguration()
-            //    .WriteTo.File(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + $"/ScalableTeachingLogs/log-.txt", rollingInterval: RollingInterval.Day)
-            //    .CreateLogger();
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.File($"{Environment.GetEnvironmentVariable("ScalableTeachingBaseLocation")}/logs/log-.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -97,12 +97,12 @@ namespace ScalableTeaching
                 endpoints.MapControllers();
             });
 
-            //lifetime.ApplicationStopped.Register(OnShutdown);
+            lifetime.ApplicationStopped.Register(OnShutdown);
         }
 
-        //private void OnShutdown()
-        //{
-        //    Log.CloseAndFlush();
-        //}
+        private void OnShutdown()
+        {
+            Log.CloseAndFlush();
+        }
     }
 }

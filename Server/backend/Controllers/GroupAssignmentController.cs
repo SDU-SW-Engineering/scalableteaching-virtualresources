@@ -9,6 +9,7 @@ using ScalableTeaching.Data;
 using ScalableTeaching.Models;
 using Microsoft.AspNetCore.Authorization;
 using ScalableTeaching.DTO;
+using Serilog;
 
 namespace ScalableTeaching.Controllers
 {
@@ -27,10 +28,10 @@ namespace ScalableTeaching.Controllers
         [HttpGet("{groupid}")]
         public async Task<ActionResult> GetGroupMembers(Guid groupId)
         {
-            if (! await _context.Groups.AnyAsync(group => group.Course.User.Username == getUsername() && group.GroupID == groupId)) return BadRequest("You are no associated with any group with this id");
+            if (!await _context.Groups.AnyAsync(group => group.Course.User.Username == getUsername() && group.GroupID == groupId)) return BadRequest("You are no associated with any group with this id");
             var assignments = _context.GroupAssignments.Where(assignment => assignment.GroupID == groupId).ToListAsync();
             var outputStructure = new { GroupID = groupId, Members = new List<string>() };
-            foreach(var assignment in await assignments)
+            foreach (var assignment in await assignments)
             {
                 outputStructure.Members.Add(assignment.UserUsername);
             }
@@ -47,16 +48,49 @@ namespace ScalableTeaching.Controllers
             {
                 return Conflict("Assignment already exists");
             }
-            if (!_context.Groups.Any(group => group.GroupID == dto.GroupID &&
-                                              group.Course.User.Username == getUsername())) 
-            { 
-                return BadRequest("Either group does not exist or the group is not on a course owned by you"); 
+            if (!await _context.Groups.AnyAsync(group => group.GroupID == dto.GroupID &&
+                                              group.Course.User.Username == getUsername()))
+            {
+                return BadRequest("Either group does not exist or the group is owned by another user");
             }
 
-            await _context.GroupAssignments.AddAsync(new GroupAssignment() { GroupID=dto.GroupID,UserUsername=dto.UserUsername});
+            await _context.GroupAssignments
+                .AddAsync(new GroupAssignment() { GroupID = dto.GroupID, UserUsername = dto.UserUsername });
             await _context.SaveChangesAsync();
             // ReSharper disable once Mvc.ActionNotResolved
-            return CreatedAtAction("members", new {groupid = dto.GroupID});
+            return CreatedAtAction("members", new { groupid = dto.GroupID });
+        }
+
+        [HttpPut("update")]
+        public async Task<ActionResult> UpdateGroupMembers(AllGroupMembersDTO dto)
+        {
+            //Validate DTO
+            if (!dto.Validate()) return BadRequest("All fields must contain valid values");
+            
+
+            var groupQueriable = _context.Groups.Where(
+                    g => g.GroupID.Equals(dto.GroupID) && g.Course.UserUsername.Equals(getUsername()));
+
+            //Check group existance and permission
+            if (!await groupQueriable.AnyAsync())
+                return BadRequest("Group does not exist or is owned by different user");
+
+            _context.GroupAssignments.RemoveRange((await groupQueriable.FirstAsync()).GroupAssignments);
+            foreach(var username in dto.Usernames)
+            {
+                await _context.GroupAssignments
+                    .AddAsync(new GroupAssignment() { GroupID = dto.GroupID, UserUsername = username });
+            }
+            try
+            {
+                int saveResult = await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                Log.Error($"An Exception occurred whent trying to save group assignments.\n Error message: {e.Message}\n");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            return NoContent();
         }
 
         [HttpDelete("unassign")]
@@ -83,9 +117,9 @@ namespace ScalableTeaching.Controllers
             return NoContent();
         }
 
-        
-        
-        
+
+
+
         private bool GroupAssignmentExists(Guid id)
         {
             return _context.GroupAssignments.Any(e => e.GroupID == id);
@@ -95,6 +129,6 @@ namespace ScalableTeaching.Controllers
         {
             return HttpContext.User.Claims.Where(claim => claim.Type == "username").First().Value;
         }
-        
+
     }
 }
