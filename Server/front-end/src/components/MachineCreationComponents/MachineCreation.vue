@@ -23,7 +23,7 @@
           <b-form-select
               v-model="settings.classname.selected"
               :options="getClassnameOptions"
-              state="false"
+              :state="settings.classname.selected !== 'null'"
           >
             <b-form-select-option value="null">Class not on list</b-form-select-option>
           </b-form-select>

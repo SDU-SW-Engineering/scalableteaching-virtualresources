@@ -108,6 +108,7 @@
 //TODO: Implement file based multi upload of groups and users
 import CourseAPI from "@/api/CourseAPI";
 import GroupAPI from "@/api/GroupAPI";
+import StringHelper from "@/helpers/StringHelper";
 
 export default {
   name: "GroupManagement",
@@ -201,7 +202,7 @@ export default {
       let usersField = this.form.groupUsers
       if (usersField === null || usersField === undefined || usersField.length === 0) return null
 
-      let cleanedUserTokens = this.cleanUsersList();
+      let cleanedUserTokens = StringHelper.breakStringIntoTokenList(this.form.groupUsers);
       for (let i = 0; i < cleanedUserTokens.length; i++) {
         let token = cleanedUserTokens[i]
         if (token.length < 3 || token.length > 7) return false
@@ -214,7 +215,7 @@ export default {
       event.preventDefault()
 
       if (this.selectedRow.length > 0) {
-        let newUserList = this.cleanUsersList().sort()
+        let newUserList = StringHelper.breakStringIntoTokenList(this.form.groupUsers).sort()
         //Update member list
         if(newUserList.join() !== this.selectedRow[0].members.sort().join)
         {
@@ -252,17 +253,6 @@ export default {
     },
     updateFilter() {
       this.tableFilter = this.form.selectedCourse
-    },
-    cleanUsersList(){
-      let userTokens = this.form.groupUsers.split(/[,\s]/g)
-      let cleanedUserTokens = []
-
-      userTokens.forEach(token => {
-        let newToken = token.replaceAll(/[,\s]/g, "")
-        if (newToken.length > 0) cleanedUserTokens.push(newToken)
-        cleanedUserTokens.push()
-      })
-      return cleanedUserTokens
     }
   }
 }
