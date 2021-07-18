@@ -2,12 +2,12 @@
   <div>
     <b-container fluid="sm">
 
-      <b-form @submit="onSubmit" @reset="resetFields" autocomplete="false">
+      <b-form @submit="submit" @reset="resetFields" autocomplete="false">
 
+        <!--Associated Course-->
         <b-form-group
             id="input-group-1"
             label="Associated Course"
-            label-for="input-1"
         >
           <b-form-select
               v-on:change="updateFilter"
@@ -18,7 +18,7 @@
               placeholder="Associated Course"
               v-b-tooltip.hover title="Associated Course"
               aria-describedby="coursename-live-feedback"
-              :state="validateFormItem('course')"
+              :state="form.selectedCourse !== null && form.selectedCourse !== undefined"
           ></b-form-select>
 
           <b-form-invalid-feedback id="coursename-live-feedback">
@@ -26,10 +26,10 @@
           </b-form-invalid-feedback>
         </b-form-group>
 
+        <!--Group Name-->
         <b-form-group
-            id="input-group-1"
+            id="input-group-2"
             label="Group Name"
-            label-for="input-1"
         >
           <b-form-input
               autocomplete="false"
@@ -38,7 +38,7 @@
               type="text"
               placeholder="Name of the group"
               v-b-tooltip.hover title="Name of the group"
-              :state="validateFormItem('groupname')"
+              :state="form.groupname.length > 0"
               aria-describedby="groupname-live-feedback"
               required
           ></b-form-input>
@@ -49,6 +49,18 @@
           </b-form-invalid-feedback>
         </b-form-group>
 
+        <!--Group Users-->
+        <b-form-group
+            id="input-group-3"
+            label="Group Users"
+        >
+          <b-form-textarea
+              v-model="form.groupUsers"
+              :state="validateUsersInput()"
+          ></b-form-textarea>
+        </b-form-group>
+
+        <!--Submission buttons-->
         <b-button-group>
           <b-button pill type="submit" variant="success">Submit</b-button>
           <b-button pill type="reset" variant="secondary">Reset</b-button>
@@ -87,13 +99,13 @@
           v-on:load="loadTableData"
           :busy="tableIsLoading"
           :filter="tableFilter"
-          :filter-included-fields="courseName"
       ></b-table>
     </b-container>
   </div>
 </template>
 
 <script>
+//TODO: Implement file based multi upload of groups and users
 import CourseAPI from "@/api/CourseAPI";
 import GroupAPI from "@/api/GroupAPI";
 
@@ -110,6 +122,7 @@ export default {
       form: {
         groupname: '',
         selectedCourse: null,
+        groupUsers: '',
       },
       defaultSelectedCourse: null,
       defaultSelectableCourses: [{value: null, text: 'Select a course'}],
@@ -150,19 +163,22 @@ export default {
       //If successfull
       if (result.status === 200) {
         for (let i = 0; i < result.body.length; i++) {
-          console.log("Group: ", result.body[i])
-          //Add coursename to each group
-          const resultCourse = await CourseAPI.getCourse(result.body[i].courseID)
-          result.body[i].courseName = resultCourse.body.courseName;
-          //Add group members to each group
-          const resultMembers = await GroupAPI.getGroupMembers(result.body[i].groupID);
-          if (result.status === 200) {
-            result.body[i].members = resultMembers.body
-            this.groups.push(result.body[i])
-          } else {
-            result.body[i].members = []
-            this.groups.push(result.body[i])
+          let singleResult = {
+            groupName: result.body[i].groupName,
+            courseID: result.body[i].courseID,
+            groupID: result.body[i].groupID,
+            courseName: '',
+            members: []
           }
+          //Add coursename to each group
+          const resultCourse = await CourseAPI.getCourse(singleResult.courseID)
+          singleResult.courseName = resultCourse.body.courseName;
+          //Add group members to each group
+          const resultMembers = await GroupAPI.getGroupMembers(singleResult.groupID);
+          if (result.status === 200) {
+            singleResult.members = resultMembers.body.members
+          }
+          this.groups.push(singleResult)
         }
       }
       this.tableLoading(false)
@@ -172,33 +188,44 @@ export default {
       if (this.selectedRow.length > 0) {
         this.form.selectedCourse = this.selectedRow[0].courseID
         this.form.groupname = this.selectedRow[0].groupName
+        this.form.groupUsers = this.selectedRow[0].members.join()
       } else {
         this.resetFields()
       }
     },
     async removeSelectedCourse() {
       await GroupAPI.deleteGroup(this.selectedRow[0].groupID)
+      await this.loadTableData()
     },
-    validateFormItem(item) {
-      console.log(this.form)
-      switch (item) {
-        case 'course':
-          return this.form.selectedCourse !== null && this.form.selectedCourse !== undefined
-        case 'groupname':
-          return this.form.groupname.length > 0
-        default:
-          return false;
+    validateUsersInput() {
+      let usersField = this.form.groupUsers
+      if (usersField === null || usersField === undefined || usersField.length === 0) return null
+
+      let cleanedUserTokens = this.cleanUsersList();
+      for (let i = 0; i < cleanedUserTokens.length; i++) {
+        let token = cleanedUserTokens[i]
+        if (token.length < 3 || token.length > 7) return false
       }
+
+      return true
     },
-    async onSubmit(event) {
-      let respOk = 0;
+    async submit(event) {
+      let respOk = false;
       event.preventDefault()
 
       if (this.selectedRow.length > 0) {
-        console.log("Put", this.form.groupname, this.form.selectedCourse, this.selectedRow[0].groupID)
+        let newUserList = this.cleanUsersList().sort()
+        //Update member list
+        if(newUserList.join() !== this.selectedRow[0].members.sort().join)
+        {
+          await GroupAPI.putMembersInGroup(newUserList, this.selectedRow[0].groupID)
+        }
+
+        //Update Group Name
         let resp = await GroupAPI.putGroup(this.form.groupname, this.form.selectedCourse, this.selectedRow[0].groupID)
         respOk = resp === 204
       } else {
+        //Create Group
         let resp = await GroupAPI.postGroup(this.form.groupname, this.form.selectedCourse)
         respOk = resp === 200
       }
@@ -223,11 +250,21 @@ export default {
         }
       }
     },
-    updateFilter(){
+    updateFilter() {
       this.tableFilter = this.form.selectedCourse
-    }
-  },
+    },
+    cleanUsersList(){
+      let userTokens = this.form.groupUsers.split(/[,\s]/g)
+      let cleanedUserTokens = []
 
+      userTokens.forEach(token => {
+        let newToken = token.replaceAll(/[,\s]/g, "")
+        if (newToken.length > 0) cleanedUserTokens.push(newToken)
+        cleanedUserTokens.push()
+      })
+      return cleanedUserTokens
+    }
+  }
 }
 </script>
 

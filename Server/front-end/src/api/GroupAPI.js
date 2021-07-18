@@ -141,6 +141,25 @@ async function removeMemberFromGroup(UserUsername, GroupID) {
     }).then(response => response.status)
 }
 
+/**
+ *
+ * @param Usernames an array of usernames to make up the new members of a group
+ * @param GroupID the id of the group in question
+ * @returns {Promise<number>} status of request
+ */
+async function putMembersInGroup(Usernames, GroupID){
+    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.groupAssignment}/update`,{
+        method: "PUT",
+        headers: new Headers({
+            'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
+            'Content-Type': 'application/json'
+        }),
+        body: JSON.stringify({
+            GroupID: GroupID,
+            Usernames: Usernames,
+        })
+    }).then(resp => resp.status)
+}
 
 
 export default {
@@ -153,4 +172,5 @@ export default {
     getGroupMembers,
     removeMemberFromGroup,
     addMemberToGroup,
+    putMembersInGroup,
 }
