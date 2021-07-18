@@ -4,7 +4,7 @@
     <ProjectVersion>2.1</ProjectVersion>
     <DockerTargetOS>Linux</DockerTargetOS>
     <ProjectGuid>de770e74-9246-410a-877f-cc30928385e4</ProjectGuid>
-    <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
+    <DockerLaunchAction>None</DockerLaunchAction>
     <DockerServiceUrl>https://vmdeployment.hounsvad.dk</DockerServiceUrl>
     <DockerServiceName>backend</DockerServiceName>
   </PropertyGroup>
