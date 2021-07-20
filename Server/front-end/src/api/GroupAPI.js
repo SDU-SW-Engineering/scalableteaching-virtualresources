@@ -12,6 +12,21 @@ async function getGroups() {
         return {status: response.status,  body:await response.json()}})
 }
 
+async function getGroupsByCourseID(id) {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.group}/course/${id}`,{
+        method: "GET",
+        headers: new Headers({
+            'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
+            'Content-Type': 'application/json'
+        })
+    }).then(async response => {
+        try {
+            return {status: response.status,  body:await response.json()}
+        }catch{
+            return {status: response.status}
+        }})
+}
+
 async function getGroup(id) {
     return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.group}/${id}`,{
         method: "GET",
@@ -164,6 +179,7 @@ async function putMembersInGroup(Usernames, GroupID){
 
 export default {
     getGroups,
+    getGroupsByCourseID,
     getGroup,
     postGroup,
     putGroup,

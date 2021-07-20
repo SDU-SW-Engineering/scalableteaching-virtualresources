@@ -22,10 +22,9 @@
         <b-form-group label="Select or input class name">
           <b-form-select
               v-model="settings.classname.selected"
-              :options="getClassnameOptions"
-              :state="settings.classname.selected !== 'null'"
+              :options="classnameOptions"
+              :state="settings.classname.selected !== null"
           >
-            <b-form-select-option value="null">Class not on list</b-form-select-option>
           </b-form-select>
         </b-form-group>
       </b-col>
@@ -52,6 +51,7 @@
     <PerGroupMachineCreation
         v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 2"
         ref="PerGroupMachineCreation"
+        v-bind:classObject="settings.classname.selected"
     />
 
     <PerUserMachineCreation
@@ -59,10 +59,9 @@
         ref="PerUserMachineCreation"
     />
 
-    <EndOfCreationTable
-
-        ref="EndOfCreationTable"
-    />
+<!--    <EndOfCreationTable-->
+<!--        ref="EndOfCreationTable"-->
+<!--    />-->
 
   </div>
 </template>
@@ -72,9 +71,13 @@ import PerGroupMachineCreation from "@/components/MachineCreationComponents/PerG
 import PerUserMachineCreation from "@/components/MachineCreationComponents/PerUserMachineCreation";
 import MultipleSharedMachineCreation from "@/components/MachineCreationComponents/MultipleSharedMachineCreation";
 import EndOfCreationTable from "@/components/MachineCreationComponents/EndOfCreationTable";
+import CourseAPI from "@/api/CourseAPI";
 export default {
   name: "MachineCreation",
-  components: {EndOfCreationTable, MultipleSharedMachineCreation, PerUserMachineCreation, PerGroupMachineCreation},
+  components: {MultipleSharedMachineCreation, PerUserMachineCreation, PerGroupMachineCreation},
+  mounted() {
+    this.updateClassSelectionList()
+  },
   data() {
     return {
       creationStep: 0,
@@ -83,6 +86,7 @@ export default {
       /*isDisabled: false,*/
       resetBox: '',
       debugText: 'No Debug Text Yet',
+      classnameOptions: [],
       settings: {
         machinesToBeCreated: {
           items: [
@@ -108,8 +112,7 @@ export default {
           selected: 1,
         },
         classname: {
-          selected: "null",
-          newName: "",
+          selected: null,
         }
       },
 
@@ -155,10 +158,6 @@ export default {
       this.resetBox = "";
       this.settings.replicationDirective.selected = 0;
       this.settings.sharedMachineAmount.selected = 1;
-      this.settings.groupMachines.file = "";
-      this.settings.groupMachines.useFile = false;
-      this.settings.groupMachines.selectedGroups = [];
-      this.settings.userMachines.file = "";
       this.settings.classname = {
         selected: "null",
         newName: ""
@@ -167,31 +166,17 @@ export default {
     finish() {
       //TODO: Verify all data entered correctly and submit to backend.
     },
-    validateClassField(){
-
-    }
+    async updateClassSelectionList (){
+      this.classnameOptions = []
+      let retrievedClassNames = await CourseAPI.getCourses()
+      retrievedClassNames.body.forEach(course => {
+        this.classnameOptions.push({
+          value: course,
+          text: course.courseName
+        })
+      })
+    },
   },
-  computed: {
-    console: () => console,
-    getClassnameOptions() {
-      //TODO: Implement class return
-      return [
-        {text: "ONK", value: "ONK"},
-        {text: "ADT", value: "ADT"},
-        {text: "YAO", value: "YAO"},
-        {text: "MUU", value: "MUU"}
-      ]
-    },
-    getGroupNames() {
-      //TODO: Implement The return of groups
-      return [
-        {text: "Group 1", value: "411c4f02-04a0-45fb-ba3b-fbe50784f592"},
-        {text: "Group 2", value: "b3f5aaa7-8747-4c07-8f5b-3db6c833b90a"},
-        {text: "Group 3", value: "2dff4822-79b1-40ff-85b9-185d5439384b"},
-        {text: "Group 4", value: "734da026-013e-4b3c-9c35-62729fe60832"}
-      ];
-    },
-  }
 }
 
 </script>

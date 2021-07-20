@@ -1,13 +1,14 @@
 <template>
   <b-container id="PerUserMachineConfiguration">
     <!--Per User - Upload or create groups-->
-    <b-row align-content="center" id="PerUser_MachineName">
+    <b-row align-content="center" id="PerGroup_MachineName">
       <b-col md="11">
         <b-form-group>
           <b-form-input
-              v-model="userMachineSettings.machineNamingDirective"
+              v-model="settings.machineNamingDirective"
               placeholder="Enter the name for the machine."
               type="text"
+              :state="validateMachineName()"
           ></b-form-input> <!--TODO: Implement validation of input, and invalid feedback-->
         </b-form-group>
       </b-col>
@@ -23,7 +24,6 @@
               <br>&emsp;The number will be between 0(inclusive) and
               up to the number of machines created at once(exclusive)
             </dd>
-
             <dt>%s</dt>
             <dd>&emsp;Represents the current semester.<br/>
               &emsp;Will be presented as fx E21 or F21, where E21 would be fall 2021 and F21 for spring 2021.<br/>
@@ -31,53 +31,40 @@
               &emsp;The tag will denote a fall semester if created from July 01 to December 31.
             </dd>
 
-            <dt>%u</dt>
-            <dd>&emsp;Represents the username of the assigned user for the specific machine</dd>
+            <dt>%g</dt>
+            <dd>&emsp;Represents the groupname of the assigned user for the specific machine</dd>
 
           </dl>
         </b-popover>
       </b-col>
     </b-row>
-    <b-row align-content="center" id="PerUser_UsernamesAndGroups">
+
+    <b-row align-content="center" id="PerGroup_GroupNamesAndLinuxGroups">
       <b-col md="6">
-        <b-form-group label="Enter or upload list of usernames">
-          <b-form-textarea
-              id="textarea"
-              v-model="userMachineSettings.enteredUsersField"
-              placeholder="Enter a list of usernames separated by linebreaks."
-              rows="3"
-              max-rows="6"
-              v-if="!userMachineSettings.useUsersFile"
-              :key="userMachineSettings.useUsersFile"
-          ></b-form-textarea>
-          <b-form-file
-              v-if="userMachineSettings.useUsersFile"
-              :key="userMachineSettings.useUsersFile"
-              v-model="userMachineSettings.usersFile"
-              :state="Boolean(userMachineSettings.usersFile)"
-              accept="text/csv"
-              v-on:input="debugText=2"
-          ></b-form-file><!--TODO: Implement validation of users file on change of file-->
-
-          <b-form-radio-group
-              v-model="userMachineSettings.useUsersFile"
-              :options="userMachineSettings.useUsersFileOptions"
+        <b-form-group label="Select groups">
+          <b-form-select
+              :state="validateSelectedGroups()"
+              :options="groupSelectionOptions"
+              multiple
+              :select-size=3
+              v-model="settings.selectedGroups"
           >
-          </b-form-radio-group>
-
+            <!--            <b-form-select-option value=null>Select Groups</b-form-select-option>-->
+          </b-form-select>
         </b-form-group>
       </b-col>
       <b-col md="6">
-        <!--TODO: Allow for user, group, permission configuration-->
         <!--Per User: Enter Groups for machine that the user will be added to-->
         <b-form-group
             label="Enter list of linux groups">
           <b-form-textarea
               id="textarea"
-              v-model="userMachineSettings.groups"
-              placeholder="List of groups seperated by line breaks"
+              v-model="linuxGroupsField"
+              placeholder="List of groups separated by line breaks"
               rows="3"
               max-rows="6"
+              :state="validateGroups()"
+              lazy
           ></b-form-textarea>
         </b-form-group>
       </b-col>
@@ -90,10 +77,11 @@
         <b-form-group label="Enter list of additional personal package archives(PPA)">
           <b-form-textarea
               id="textarea"
-              v-model="userMachineSettings.ppa"
+              v-model="ppaField"
               placeholder="Enter list of PPAs separated by linebreaks."
               rows="3"
               max-rows="6"
+              :state="validatePPA()"
           ></b-form-textarea>
         </b-form-group>
       </b-col>
@@ -105,10 +93,11 @@
         <b-form-group label="Enter apt packages to install">
           <b-form-textarea
               id="textarea"
-              v-model="userMachineSettings.apt"
+              v-model="aptField"
               placeholder="Enter a list of apt package names separated by linebreaks."
               rows="3"
               max-rows="6"
+              :state="validateAPT()"
           ></b-form-textarea>
         </b-form-group>
       </b-col>
@@ -117,10 +106,11 @@
         <b-form-group label="Enter list of ports to forward">
           <b-form-textarea
               id="textarea"
-              v-model="userMachineSettings.portsField"
+              v-model="portsField"
               placeholder="Enter list of ports to forward, split by spaces, commas or linebreaks"
               rows="3"
               max-rows="6"
+              :state="validatePorts()"
           ></b-form-textarea>
         </b-form-group>
       </b-col>
@@ -129,61 +119,120 @@
 </template>
 
 <script>
+import GroupAPI from "@/api/GroupAPI";
+import StringHelper from "@/helpers/StringHelper";
+
 export default {
   name: "PerGroupMachineCreation",
+  props: ['classObject'],
   data() {
     return {
-      groupMachineSettings: {
-        portsValidation:null,
+      groupSelectionOptions: [],
+      portsField: "",
+      aptField: "",
+      linuxGroupsField: "",
+      ppaField: "",
+      settings: {
+        selectedGroups: [null],
+        portsValidation: null,
         enteredUsersField: "",
-        useUsersFile: true,
+        useGroupsFile: true,
         machineNamingDirective: "",
-        portsField: "",
         ports: [],
-        apt: "",
-        ppa: "",
-        groups: "",
+        apt: [],
+        ppa: [],
+        groups: [],
         useUsersFileOptions: [
           {text: "Enter usernames", value: false},
           {text: "Upload file containing usernames", value: true}
         ],
-        usersFile: null,
+        groupsFile: null,
       },
     }
   },
   methods: {
-    validateMachineName(){
-      let name = this.userMachineSettings.machineNamingDirective
-      let regex = /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/
+    validateMachineName() {
+      let name = this.settings.machineNamingDirective
+      let regex = /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/g
       return name.search(regex) !== -1
     },
-    validateUserFile(){
-
+    validateSelectedGroups() {
+      let groups = this.settings.selectedGroups
+      if (groups.length < 1 || (groups.length === 1 && groups[0] === null)) return false
     },
-    validateUserList(){
-
+    validateGroups() {
+      if (this.linuxGroupsField.length === 0) return null
+      let cleanTokens = StringHelper.breakStringIntoTokenList(this.linuxGroupsField)
+      for(let i = 0; i < cleanTokens.length; i++) {
+        console.log("i:", i, " token: ", cleanTokens[i], " Tokens:", cleanTokens)
+        let token = cleanTokens[i]
+        if (token.length > 0) {
+          if (token.match(/^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/) === null) {
+            return false
+          }
+        }
+      }
     },
-    validateGroups(){
-
+    validatePPA() {
+      this.settings.ppa = []
+      if (this.ppaField.length === 0) return null
+      let cleanTokens = StringHelper.breakStringIntoTokenList(this.ppaField)
+      for(let i = 0; i < cleanTokens.length; i++) {
+        let token = cleanTokens[i]
+        if (token.length > 0) {
+          if (token.match(/[(htps)?:/w.a-zA-Z0-9@%_+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&/=]*)/) === null) {
+            return false
+          }
+        }
+      }
+      return true
     },
-    validatePPA(){
-
+    validateAPT() {
+      this.settings.apt = []
+      if (this.aptField.length === 0) return null
+      let cleanTokens = StringHelper.breakStringIntoTokenList(this.aptField)
+      for(let i = 0; i < cleanTokens.length; i++) {
+        let token = cleanTokens[i]
+        if (token.length > 0) {
+          if (token.match(/[0-9A-Za-z,.+-]/) === null) {
+            return false
+          }
+        }
+      }
+      return true
     },
-    validateAPT(){
-
+    validatePorts() {
+      this.settings.ports = []
+      if (this.portsField.length === 0) return null
+      let cleanTokens = StringHelper.breakStringIntoTokenList(this.portsField)
+      for(let i = 0; i < cleanTokens.length; i++) {
+        let token = cleanTokens[i]
+        if (token.length > 0) {
+          if (!(token.match(/[0-9]{1,5}/) !== null && (parseInt(token) > 0 && parseInt(token) < 65535)))
+            return false
+        }
+      }
     },
-    validatePorts(){ //TODO: Implement functional validation for all fields
-      //   if(this.userMachineSettings.portsField.length === 0) return null
-      //   let initialSplit = this.userMachineSettings.portsField.split(/[\s,]/);
-      //   this.userMachineSettings.ports = []
-      //   for(let token in initialSplit){
-      //     token = token.replace(/[\s]/, "")
-      //     if(token.match(/[0-9]{1,5}/) != null && (parseInt(token) > 0 && parseInt(token) < 65535))
-      //       this.userMachineSettings.ports.push(parseInt(token))
-      //     else
-      //       return false
-      //   }
-      //   return true
+    async updateGroupList() {
+      this.groupSelectionOptions = []
+      this.settings.selectedGroups = []
+      let groupsResponse = await GroupAPI.getGroupsByCourseID(this.classObject.courseID)
+      if (groupsResponse.body === undefined) return
+
+      for(let i = 0; i < groupsResponse.length; i++) {
+        let group = groupsResponse[i]
+        this.groupSelectionOptions.push({
+          value: group,
+          text: group.groupName
+        })
+      }
+    }
+
+  },
+  watch: {
+    // eslint-disable-next-line no-unused-vars
+    classObject: function (newVal, oldVal) {
+      this.updateGroupList()
     }
   }
 }
