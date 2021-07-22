@@ -32,7 +32,7 @@
             </dd>
 
             <dt>%g</dt>
-            <dd>&emsp;Represents the groupname of the assigned user for the specific machine</dd>
+            <dd>&emsp;Represents the groupnumber of the assigned group for the specific machine</dd>
 
           </dl>
         </b-popover>
@@ -49,7 +49,7 @@
               :select-size=3
               v-model="settings.selectedGroups"
           >
-            <!--            <b-form-select-option value=null>Select Groups</b-form-select-option>-->
+
           </b-form-select>
         </b-form-group>
       </b-col>
@@ -60,11 +60,11 @@
           <b-form-textarea
               id="textarea"
               v-model="linuxGroupsField"
-              placeholder="List of groups separated by line breaks"
+              placeholder="List of groups separated by line breaks, commas or spaces."
               rows="3"
               max-rows="6"
               :state="validateGroups()"
-              lazy
+              debounce="300"
           ></b-form-textarea>
         </b-form-group>
       </b-col>
@@ -78,10 +78,11 @@
           <b-form-textarea
               id="textarea"
               v-model="ppaField"
-              placeholder="Enter list of PPAs separated by linebreaks."
+              placeholder="Enter list of PPAs separated by linebreaks, commas or spaces."
               rows="3"
               max-rows="6"
               :state="validatePPA()"
+              debounce="300"
           ></b-form-textarea>
         </b-form-group>
       </b-col>
@@ -94,10 +95,11 @@
           <b-form-textarea
               id="textarea"
               v-model="aptField"
-              placeholder="Enter a list of apt package names separated by linebreaks."
+              placeholder="Enter a list of apt package names separated by linebreaks, commas or spaces."
               rows="3"
               max-rows="6"
               :state="validateAPT()"
+              debounce="300"
           ></b-form-textarea>
         </b-form-group>
       </b-col>
@@ -107,10 +109,11 @@
           <b-form-textarea
               id="textarea"
               v-model="portsField"
-              placeholder="Enter list of ports to forward, split by spaces, commas or linebreaks"
+              placeholder="Enter list of ports to forward separated by linebreaks, commas or spaces."
               rows="3"
               max-rows="6"
               :state="validatePorts()"
+              debounce="300"
           ></b-form-textarea>
         </b-form-group>
       </b-col>
@@ -153,6 +156,7 @@ export default {
   methods: {
     validateMachineName() {
       let name = this.settings.machineNamingDirective
+      name = name.replace("%i", "00").replace("%g", "abcde01").replace("%s", "e01")
       let regex = /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/g
       return name.search(regex) !== -1
     },
@@ -164,7 +168,6 @@ export default {
       if (this.linuxGroupsField.length === 0) return null
       let cleanTokens = StringHelper.breakStringIntoTokenList(this.linuxGroupsField)
       for(let i = 0; i < cleanTokens.length; i++) {
-        console.log("i:", i, " token: ", cleanTokens[i], " Tokens:", cleanTokens)
         let token = cleanTokens[i]
         if (token.length > 0) {
           if (token.match(/^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/) === null) {
@@ -172,6 +175,7 @@ export default {
           }
         }
       }
+      return true
     },
     validatePPA() {
       this.settings.ppa = []
@@ -180,7 +184,7 @@ export default {
       for(let i = 0; i < cleanTokens.length; i++) {
         let token = cleanTokens[i]
         if (token.length > 0) {
-          if (token.match(/[(htps)?:/w.a-zA-Z0-9@%_+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&/=]*)/) === null) {
+          if (token.match(/^(ppa:([a-z-]+)\/[a-z-]+)$/) === null) {
             return false
           }
         }
@@ -194,7 +198,7 @@ export default {
       for(let i = 0; i < cleanTokens.length; i++) {
         let token = cleanTokens[i]
         if (token.length > 0) {
-          if (token.match(/[0-9A-Za-z,.+-]/) === null) {
+          if (token.match(/[0-9A-Za-z.+-]+/) === null) {
             return false
           }
         }
@@ -208,17 +212,17 @@ export default {
       for(let i = 0; i < cleanTokens.length; i++) {
         let token = cleanTokens[i]
         if (token.length > 0) {
-          if (!(token.match(/[0-9]{1,5}/) !== null && (parseInt(token) > 0 && parseInt(token) < 65535)))
+          if (!(token.match(/[0-9]{1,5}/) !== null && (parseInt(token) > 0 && parseInt(token) <= 65535)))
             return false
         }
       }
+      return true
     },
     async updateGroupList() {
       this.groupSelectionOptions = []
       this.settings.selectedGroups = []
       let groupsResponse = await GroupAPI.getGroupsByCourseID(this.classObject.courseID)
       if (groupsResponse.body === undefined) return
-
       for(let i = 0; i < groupsResponse.length; i++) {
         let group = groupsResponse[i]
         this.groupSelectionOptions.push({

@@ -43,19 +43,19 @@
       </b-col>
     </b-row>
 
-    <MultipleSharedMachineCreation
-        v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 1"
-        ref="MultipleSharedMachineCreation"
+    <SingleMachineCreation
+        v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 0"
+        ref="SingleMachineCreation"
     />
 
     <PerGroupMachineCreation
-        v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 2"
+        v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 1"
         ref="PerGroupMachineCreation"
         v-bind:classObject="settings.classname.selected"
     />
 
     <PerUserMachineCreation
-        v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 3"
+        v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 2"
         ref="PerUserMachineCreation"
     />
 
@@ -69,12 +69,12 @@
 <script>
 import PerGroupMachineCreation from "@/components/MachineCreationComponents/PerGroupMachineCreation";
 import PerUserMachineCreation from "@/components/MachineCreationComponents/PerUserMachineCreation";
-import MultipleSharedMachineCreation from "@/components/MachineCreationComponents/MultipleSharedMachineCreation";
 import EndOfCreationTable from "@/components/MachineCreationComponents/EndOfCreationTable";
 import CourseAPI from "@/api/CourseAPI";
+import SingleMachineCreation from "@/components/MachineCreationComponents/SingleMachineCreation";
 export default {
   name: "MachineCreation",
-  components: {MultipleSharedMachineCreation, PerUserMachineCreation, PerGroupMachineCreation},
+  components: {SingleMachineCreation, PerUserMachineCreation, PerGroupMachineCreation},
   mounted() {
     this.updateClassSelectionList()
   },
@@ -101,9 +101,8 @@ export default {
         replicationDirective: {
           options: [
             {text: "Single Machine", value: 0},
-            {text: "Multiple Shared", value: 1},
-            {text: "Per Group", value: 2},
-            {text: "Per User", value: 3},
+            {text: "Per Group", value: 1},
+            {text: "Per User", value: 2},
           ],
           selected: 0,
         },
