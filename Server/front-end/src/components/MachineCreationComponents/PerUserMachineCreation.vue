@@ -168,6 +168,20 @@ export default {
     }
   },
   methods: {
+    isValidAndComplete(){
+      let rv = true
+      rv = rv && this.validateMachineName()
+      rv = rv && this.validateUsers()
+      let portsValidity = this.validatePorts()
+      let groupsValidity = this.validateGroups()
+      let aptValidity = this.validateAPT()
+      let ppaValidity = this.validatePPA()
+      rv = rv && (portsValidity === null || portsValidity === true)
+      rv = rv && (groupsValidity === null || groupsValidity === true)
+      rv = rv && (aptValidity === null || aptValidity === true)
+      rv = rv && (ppaValidity === null || ppaValidity === true)
+      return rv
+    },
     validateMachineName(){
       let name = this.settings.machineNamingDirective
       name = name.replace("%i", "00").replace("%g", "abcde01").replace("%s", "e01")

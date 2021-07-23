@@ -3,21 +3,20 @@
     <!--Top of screen buttons-->
     <b-row>
       <b-col>
-        <b-button class="mb4 mr4" v-if="!advanced" :disabled="creationStep < 1" v-on:click="creationStep--">←
+        <b-button class="mb4 mr4" :disabled="creationStep < 1" v-on:click="creationStep--">←
         </b-button>
         <b-button class="mb4 mr2" variant="warning" v-on:click="resetVerification">Reset Machine Creation Forms
         </b-button>
-        <b-button class="mb4 mr2" variant="info" v-on:click="advanced = !advanced">Advanced Mode</b-button>
         <b-button class="mb4 mr2" v-if="creationStep===3" variant="primary" v-on:click="finish">Create Machines
         </b-button>
-        <b-button class="mb4 ml2" :disabled="creationStep >= availableCreationStep"
+        <b-button class="mb4 ml2" :disabled="!canNextCreationStep()"
                   v-on:click="creationStep++"
-                  v-if="!advanced">→
+        >→
         </b-button>
       </b-col>
     </b-row>
     <!--Class Name Selection And Input-->
-    <b-row v-if="creationStep===0 || advanced">
+    <b-row v-if="creationStep === 0">
       <b-col md="6" offset-md="3" align-self="center">
         <b-form-group label="Select or input class name">
           <b-form-select
@@ -30,7 +29,7 @@
       </b-col>
     </b-row>
     <!--Machine Replication Directive-->
-    <b-row v-if="(creationStep=== 1 || advanced)">
+    <b-row v-if="(creationStep === 1)">
       <b-col>
         <b-form-group label="Select replication directive">
           <b-form-radio-group
@@ -44,24 +43,26 @@
     </b-row>
 
     <SingleMachineCreation
-        v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 0"
+        v-if="creationStep === 2 && settings.replicationDirective.selected === 0"
         ref="SingleMachineCreation"
     />
 
     <PerGroupMachineCreation
-        v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 1"
+        v-if="creationStep === 2 && settings.replicationDirective.selected === 1"
         ref="PerGroupMachineCreation"
         v-bind:classObject="settings.classname.selected"
     />
 
     <PerUserMachineCreation
-        v-if="(creationStep === 2 || advanced) && settings.replicationDirective.selected === 2"
+        v-if="creationStep === 2 && settings.replicationDirective.selected === 2"
         ref="PerUserMachineCreation"
     />
 
-<!--    <EndOfCreationTable-->
-<!--        ref="EndOfCreationTable"-->
-<!--    />-->
+    <EndOfCreationTable
+        v-if="creationStep === 3"
+        ref="EndOfCreationTable"
+        v-bind:machinesToBeCreated="getMachinesToBeCreated()"
+    />
 
   </div>
 </template>
@@ -72,6 +73,7 @@ import PerUserMachineCreation from "@/components/MachineCreationComponents/PerUs
 import EndOfCreationTable from "@/components/MachineCreationComponents/EndOfCreationTable";
 import CourseAPI from "@/api/CourseAPI";
 import SingleMachineCreation from "@/components/MachineCreationComponents/SingleMachineCreation";
+
 export default {
   name: "MachineCreation",
   components: {SingleMachineCreation, PerUserMachineCreation, PerGroupMachineCreation},
@@ -81,21 +83,27 @@ export default {
   data() {
     return {
       creationStep: 0,
-      advanced: false,
-      availableCreationStep: 0,
-      /*isDisabled: false,*/
+      maxCreationStep: 3,
       resetBox: '',
       debugText: 'No Debug Text Yet',
       classnameOptions: [],
       settings: {
         machinesToBeCreated: {
           items: [
-              {machineName:'ONK-frhou18-01-E21', courseName: 'Onk Not Known', users: ['frhou18'], groups: ['sudo', 'onk'], ports: [1234, 8456], PPAs: ['ppa:kubuntu-ppa/staging-plasma'], APTs:['vim', 'git']}
+            {
+              machineName: 'ONK-frhou18-01-E21',
+              courseName: 'Onk Not Known',
+              users: ['frhou18'],
+              groups: ['sudo', 'onk'],
+              ports: [1234, 8456],
+              PPAs: ['ppa:kubuntu-ppa/staging-plasma'],
+              APTs: ['vim', 'git']
+            }
           ],
           fields: [
-              {key: 'machineName', label: 'Machine Name', sortable: true},
-              {key: 'users', label: 'Users', sortable: false},
-              {key: 'details', label: 'Details', sortable: false}
+            {key: 'machineName', label: 'Machine Name', sortable: true},
+            {key: 'users', label: 'Users', sortable: false},
+            {key: 'details', label: 'Details', sortable: false}
           ],
         },
         replicationDirective: {
@@ -104,7 +112,7 @@ export default {
             {text: "Per Group", value: 1},
             {text: "Per User", value: 2},
           ],
-          selected: 0,
+          selected: null,
         },
         sharedMachineAmount: {
           options: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
@@ -118,14 +126,32 @@ export default {
     }
   },
   methods: {
-    setAvailableCreationStep() {
-      if (this.availableCreationStep === 0 && this.settings.classname.selected !== "null") {
-        this.availableCreationStep = 2
+    canNextCreationStep() {
+      if (this.creationStep === 0 && this.settings.classname.selected !== null) return true
+      if (this.creationStep === 1 && this.settings.replicationDirective !== null) return true
+      if (this.creationStep === 2) return true
+    },
+    machineCustomizationValid() {
+      if (this.settings.replicationDirective.selected === 0) {
+        this.$refs.SingleMachineCreation.isValidAndComplete()
       }
-      if (this.availableCreationStep === 2) {
-        let a = 1
+      if (this.settings.replicationDirective.selected === 1) {
+        this.$refs.PerGroupMachineCreation.isValidAndComplete()
       }
-
+      if (this.settings.replicationDirective.selected === 2) {
+        this.$refs.PerUserMachineCreation.isValidAndComplete()
+      }
+    },
+    getMachinesToBeCreated() {
+      if (this.settings.replicationDirective.selected === 0) {
+        this.$refs.SingleMachineCreation.getMachinesToBeCreated()
+      }
+      if (this.settings.replicationDirective.selected === 1) {
+        this.$refs.PerGroupMachineCreation.getMachinesToBeCreated()
+      }
+      if (this.settings.replicationDirective.selected === 2) {
+        this.$refs.PerUserMachineCreation.getMachinesToBeCreated()
+      }
     },
     resetVerification() {
       //Reset forms
@@ -151,8 +177,7 @@ export default {
           })
     },
     resetFields() {
-      this.creationStep = 1;
-      this.advanced = false;
+      this.creationStep = 0;
       this.debugText = "No Debug Text Yet";
       this.resetBox = "";
       this.settings.replicationDirective.selected = 0;
@@ -165,7 +190,7 @@ export default {
     finish() {
       //TODO: Verify all data entered correctly and submit to backend.
     },
-    async updateClassSelectionList (){
+    async updateClassSelectionList() {
       this.classnameOptions = []
       let retrievedClassNames = await CourseAPI.getCourses()
       retrievedClassNames.body.forEach(course => {
