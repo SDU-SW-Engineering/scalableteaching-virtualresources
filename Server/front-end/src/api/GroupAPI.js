@@ -12,6 +12,21 @@ async function getGroups() {
         return {status: response.status,  body:await response.json()}})
 }
 
+async function getGroupsByCourseID(id) {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.group}/course/${id}`,{
+        method: "GET",
+        headers: new Headers({
+            'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
+            'Content-Type': 'application/json'
+        })
+    }).then(async response => {
+        try {
+            return {status: response.status,  body:await response.json()}
+        }catch{
+            return {status: response.status}
+        }})
+}
+
 async function getGroup(id) {
     return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.group}/${id}`,{
         method: "GET",
@@ -141,10 +156,30 @@ async function removeMemberFromGroup(UserUsername, GroupID) {
     }).then(response => response.status)
 }
 
+/**
+ *
+ * @param Usernames an array of usernames to make up the new members of a group
+ * @param GroupID the id of the group in question
+ * @returns {Promise<number>} status of request
+ */
+async function putMembersInGroup(Usernames, GroupID){
+    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.groupAssignment}/update`,{
+        method: "PUT",
+        headers: new Headers({
+            'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
+            'Content-Type': 'application/json'
+        }),
+        body: JSON.stringify({
+            GroupID: GroupID,
+            Usernames: Usernames,
+        })
+    }).then(resp => resp.status)
+}
 
 
 export default {
     getGroups,
+    getGroupsByCourseID,
     getGroup,
     postGroup,
     putGroup,
@@ -153,4 +188,5 @@ export default {
     getGroupMembers,
     removeMemberFromGroup,
     addMemberToGroup,
+    putMembersInGroup,
 }

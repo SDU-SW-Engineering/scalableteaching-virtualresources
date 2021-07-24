@@ -55,7 +55,17 @@
 
 <script>
 export default {
-name: "EndOfCreationTable"
+  name: "EndOfCreationTable",
+  data() {
+    return {
+      settings: {
+        machinesToBeCreated: {
+          items: [],
+          fields: [],
+        },
+      }
+    }
+  }
 }
 </script>
 

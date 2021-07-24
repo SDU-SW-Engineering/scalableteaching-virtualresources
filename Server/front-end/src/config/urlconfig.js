@@ -10,6 +10,7 @@ const groupAssignment = "/api/groupassignment"
 const login = "/api/login"
 const loginTokenReturnString = protocol + "%3A%2F%2F" + base + "%2FLogin"
 
+
 export default {
     port,
     protocol,
@@ -21,5 +22,5 @@ export default {
     loginTokenReturnString,
     course,
     group,
-    groupAssignment
+    groupAssignment,
 }
