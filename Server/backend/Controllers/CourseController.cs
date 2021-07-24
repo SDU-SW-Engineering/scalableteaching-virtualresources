@@ -29,7 +29,9 @@ namespace ScalableTeaching.Controllers
         [Authorize(Policy = "ManagerLevel")]
         public async Task<ActionResult<IEnumerable<CourseDTO>>> GetCourses()
         {
-            return await _context.Courses.AsQueryable().Cast<CourseDTO>().ToListAsync();
+            var courses = await _context.Courses.Where(course => course.UserUsername == getUsername()).Cast<CourseDTO>().ToListAsync();
+
+            return courses.Count > 0 ? Ok(courses) : NoContent() ;
         }
 
         // GET: api/Course/5

@@ -30,14 +30,16 @@ namespace ScalableTeaching.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Group>>> GetGroups()
         {
-            var groups = await Task.Factory.StartNew< IEnumerable < Group >>(() => _context.Groups.Where(group => group.Course.User.Username == GetUsername()));
-            var returnList = new List<GroupOutDTO>();
-            foreach (var group in groups)
-            {
-                returnList.Add((GroupOutDTO)group);
-            } 
-            return groups.Any() ? Ok(returnList) : NoContent();
+            var returnList = await _context.Groups.Where(group => group.Course.UserUsername == GetUsername()).Cast<GroupOutDTO>().ToListAsync();
+            return returnList.Count > 0 ? Ok(returnList) : NoContent();
+        }
 
+        // GET: api/group - Return all groups for a given user
+        [HttpGet("course/{id}")]
+        public async Task<ActionResult<IEnumerable<Group>>> GetGroups(Guid id)
+        {
+            var returnList = await _context.Groups.Where(group => group.Course.UserUsername == GetUsername() && group.CourseID == id).Cast<GroupOutDTO>().ToListAsync();
+            return returnList.Count > 0 ? Ok(returnList) : NoContent();
         }
 
         // GET: api/group/5 - Return requested group by id

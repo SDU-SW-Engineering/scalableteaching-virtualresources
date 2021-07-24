@@ -10,6 +10,8 @@ using ScalableTeaching.Models;
 using Microsoft.AspNetCore.Authorization;
 using ScalableTeaching.DTO;
 using Serilog;
+using ScalableTeaching.Helpers;
+using System.Security.Cryptography;
 
 namespace ScalableTeaching.Controllers
 {
@@ -78,6 +80,15 @@ namespace ScalableTeaching.Controllers
             _context.GroupAssignments.RemoveRange((await groupQueriable.FirstAsync()).GroupAssignments);
             foreach(var username in dto.Usernames)
             {
+                if(! await _context.Users.Where(u => u.Username == username).AnyAsync())
+                {
+                    await _context.Users.AddAsync(new User()
+                    {
+                        Username = username,
+                        AccountType = Models.User.UserType.User,
+                        UserPrivateKey = SSHKeyHelper.ExportKeyAsPEM(RSA.Create(2048))
+                    });
+                }
                 await _context.GroupAssignments
                     .AddAsync(new GroupAssignment() { GroupID = dto.GroupID, UserUsername = username });
             }
