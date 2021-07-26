@@ -65,6 +65,17 @@ export default {
         },
       }
     }
+  },
+  methods: {
+    populateMachines(machines) {
+      //TODO: Populate the list of
+    },
+    clearMachines() {
+      //TODO: Clear the list of machines
+    },
+    getMachinesToBeCreated() {
+      //TODO: Return machines that are not de-selected in the table
+    }
   }
 }
 </script>

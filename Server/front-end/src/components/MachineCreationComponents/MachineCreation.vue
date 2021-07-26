@@ -10,7 +10,7 @@
         <b-button class="mb4 mr2" v-if="creationStep===3" variant="primary" v-on:click="finish">Create Machines
         </b-button>
         <b-button class="mb4 ml2" :disabled="!canNextCreationStep()"
-                  v-on:click="creationStep++"
+                  v-on:click="nextCreationStep"
         >→
         </b-button>
       </b-col>
@@ -61,7 +61,6 @@
     <EndOfCreationTable
         v-if="creationStep === 3"
         ref="EndOfCreationTable"
-        v-bind:machinesToBeCreated="getMachinesToBeCreated()"
     />
 
   </div>
@@ -76,7 +75,7 @@ import SingleMachineCreation from "@/components/MachineCreationComponents/Single
 
 export default {
   name: "MachineCreation",
-  components: {SingleMachineCreation, PerUserMachineCreation, PerGroupMachineCreation},
+  components: {SingleMachineCreation, PerUserMachineCreation, PerGroupMachineCreation, EndOfCreationTable},
   mounted() {
     this.updateClassSelectionList()
   },
@@ -126,31 +125,38 @@ export default {
     }
   },
   methods: {
+    nextCreationStep() {
+      if (this.creationStep < 2) this.creationStep++
+      else if (this.creationStep === 2 && this.machineCustomizationValid()) {
+        this.$refs.EndOfCreationTable.populateMachines(this.getMachinesToBeCreated())
+        this.creationStep++
+      }
+    },
     canNextCreationStep() {
       if (this.creationStep === 0 && this.settings.classname.selected !== null) return true
-      if (this.creationStep === 1 && this.settings.replicationDirective !== null) return true
+      if (this.creationStep === 1 && this.settings.replicationDirective.selected !== null) return true
       if (this.creationStep === 2) return true
     },
     machineCustomizationValid() {
       if (this.settings.replicationDirective.selected === 0) {
-        this.$refs.SingleMachineCreation.isValidAndComplete()
+        return this.$refs.SingleMachineCreation.isValidAndComplete()
       }
       if (this.settings.replicationDirective.selected === 1) {
-        this.$refs.PerGroupMachineCreation.isValidAndComplete()
+        return this.$refs.PerGroupMachineCreation.isValidAndComplete()
       }
       if (this.settings.replicationDirective.selected === 2) {
-        this.$refs.PerUserMachineCreation.isValidAndComplete()
+        return this.$refs.PerUserMachineCreation.isValidAndComplete()
       }
     },
     getMachinesToBeCreated() {
       if (this.settings.replicationDirective.selected === 0) {
-        this.$refs.SingleMachineCreation.getMachinesToBeCreated()
+        return this.$refs.SingleMachineCreation.getMachinesToBeCreated()
       }
       if (this.settings.replicationDirective.selected === 1) {
-        this.$refs.PerGroupMachineCreation.getMachinesToBeCreated()
+        return this.$refs.PerGroupMachineCreation.getMachinesToBeCreated()
       }
       if (this.settings.replicationDirective.selected === 2) {
-        this.$refs.PerUserMachineCreation.getMachinesToBeCreated()
+        return this.$refs.PerUserMachineCreation.getMachinesToBeCreated()
       }
     },
     resetVerification() {
@@ -188,7 +194,8 @@ export default {
       }
     },
     finish() {
-      //TODO: Verify all data entered correctly and submit to backend.
+      let machinesToBeCreated = this.$refs.EndOfCreationTable.getMachinesToBeCreated()
+      //TODO: Make call to backend
     },
     async updateClassSelectionList() {
       this.classnameOptions = []
