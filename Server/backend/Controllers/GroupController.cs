@@ -28,7 +28,7 @@ namespace ScalableTeaching.Controllers
 
         // GET: api/group - Return all groups for a given user
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Group>>> GetGroups()
+        public async Task<ActionResult<IEnumerable<GroupOutDTO>>> GetGroups()
         {
             var returnList = await _context.Groups.Where(group => group.Course.UserUsername == GetUsername()).Cast<GroupOutDTO>().ToListAsync();
             return returnList.Count > 0 ? Ok(returnList) : NoContent();
@@ -36,7 +36,7 @@ namespace ScalableTeaching.Controllers
 
         // GET: api/group - Return all groups for a given user
         [HttpGet("course/{id}")]
-        public async Task<ActionResult<IEnumerable<Group>>> GetGroups(Guid id)
+        public async Task<ActionResult<IEnumerable<GroupOutDTO>>> GetGroups(Guid id)
         {
             var returnList = await _context.Groups.Where(group => group.Course.UserUsername == GetUsername() && group.CourseID == id).Cast<GroupOutDTO>().ToListAsync();
             return returnList.Count > 0 ? Ok(returnList) : NoContent();
@@ -89,7 +89,7 @@ namespace ScalableTeaching.Controllers
 
         // POST: api/group
         [HttpPost]
-        public async Task<ActionResult<Group>> PostGroup(GroupDTO dto)
+        public async Task<ActionResult<GroupOutDTO>> PostGroup(GroupDTO dto)
         {
             //Validate the course
             if(!_context.Courses.Any(course => course.User.Username == GetUsername() && course.CourseID == dto.CourseID)) return BadRequest();
@@ -100,11 +100,16 @@ namespace ScalableTeaching.Controllers
             }
             else
             {
+                var groupsInCourse = await _context.Groups.Where(group => group.CourseID == dto.CourseID).ToListAsync();
+                int maxIndex = 0;
+                if (groupsInCourse.Count >= 1) maxIndex = groupsInCourse.Max((group) => { return group.GroupIndex; });
+
                 var group = new Group()
                 {
                     GroupName = dto.GroupName,
                     CourseID = dto.CourseID,
-                    GroupID = Guid.NewGuid()  
+                    GroupID = Guid.NewGuid(),
+                    GroupIndex = maxIndex+1
                 };
                 _context.Groups.Add(group);
                 await _context.SaveChangesAsync();
