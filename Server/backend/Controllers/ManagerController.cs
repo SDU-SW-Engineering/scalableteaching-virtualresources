@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ScalableTeaching.Data;
+using ScalableTeaching.DTO;
 using ScalableTeaching.Helpers;
 using ScalableTeaching.Models;
 using System.Collections.Generic;
@@ -27,10 +28,11 @@ namespace ScalableTeaching.Controllers
         // GET: api/Manager
         // Returns all people of manager level
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<ManagerReturnDTO>>> GetUsers()
         {
 
-            return await _context.Users.Where(user => user.AccountType.Equals(Models.User.UserType.Manager)).ToListAsync();
+            return await _context.Users.Where(user => user.AccountType.Equals(Models.User.UserType.Manager))
+                .Cast<ManagerReturnDTO>().ToListAsync();
         }
 
         // POST: api/Manager
