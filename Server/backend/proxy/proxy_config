@@ -32,7 +32,7 @@ http {
             client_max_body_size 4096M;
         }
         location / {
-            proxy_pass http://192.168.27.70:8080;
+            proxy_pass http://172.25.120.143:8080;
         }
         location /swagger {
             proxy_pass https://backend/swagger;

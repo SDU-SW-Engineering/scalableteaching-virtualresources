@@ -1,5 +1,5 @@
-﻿using System;
-using CookComputing.XmlRpc;
+﻿using CookComputing.XmlRpc;
+using System;
 
 namespace ScalableTeaching.OpenNebula.XmlRpcInterfaces
 {

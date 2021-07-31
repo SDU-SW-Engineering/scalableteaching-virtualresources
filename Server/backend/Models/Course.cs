@@ -31,7 +31,7 @@ namespace ScalableTeaching.Models
 
         public static (bool, string) Validate(string UserUsername, string CourseName, string ShortCourseName, string SDUCourseID)
         {
-            if (UserUsername == null ) return (false, "UserUsername null");
+            if (UserUsername == null) return (false, "UserUsername null");
             if (CourseName == null) return (false, "CourseName null");
             if (ShortCourseName == null) return (false, "ShortCourseName null");
             if (SDUCourseID == null) return (false, "SDUCourseID null");

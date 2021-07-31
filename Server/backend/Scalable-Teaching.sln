@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backend", "Backend.csproj",
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{DE770E74-9246-410A-877F-CC30928385E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XML-RPC-Test", "..\XML-RPC-Test\XML-RPC-Test.csproj", "{BB387DB6-5164-45E6-A25D-7525B53D4654}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{DE770E74-9246-410A-877F-CC30928385E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DE770E74-9246-410A-877F-CC30928385E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DE770E74-9246-410A-877F-CC30928385E4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BB387DB6-5164-45E6-A25D-7525B53D4654}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BB387DB6-5164-45E6-A25D-7525B53D4654}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BB387DB6-5164-45E6-A25D-7525B53D4654}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BB387DB6-5164-45E6-A25D-7525B53D4654}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

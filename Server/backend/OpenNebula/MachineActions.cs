@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace ScalableTeaching.OpenNebula
 {
@@ -71,7 +68,7 @@ namespace ScalableTeaching.OpenNebula
         /// </summary>
         public static readonly string RESUME = "resume";
 
-        private static List<string> _ListOfActions = new() { TERMINATE_HARD, TERMINATE, UNDEPLOY_HARD, UNDEPLOY, POWEROFF_HARD, POWEROFF, REBOOT_HARD, REBOOT, HOLD, RELEASE, STOP, SUSPEND, RESUME };
+        private static readonly List<string> _ListOfActions = new() { TERMINATE_HARD, TERMINATE, UNDEPLOY_HARD, UNDEPLOY, POWEROFF_HARD, POWEROFF, REBOOT_HARD, REBOOT, HOLD, RELEASE, STOP, SUSPEND, RESUME };
         /// <summary>
         /// List of actions that can be performed on virtual machines
         /// </summary>

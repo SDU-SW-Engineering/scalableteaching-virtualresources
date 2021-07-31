@@ -1,18 +1,19 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ScalableTeaching.Models
 {
     public class User
     {
         [Key]
-        public String Username { get; set; }
-        public String Mail { get; set; }
+        public string Username { get; set; }
+        public string Surname { get; set; }
+        public string GeneralName { get; set; }
+        public string Mail { get; set; }
         [Required]
         public UserType AccountType { get; set; }
-        [Required] 
+        [Required]
         public string UserPrivateKey { get; set; }
-        
+
 
         public enum UserType
         {
@@ -20,8 +21,8 @@ namespace ScalableTeaching.Models
             Manager,
             Administrator,
         }
-        
+
     }
 
-    
+
 }

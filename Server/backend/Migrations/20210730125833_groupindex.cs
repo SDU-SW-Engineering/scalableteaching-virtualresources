@@ -1,9 +1,9 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 namespace ScalableTeaching.Migrations
 {
-    public partial class initial : Migration
+    public partial class groupindex : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -48,6 +48,7 @@ namespace ScalableTeaching.Migrations
                 {
                     GroupID = table.Column<Guid>(type: "uuid", nullable: false),
                     GroupName = table.Column<string>(type: "text", nullable: true),
+                    GroupIndex = table.Column<int>(type: "integer", nullable: false),
                     CourseID = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>

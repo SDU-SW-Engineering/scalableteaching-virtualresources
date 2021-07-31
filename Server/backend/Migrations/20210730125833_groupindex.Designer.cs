@@ -10,18 +10,18 @@ using ScalableTeaching.Data;
 namespace ScalableTeaching.Migrations
 {
     [DbContext(typeof(VmDeploymentContext))]
-    [Migration("20210429145048_initial")]
-    partial class initial
+    [Migration("20210730125833_groupindex")]
+    partial class groupindex
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.3")
+                .HasAnnotation("ProductVersion", "5.0.6")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-            modelBuilder.Entity("backend.Models.Course", b =>
+            modelBuilder.Entity("ScalableTeaching.Models.Course", b =>
                 {
                     b.Property<Guid>("CourseID")
                         .ValueGeneratedOnAdd()
@@ -53,7 +53,7 @@ namespace ScalableTeaching.Migrations
                     b.ToTable("Courses");
                 });
 
-            modelBuilder.Entity("backend.Models.Group", b =>
+            modelBuilder.Entity("ScalableTeaching.Models.Group", b =>
                 {
                     b.Property<Guid>("GroupID")
                         .ValueGeneratedOnAdd()
@@ -61,6 +61,9 @@ namespace ScalableTeaching.Migrations
 
                     b.Property<Guid>("CourseID")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("GroupIndex")
+                        .HasColumnType("integer");
 
                     b.Property<string>("GroupName")
                         .HasColumnType("text");
@@ -72,7 +75,7 @@ namespace ScalableTeaching.Migrations
                     b.ToTable("Groups");
                 });
 
-            modelBuilder.Entity("backend.Models.GroupAssignment", b =>
+            modelBuilder.Entity("ScalableTeaching.Models.GroupAssignment", b =>
                 {
                     b.Property<Guid>("GroupID")
                         .HasColumnType("uuid");
@@ -87,7 +90,7 @@ namespace ScalableTeaching.Migrations
                     b.ToTable("GroupAssignments");
                 });
 
-            modelBuilder.Entity("backend.Models.LocalForward", b =>
+            modelBuilder.Entity("ScalableTeaching.Models.LocalForward", b =>
                 {
                     b.Property<Guid>("MachineID")
                         .HasColumnType("uuid");
@@ -100,7 +103,7 @@ namespace ScalableTeaching.Migrations
                     b.ToTable("LocalForwards");
                 });
 
-            modelBuilder.Entity("backend.Models.Machine", b =>
+            modelBuilder.Entity("ScalableTeaching.Models.Machine", b =>
                 {
                     b.Property<Guid>("MachineID")
                         .ValueGeneratedOnAdd()
@@ -129,7 +132,7 @@ namespace ScalableTeaching.Migrations
                     b.ToTable("Machines");
                 });
 
-            modelBuilder.Entity("backend.Models.MachineAssignment", b =>
+            modelBuilder.Entity("ScalableTeaching.Models.MachineAssignment", b =>
                 {
                     b.Property<Guid>("MachineID")
                         .HasColumnType("uuid");
@@ -152,7 +155,7 @@ namespace ScalableTeaching.Migrations
                     b.ToTable("MachineAssignments");
                 });
 
-            modelBuilder.Entity("backend.Models.User", b =>
+            modelBuilder.Entity("ScalableTeaching.Models.User", b =>
                 {
                     b.Property<string>("Username")
                         .HasColumnType("text");
@@ -172,9 +175,9 @@ namespace ScalableTeaching.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("backend.Models.Course", b =>
+            modelBuilder.Entity("ScalableTeaching.Models.Course", b =>
                 {
-                    b.HasOne("backend.Models.User", "User")
+                    b.HasOne("ScalableTeaching.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserUsername")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -183,9 +186,9 @@ namespace ScalableTeaching.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("backend.Models.Group", b =>
+            modelBuilder.Entity("ScalableTeaching.Models.Group", b =>
                 {
-                    b.HasOne("backend.Models.Course", "Course")
+                    b.HasOne("ScalableTeaching.Models.Course", "Course")
                         .WithMany()
                         .HasForeignKey("CourseID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -194,15 +197,15 @@ namespace ScalableTeaching.Migrations
                     b.Navigation("Course");
                 });
 
-            modelBuilder.Entity("backend.Models.GroupAssignment", b =>
+            modelBuilder.Entity("ScalableTeaching.Models.GroupAssignment", b =>
                 {
-                    b.HasOne("backend.Models.Group", "Group")
+                    b.HasOne("ScalableTeaching.Models.Group", "Group")
                         .WithMany("GroupAssignments")
                         .HasForeignKey("GroupID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("backend.Models.User", "User")
+                    b.HasOne("ScalableTeaching.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserUsername")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -213,9 +216,9 @@ namespace ScalableTeaching.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("backend.Models.LocalForward", b =>
+            modelBuilder.Entity("ScalableTeaching.Models.LocalForward", b =>
                 {
-                    b.HasOne("backend.Models.Machine", "Machine")
+                    b.HasOne("ScalableTeaching.Models.Machine", "Machine")
                         .WithMany()
                         .HasForeignKey("MachineID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -224,15 +227,15 @@ namespace ScalableTeaching.Migrations
                     b.Navigation("Machine");
                 });
 
-            modelBuilder.Entity("backend.Models.Machine", b =>
+            modelBuilder.Entity("ScalableTeaching.Models.Machine", b =>
                 {
-                    b.HasOne("backend.Models.Course", "Course")
+                    b.HasOne("ScalableTeaching.Models.Course", "Course")
                         .WithMany()
                         .HasForeignKey("CourseID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("backend.Models.User", "User")
+                    b.HasOne("ScalableTeaching.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserUsername")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -243,19 +246,19 @@ namespace ScalableTeaching.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("backend.Models.MachineAssignment", b =>
+            modelBuilder.Entity("ScalableTeaching.Models.MachineAssignment", b =>
                 {
-                    b.HasOne("backend.Models.Group", "Group")
+                    b.HasOne("ScalableTeaching.Models.Group", "Group")
                         .WithMany()
                         .HasForeignKey("GroupID");
 
-                    b.HasOne("backend.Models.Machine", "Machine")
+                    b.HasOne("ScalableTeaching.Models.Machine", "Machine")
                         .WithMany()
                         .HasForeignKey("MachineID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("backend.Models.User", "User")
+                    b.HasOne("ScalableTeaching.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserUsername")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -268,7 +271,7 @@ namespace ScalableTeaching.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("backend.Models.Group", b =>
+            modelBuilder.Entity("ScalableTeaching.Models.Group", b =>
                 {
                     b.Navigation("GroupAssignments");
                 });
