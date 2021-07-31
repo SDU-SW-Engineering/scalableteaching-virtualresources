@@ -5,7 +5,7 @@
       <b-col md="11">
         <b-form-group>
           <b-form-input
-              v-model="settings.machineNamingDirective"
+              v-model="machineNamingDirective"
               placeholder="Enter the name for the machine."
               type="text"
               :state="validateMachineName()"
@@ -131,19 +131,26 @@ export default {
         {text: "Enter usernames", value: false},
         {text: "Upload file containing usernames", value: true}
       ],
-      settings: {
-        machineNamingDirective: "",
-        ports: [],
-        apt: [],
-        ppa: [],
-        groups: [],
-        users: [],
-      },
+      machineNamingDirective: "",
     }
   },
   methods: {
     getMachinesToBeCreated(){
-
+      //Machines to be returned
+      let machines = []
+      //Intermediate variable extraction
+      let ports = []
+      StringHelper.breakStringIntoTokenList(this.portsField).forEach(portToken => ports.push(parseInt(portToken)))
+      //Machine list population
+      machines.push({
+        hostname: this.machineNamingDirective,
+        users: StringHelper.breakStringIntoTokenList(this.useUsersFile ? this.usersFile : this.enteredUsersField),
+        apt: StringHelper.breakStringIntoTokenList(this.aptField),
+        ppa: StringHelper.breakStringIntoTokenList(this.ppaField),
+        ports: ports,
+        linuxGroups: StringHelper.breakStringIntoTokenList(this.linuxGroupsField)
+      });
+      return machines
     },
     isValidAndComplete(){
       let rv = true
@@ -160,7 +167,7 @@ export default {
       return rv
     },
     validateMachineName(){
-      let name = this.settings.machineNamingDirective
+      let name = this.machineNamingDirective
       name = name.replace("%i", "00").replace("%g", "abcde01").replace("%s", "e01")
       let regex = /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/
       return name.search(regex) !== -1
