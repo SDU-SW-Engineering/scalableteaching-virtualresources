@@ -7,6 +7,6 @@ namespace ScalableTeaching.DTO
     {
         public string GroupName { get; set; }
         public Guid CourseID { get; set; }
-        public List<string> Users{ get; set; }
+        public List<string> Users { get; set; }
     }
 }

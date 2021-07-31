@@ -1,5 +1,3 @@
-using ScalableTeaching.Data;
-using ScalableTeaching.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,10 +7,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using static ScalableTeaching.Models.User.UserType;
-
-using System;
+using ScalableTeaching.Data;
+using ScalableTeaching.Helpers;
 using Serilog;
+using System;
+using static ScalableTeaching.Models.User.UserType;
 
 namespace ScalableTeaching
 {
@@ -63,7 +62,7 @@ namespace ScalableTeaching
                 options.AddPolicy("ManagerLevel", policy => policy.RequireClaim("account_type", nameof(Manager), nameof(Administrator)));
                 options.AddPolicy("UserLevel", policy => policy.RequireClaim("account_type", nameof(User), nameof(Manager), nameof(Administrator)));
             });
-            
+
 
             services.AddSingleton<IConfiguration>(Configuration);
             services.AddScoped<SshConfigBuilder>();

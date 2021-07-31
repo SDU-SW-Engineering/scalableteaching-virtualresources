@@ -11,7 +11,7 @@ namespace ScalableTeaching.Models
         public string Name { get; set; }
         public string HostName { get; set; }
         [Required]
-        public string UserUsername  { get; set; }
+        public string UserUsername { get; set; }
         [Required]
         public Guid CourseID { get; set; }
 

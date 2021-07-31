@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ScalableTeaching.Data;
-using ScalableTeaching.Models;
-using Microsoft.AspNetCore.Authorization;
-using ScalableTeaching.Helpers;
 using ScalableTeaching.DTO;
+using ScalableTeaching.Helpers;
+using ScalableTeaching.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace ScalableTeaching.Controllers
 {
@@ -48,7 +48,9 @@ namespace ScalableTeaching.Controllers
         {
             var foundGroup = await _context.Groups.Where(group => group.GroupID == id && group.Course.User.Username == GetUsername()).FirstAsync();
 
+#pragma warning disable IDE0029 // Use coalesce expression - Suppressed due to ignoronius prompt. Line is incompatible with the operator.
             return foundGroup == null ? NotFound() : foundGroup;
+#pragma warning restore IDE0029 // Use coalesce expression
         }
 
         // PUT: api/group/5
@@ -65,7 +67,7 @@ namespace ScalableTeaching.Controllers
             {
                 var group = await _context.Groups.FindAsync(id);
                 group.GroupName = dto.GroupName;
-                _context.Entry(group).State = EntityState.Modified;
+                _context.Groups.Update(group);
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -92,7 +94,7 @@ namespace ScalableTeaching.Controllers
         public async Task<ActionResult<GroupOutDTO>> PostGroup(GroupDTO dto)
         {
             //Validate the course
-            if(!_context.Courses.Any(course => course.User.Username == GetUsername() && course.CourseID == dto.CourseID)) return BadRequest();
+            if (!_context.Courses.Any(course => course.User.Username == GetUsername() && course.CourseID == dto.CourseID)) return BadRequest();
             //Validate the group
             if (_context.Groups.Any(group => group.GroupName == dto.GroupName))
             {
@@ -109,9 +111,9 @@ namespace ScalableTeaching.Controllers
                     GroupName = dto.GroupName,
                     CourseID = dto.CourseID,
                     GroupID = Guid.NewGuid(),
-                    GroupIndex = maxIndex+1
+                    GroupIndex = maxIndex + 1
                 };
-                _context.Groups.Add(group);
+                await _context.Groups.AddAsync(group);
                 await _context.SaveChangesAsync();
 
                 return CreatedAtAction("GetGroup", new { id = @group.GroupID }, @group);
@@ -183,7 +185,7 @@ namespace ScalableTeaching.Controllers
             await _context.SaveChangesAsync();
 
             var returnedAssignments = new List<GroupAssignmentDTO>();
-            foreach(var assignment in groupAssignments)
+            foreach (var assignment in groupAssignments)
             {
                 returnedAssignments.Add(assignment);
             }

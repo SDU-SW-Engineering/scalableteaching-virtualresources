@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using ScalableTeaching.OpenNebula.Models;
+﻿using ScalableTeaching.OpenNebula.Models;
+using System.Collections.Generic;
 
 namespace ScalableTeaching.OpenNebula
 {

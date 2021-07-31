@@ -4,16 +4,14 @@ using ScalableTeaching.OpenNebula.Models;
 using ScalableTeaching.OpenNebula.XmlRpcInterfaces;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ScalableTeaching.OpenNebula
 {
     public class OpenNebulaAccessor : IOpenNebulaAccessor
     {
-        private IVmManagement VmManagementProxy;
-        private IVmTemplateManagement VmTemplateManagementProxy;
-        private string _Session;
+        private readonly IVmManagement VmManagementProxy;
+        private readonly IVmTemplateManagement VmTemplateManagementProxy;
+        private readonly string _Session;
 
 
         public OpenNebulaAccessor(string ServerUrl, string Session)

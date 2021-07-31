@@ -1,7 +1,7 @@
-﻿using System;
+﻿using ScalableTeaching.OpenNebula.Models;
+using System;
 using System.Collections.Generic;
 using System.Xml;
-using ScalableTeaching.OpenNebula.Models;
 
 namespace ScalableTeaching.OpenNebula.Containers
 {
@@ -13,7 +13,7 @@ namespace ScalableTeaching.OpenNebula.Containers
         {
             XmlDocument ResultDocument;
             ResultDocument = GetCleanXmlDocument(input);
-            
+
             XmlNodeList VmTemplateNodes = ResultDocument.GetElementsByTagName("VM");
 
             foreach (XmlNode VmNode in VmTemplateNodes)

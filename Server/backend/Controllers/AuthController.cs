@@ -1,19 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
-using ScalableTeaching.DTO;
-using ScalableTeaching.Helpers;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using ScalableTeaching.Data;
-using System.Text.Json;
+using ScalableTeaching.DTO;
+using ScalableTeaching.Helpers;
 using ScalableTeaching.Models;
-using Microsoft.AspNetCore.Authorization;
+using System;
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace ScalableTeaching.Controllers
 {
     [Route("/api/login")]
-    [ApiController]    
+    [ApiController]
     public class AuthController : ControllerBase
     {
         private readonly VmDeploymentContext _context;
@@ -31,13 +31,15 @@ namespace ScalableTeaching.Controllers
             try
             {
                 UserDTO user = await SSOHelper.GetSSOData(tokendata);
-                User databaseUserReturn = _context.Users.Find(user.Username);
+                User databaseUserReturn = await _context.Users.FindAsync(user.Username);
                 if (databaseUserReturn == null)
                 {
                     _context.Users.Add(new User()
                     {
                         AccountType = Models.User.UserType.User,
                         Mail = user.Mail,
+                        GeneralName = user.Gn,
+                        Surname = user.Sn,
                         Username = user.Username,
                         UserPrivateKey = SSHKeyHelper.ExportKeyAsPEM(RSA.Create(2048))
                     });
@@ -47,10 +49,13 @@ namespace ScalableTeaching.Controllers
                 else
                 {
                     if (databaseUserReturn.Mail == null) databaseUserReturn.Mail = user.Mail;
+                    if (databaseUserReturn.GeneralName == null) databaseUserReturn.GeneralName = user.Gn;
+                    if (databaseUserReturn.Surname == null) databaseUserReturn.Surname = user.Sn;
+                    _context.Users.Update(databaseUserReturn);
                     await _context.SaveChangesAsync();
                     user.AccountType = databaseUserReturn.AccountType.ToString();
                 }
-                
+
                 var response = new { jwt = JwtHelper.Create(user, _configuration.GetValue<String>("APIHostName")) };
                 return Ok(response);
             }

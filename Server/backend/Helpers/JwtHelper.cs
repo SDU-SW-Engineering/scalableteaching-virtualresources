@@ -1,8 +1,8 @@
-﻿using ScalableTeaching.DTO;
+﻿using Microsoft.IdentityModel.Tokens;
+using ScalableTeaching.DTO;
 using System;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace ScalableTeaching.Helpers
 {
@@ -30,11 +30,6 @@ namespace ScalableTeaching.Helpers
                 new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
 
             return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        public static UserDTO Decode(String Token)
-        {
-            return null;
         }
     }
 }

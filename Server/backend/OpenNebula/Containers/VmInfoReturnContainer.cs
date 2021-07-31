@@ -1,6 +1,6 @@
-﻿using System;
+﻿using ScalableTeaching.OpenNebula.Models;
+using System;
 using System.Xml;
-using ScalableTeaching.OpenNebula.Models;
 
 namespace ScalableTeaching.OpenNebula.Containers
 {
@@ -8,7 +8,7 @@ namespace ScalableTeaching.OpenNebula.Containers
     {
         public VmModel VmModel { get; private set; }
 
-        public VmInfoReturnContainer (object[] input)
+        public VmInfoReturnContainer(object[] input)
         {
             XmlDocument ResultDocument;
             ResultDocument = GetCleanXmlDocument(input);

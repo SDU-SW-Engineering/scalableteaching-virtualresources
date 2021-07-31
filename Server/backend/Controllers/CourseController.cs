@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ScalableTeaching.Data;
-using ScalableTeaching.Models;
-using Microsoft.AspNetCore.Authorization;
 using ScalableTeaching.DTO;
+using ScalableTeaching.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ScalableTeaching.Controllers
 {
@@ -29,9 +29,9 @@ namespace ScalableTeaching.Controllers
         [Authorize(Policy = "ManagerLevel")]
         public async Task<ActionResult<IEnumerable<CourseDTO>>> GetCourses()
         {
-            var courses = await _context.Courses.Where(course => course.UserUsername == getUsername()).Cast<CourseDTO>().ToListAsync();
+            var courses = await _context.Courses.Where(course => course.UserUsername == GetUsername()).Cast<CourseDTO>().ToListAsync();
 
-            return courses.Count > 0 ? Ok(courses) : NoContent() ;
+            return courses.Count > 0 ? Ok(courses) : NoContent();
         }
 
         // GET: api/Course/5
@@ -79,6 +79,7 @@ namespace ScalableTeaching.Controllers
 
             try
             {
+                _context.Courses.Update(course);
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -103,7 +104,7 @@ namespace ScalableTeaching.Controllers
         {
             if (courseDTO.CourseName is null || courseDTO.ShortCourseName is null || courseDTO.SDUCourseID is null) return BadRequest("Field is null");
             if (await _context.Users.FindAsync(courseDTO.OwnerUsername) == null) return BadRequest("User Does not exist");
-            if(!courseDTO.ShortCourseName.Any() || !courseDTO.CourseName.Any() || !courseDTO.SDUCourseID.Any())  return BadRequest("Field Empty");
+            if (!courseDTO.ShortCourseName.Any() || !courseDTO.CourseName.Any() || !courseDTO.SDUCourseID.Any()) return BadRequest("Field Empty");
 
             var CourseValidationResponse = Course.Validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
             if (CourseValidationResponse.Item1 != true)
@@ -118,9 +119,9 @@ namespace ScalableTeaching.Controllers
                 SDUCourseID = courseDTO.SDUCourseID,
                 UserUsername = courseDTO.OwnerUsername
             };
-            _ = _context.Courses.Add(course);
+            await _context.Courses.AddAsync(course);
             await _context.SaveChangesAsync();
-            
+
             return CreatedAtAction("GetCourse", new { id = course.CourseID }, course);
         }
 
@@ -144,7 +145,7 @@ namespace ScalableTeaching.Controllers
         {
             return _context.Courses.Any(e => e.CourseID == id);
         }
-        private string getUsername()
+        private string GetUsername()
         {
             return HttpContext.User.Claims.Where(claim => claim.Type == "username").First().Value;
         }

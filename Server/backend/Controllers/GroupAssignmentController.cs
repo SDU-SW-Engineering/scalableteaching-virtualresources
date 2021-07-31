@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ScalableTeaching.Data;
-using ScalableTeaching.Models;
-using Microsoft.AspNetCore.Authorization;
 using ScalableTeaching.DTO;
-using Serilog;
 using ScalableTeaching.Helpers;
+using ScalableTeaching.Models;
+using Serilog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace ScalableTeaching.Controllers
 {
@@ -30,7 +30,7 @@ namespace ScalableTeaching.Controllers
         [HttpGet("{groupid}")]
         public async Task<ActionResult> GetGroupMembers(Guid groupId)
         {
-            if (!await _context.Groups.AnyAsync(group => group.Course.User.Username == getUsername() && group.GroupID == groupId)) return BadRequest("You are no associated with any group with this id");
+            if (!await _context.Groups.AnyAsync(group => group.Course.User.Username == GetUsername() && group.GroupID == groupId)) return BadRequest("You are no associated with any group with this id");
             var assignments = _context.GroupAssignments.Where(assignment => assignment.GroupID == groupId).ToListAsync();
             var outputStructure = new { GroupID = groupId, Members = new List<string>() };
             foreach (var assignment in await assignments)
@@ -51,7 +51,7 @@ namespace ScalableTeaching.Controllers
                 return Conflict("Assignment already exists");
             }
             if (!await _context.Groups.AnyAsync(group => group.GroupID == dto.GroupID &&
-                                              group.Course.User.Username == getUsername()))
+                                              group.Course.User.Username == GetUsername()))
             {
                 return BadRequest("Either group does not exist or the group is owned by another user");
             }
@@ -68,19 +68,19 @@ namespace ScalableTeaching.Controllers
         {
             //Validate DTO
             if (!dto.Validate()) return BadRequest("All fields must contain valid values");
-            
+
 
             var groupQueriable = _context.Groups.Where(
-                    g => g.GroupID.Equals(dto.GroupID) && g.Course.UserUsername.Equals(getUsername()));
+                    g => g.GroupID.Equals(dto.GroupID) && g.Course.UserUsername.Equals(GetUsername()));
 
             //Check group existance and permission
             if (!await groupQueriable.AnyAsync())
                 return BadRequest("Group does not exist or is owned by different user");
 
             _context.GroupAssignments.RemoveRange((await groupQueriable.FirstAsync()).GroupAssignments);
-            foreach(var username in dto.Usernames)
+            foreach (var username in dto.Usernames)
             {
-                if(! await _context.Users.Where(u => u.Username == username).AnyAsync())
+                if (!await _context.Users.Where(u => u.Username == username).AnyAsync())
                 {
                     await _context.Users.AddAsync(new User()
                     {
@@ -117,7 +117,7 @@ namespace ScalableTeaching.Controllers
             }
             if (
                 !_context.Groups.Any(group => @group.GroupID == dto.GroupID &&
-                                              @group.Course.User.Username == getUsername())
+                                              @group.Course.User.Username == GetUsername())
             )
             {
                 return BadRequest("Either group does not exist or the group is not on a course owned by you");
@@ -128,15 +128,7 @@ namespace ScalableTeaching.Controllers
             return NoContent();
         }
 
-
-
-
-        private bool GroupAssignmentExists(Guid id)
-        {
-            return _context.GroupAssignments.Any(e => e.GroupID == id);
-        }
-
-        private string getUsername()
+        private string GetUsername()
         {
             return HttpContext.User.Claims.Where(claim => claim.Type == "username").First().Value;
         }

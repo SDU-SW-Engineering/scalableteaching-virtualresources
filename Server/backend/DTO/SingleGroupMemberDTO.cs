@@ -9,7 +9,7 @@ namespace ScalableTeaching.DTO
 
         public bool Validate()
         {
-            return(GroupID != Guid.Empty || UserUsername is not null || UserUsername.Length != 0);
+            return (GroupID != Guid.Empty || UserUsername is not null || UserUsername.Length != 0);
         }
     }
 }

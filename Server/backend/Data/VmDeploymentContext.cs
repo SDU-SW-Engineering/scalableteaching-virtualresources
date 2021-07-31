@@ -1,5 +1,5 @@
-﻿using ScalableTeaching.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using ScalableTeaching.Models;
 
 namespace ScalableTeaching.Data
 {

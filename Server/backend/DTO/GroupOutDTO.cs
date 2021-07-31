@@ -13,7 +13,7 @@ namespace ScalableTeaching.DTO
 
         public static explicit operator GroupOutDTO(Group group)
         {
-            return new GroupOutDTO { GroupName = group.GroupName, GroupIndex=group.GroupIndex, CourseID = group.CourseID, GroupID = group.GroupID };
+            return new GroupOutDTO { GroupName = group.GroupName, GroupIndex = group.GroupIndex, CourseID = group.CourseID, GroupID = group.GroupID };
         }
     }
 }

@@ -1,15 +1,15 @@
-﻿using ScalableTeaching.Data;
-using ScalableTeaching.Helpers;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ScalableTeaching.Data;
+using ScalableTeaching.Helpers;
+using ScalableTeaching.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ScalableTeaching.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 
 namespace ScalableTeaching.Controllers
 {
@@ -33,11 +33,11 @@ namespace ScalableTeaching.Controllers
         /// <param name="id">Id of the machine for which the string should be created</param>
         /// <returns>String representation of the config for the specific host</returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult>  GetMachineCredential(Guid id)
+        public async Task<IActionResult> GetMachineCredential(Guid id)
         {
             if (id == Guid.Empty) return BadRequest("Must be a valid guid");
             var credentialQueryable = GetAssignedMachines(id);
-            if (await credentialQueryable.AnyAsync() ) 
+            if (await credentialQueryable.AnyAsync())
                 return Ok(_configBuilder.GetMachineCredentialStringAsync(await credentialQueryable.FirstAsync()));
             return NotFound("The user has no credentials for the requested machine, or the machine does not exist");
         }//TODO: Untested
@@ -60,7 +60,7 @@ namespace ScalableTeaching.Controllers
         {
             var credentials = await GetAssignedMachines().ToListAsync();
             var builder = new StringBuilder();
-            credentials.ForEach(c=>builder.Append(_configBuilder.GetMachineCredentialStringAsync(c)));
+            credentials.ForEach(c => builder.Append(_configBuilder.GetMachineCredentialStringAsync(c)));
             return builder.ToString();
         }
         //TODO: Untested
@@ -84,7 +84,7 @@ namespace ScalableTeaching.Controllers
         {
             return (await GetConfigAndKeysAsZip()).ToFileStreamResult();
         }
-        
+
         /// <summary>
         /// Builds the complete credentials set for the user that made the request
         /// </summary>
@@ -92,7 +92,7 @@ namespace ScalableTeaching.Controllers
         /// contents matching a ssh config file for the specific user</returns>
         private async Task<InMemoryFile> SshConfigFile()
         {
-            return new InMemoryFile("config",Encoding.UTF8.GetBytes(await CompleteMachineCredentials()));
+            return new InMemoryFile("config", Encoding.UTF8.GetBytes(await CompleteMachineCredentials()));
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace ScalableTeaching.Controllers
                     Encoding.UTF8.GetBytes(SSHKeyHelper.GetSSHPublicKey(userKey, GetUsername()))),
                 new InMemoryFile("id_rsa_scalable_" + GetUsername() + ".pub", (await SshConfigFile()).Content)
             };
-            return await ZipBuilder.BuildZip(files, GetUsername()+"_ScalableTeachingUserCredentials.zip");
+            return await ZipBuilder.BuildZip(files, GetUsername() + "_ScalableTeachingUserCredentials.zip");
         }
 
         private IQueryable<MachineAssignment> GetAssignedMachines(Guid machineId = new Guid())
@@ -120,7 +120,7 @@ namespace ScalableTeaching.Controllers
             if (machineId == new Guid())
             {
                 credentialQueryable = _context.MachineAssignments.Where(cred =>
-                        cred.UserUsername == GetUsername() && 
+                        cred.UserUsername == GetUsername() &&
                         cred.MachineID == machineId);
             }
             else
@@ -130,7 +130,7 @@ namespace ScalableTeaching.Controllers
             }
             return credentialQueryable;
         }
-        
+
         /// <summary>
         /// Gives the value of the username claim for the current httpcontext
         /// </summary>
