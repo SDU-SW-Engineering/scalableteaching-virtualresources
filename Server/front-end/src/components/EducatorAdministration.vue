@@ -26,9 +26,11 @@
 
       <hr>
       <!--TODO: Implement action on button-->
-      <b-button pill variant="danger" v-if="selectedRow.length !== 0">Remove Selected User</b-button>
+      <b-button pill variant="secondary" @click="loadTableData">Refresh</b-button>
+      <b-button pill variant="danger" v-if="selectedRow.length !== 0" @click="deprivilegeSelectedUser">Remove Selected
+        User
+      </b-button>
       <hr>
-      <!--TODO: Implement busy state https://bootstrap-vue.org/docs/components/table#table-busy-state-->
       <b-table
           sticky-header="true"
           striped
@@ -44,10 +46,10 @@
 </template>
 
 <script>
-import ManagerAPI from "@/api/ManagerAPI";
+import EducatorAPI from "@/api/EducatorAPI";
 
 export default {
-  name: "UserAdministration",
+  name: "EducatorAdministration",
   mounted() {
     this.loadTableData()
   },
@@ -87,11 +89,11 @@ export default {
       this.tableLoading(true)
       this.users = []
       //Get all groups
-      const result = await ManagerAPI.getManagers();
-      //If successfull
+      const result = await EducatorAPI.getEducators();
+      //If successful
       if (result.status === 200) {
         for (let i = 0; i < result.body.length; i++) {
-          this.groups.push({
+          this.users.push({
             uname: result.body[i].username,
             sn: result.body[i].surname,
             gn: result.body[i].generalName,
@@ -107,15 +109,21 @@ export default {
     async onSubmit() {
       console.log("OnSubmit: " + this.email)
       if (this.email.match(/^[A-Za-z0-9]{1,10}@[a-zA-Z0-9]*\.sdu\.dk$/g) !== null)
-        console.log("APIReturn: " + (await ManagerAPI.postManager(this.email)))
+        console.log("APIReturn: " + (await EducatorAPI.postEducator(this.email)))
     },
-    resetFields(){
+    resetFields() {
       this.email = ''
       this.selectedRow = []
     },
     onReset(event) {
       event.preventDefault()
       this.resetFields()
+    },
+    deprivilegeSelectedUser() {
+      if (this.selectedRow.length < 1) {
+        EducatorAPI.deleteEducator(this.selectedRow[0].email)
+        this.resetFields()
+      }
     },
     tableLoading(state) {
       if (state === true) {

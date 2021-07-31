@@ -2,12 +2,12 @@ import urlconfig from "@/config/urlconfig";
 import StorageHelper from "@/helpers/StorageHelper";
 
 /**
- * Gets everyone of manager level permission
+ * Gets everyone of educator level permission
  * @returns {Promise<{body: *, status: *}>} body representing the body of the response,
  * and status being the http response code
  */
-async function getManagers() {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.manager}`,{
+async function getEducators() {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.educator}`,{
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -17,12 +17,12 @@ async function getManagers() {
 }
 
 /**
- * Upgrades a user from user level to manager level
+ * Upgrades a user from user level to educator level
  * @param email
  * @returns {Promise<number>}
  */
-async function postManager(email) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.manager}`, {
+async function postEducator(email) {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.educator}`, {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -35,12 +35,12 @@ async function postManager(email) {
 }
 
 /**
- * Downgrades a user from manager to user level
- * @param email The email of the manager in question
+ * Downgrades a user from educator to user level
+ * @param email The email of the educator in question
  * @returns {Promise<number>} Http request response
  */
-async function deleteManager(email) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.manager}/${email}`, {
+async function deleteEducator(email) {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.educator}/${email}`, {
         method: "DELETE",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -51,7 +51,7 @@ async function deleteManager(email) {
 
 
 export default {
-    getManagers,
-    postManager,
-    deleteManager,
+    getEducators,
+    postEducator,
+    deleteEducator,
 }

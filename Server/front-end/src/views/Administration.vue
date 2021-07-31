@@ -1,6 +1,6 @@
 <template>
   <b-tabs>
-    <b-tab id="user" title="Manage User"><UserAdministration/></b-tab>
+    <b-tab id="user" title="Manage Educators"><EducatorAdministration/></b-tab>
     <b-tab id="course" active title="Manage Courses"><CourseAdministration/></b-tab>
   </b-tabs>
 </template>
@@ -8,12 +8,12 @@
 
 <script>
 import CourseAdministration from "@/components/CourseAdministration";
-import UserAdministration from "@/components/UserAdministration";
+import EducatorAdministration from "@/components/EducatorAdministration";
 
 
 export default {
   name: "Administration",
-  components: {CourseAdministration, UserAdministration},
+  components: {CourseAdministration, EducatorAdministration},
 }
 
 </script>
