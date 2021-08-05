@@ -135,7 +135,7 @@ export default {
     }
   },
   methods: {
-    getMachinesToBeCreated(){
+getMachinesToBeCreated(){
       //Machines to be returned
       let machines = []
       //Intermediate variable extraction

@@ -20,9 +20,9 @@
       <b-col md="6" offset-md="3" align-self="center">
         <b-form-group label="Select or input class name">
           <b-form-select
-              v-model="settings.classname.selected"
+              v-model="classname.selected"
               :options="classnameOptions"
-              :state="settings.classname.selected !== null"
+              :state="classname.selected !== null"
           >
           </b-form-select>
         </b-form-group>
@@ -34,8 +34,8 @@
         <b-form-group label="Select replication directive">
           <b-form-radio-group
               id="CreationDirectiveSelection"
-              v-model="settings.replicationDirective.selected"
-              :options="settings.replicationDirective.options"
+              v-model="replicationDirective.selected"
+              :options="replicationDirective.options"
               name="CreationDirectiveSelection"
           ></b-form-radio-group>
         </b-form-group>
@@ -43,18 +43,18 @@
     </b-row>
 
     <SingleMachineCreation
-        v-if="creationStep === 2 && settings.replicationDirective.selected === 0"
+        v-if="creationStep === 2 && replicationDirective.selected === 0"
         ref="SingleMachineCreation"
     />
 
     <PerGroupMachineCreation
-        v-if="creationStep === 2 && settings.replicationDirective.selected === 1"
+        v-if="creationStep === 2 && replicationDirective.selected === 1"
         ref="PerGroupMachineCreation"
-        v-bind:classObject="settings.classname.selected"
+        v-bind:classObject="classname.selected"
     />
 
     <PerUserMachineCreation
-        v-if="creationStep === 2 && settings.replicationDirective.selected === 2"
+        v-if="creationStep === 2 && replicationDirective.selected === 2"
         ref="PerUserMachineCreation"
     />
 
@@ -86,76 +86,51 @@ export default {
       resetBox: '',
       debugText: 'No Debug Text Yet',
       classnameOptions: [],
-      settings: {
-        machinesToBeCreated: {
-          items: [
-            {
-              machineName: 'ONK-frhou18-01-E21',
-              courseName: 'Onk Not Known',
-              users: ['frhou18'],
-              groups: ['sudo', 'onk'],
-              ports: [1234, 8456],
-              PPAs: ['ppa:kubuntu-ppa/staging-plasma'],
-              APTs: ['vim', 'git']
-            }
-          ],
-          fields: [
-            {key: 'machineName', label: 'Machine Name', sortable: true},
-            {key: 'users', label: 'Users', sortable: false},
-            {key: 'details', label: 'Details', sortable: false}
-          ],
-        },
-        replicationDirective: {
-          options: [
-            {text: "Single Machine", value: 0},
-            {text: "Per Group", value: 1},
-            {text: "Per User", value: 2},
-          ],
-          selected: null,
-        },
-        sharedMachineAmount: {
-          options: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-          selected: 1,
-        },
-        classname: {
-          selected: null,
-        }
+      replicationDirective: {
+        options: [
+          {text: "Single Machine", value: 0},
+          {text: "Per Group", value: 1},
+          {text: "Per User", value: 2},
+        ],
+        selected: null,
       },
-
+      classname: {
+        selected: null,
+      }
     }
   },
   methods: {
     nextCreationStep() {
       if (this.creationStep < 2) this.creationStep++
       else if (this.creationStep === 2 && this.machineCustomizationValid()) {
-        this.$refs.EndOfCreationTable.populateMachines(this.getMachinesToBeCreated())
+        this.$refs.EndOfCreationTable.populateMachines(this.getMachinesToBeCreated(), this.replicationDirective.selected === 1)
         this.creationStep++
       }
     },
     canNextCreationStep() {
-      if (this.creationStep === 0 && this.settings.classname.selected !== null) return true
-      if (this.creationStep === 1 && this.settings.replicationDirective.selected !== null) return true
+      if (this.creationStep === 0 && this.classname.selected !== null) return true
+      if (this.creationStep === 1 && this.replicationDirective.selected !== null) return true
       if (this.creationStep === 2) return true
     },
     machineCustomizationValid() {
-      if (this.settings.replicationDirective.selected === 0) {
+      if (this.replicationDirective.selected === 0) {
         return this.$refs.SingleMachineCreation.isValidAndComplete()
       }
-      if (this.settings.replicationDirective.selected === 1) {
+      if (this.replicationDirective.selected === 1) {
         return this.$refs.PerGroupMachineCreation.isValidAndComplete()
       }
-      if (this.settings.replicationDirective.selected === 2) {
+      if (this.replicationDirective.selected === 2) {
         return this.$refs.PerUserMachineCreation.isValidAndComplete()
       }
     },
     getMachinesToBeCreated() {
-      if (this.settings.replicationDirective.selected === 0) {
+      if (this.replicationDirective.selected === 0) {
         return this.$refs.SingleMachineCreation.getMachinesToBeCreated()
       }
-      if (this.settings.replicationDirective.selected === 1) {
+      if (this.replicationDirective.selected === 1) {
         return this.$refs.PerGroupMachineCreation.getMachinesToBeCreated()
       }
-      if (this.settings.replicationDirective.selected === 2) {
+      if (this.replicationDirective.selected === 2) {
         return this.$refs.PerUserMachineCreation.getMachinesToBeCreated()
       }
     },
@@ -186,9 +161,8 @@ export default {
       this.creationStep = 0;
       this.debugText = "No Debug Text Yet";
       this.resetBox = "";
-      this.settings.replicationDirective.selected = 0;
-      this.settings.sharedMachineAmount.selected = 1;
-      this.settings.classname = {
+      this.replicationDirective.selected = 0;
+      this.classname = {
         selected: "null",
         newName: ""
       }

@@ -1,8 +1,9 @@
 <template>
   <b-container id="EndOfCreationTable">
     <b-table
-        :items="settings.machinesToBeCreated.items"
-        :fields="settings.machinesToBeCreated.fields"
+        responsive
+        :items="machinesToBeCreated.items"
+        :fields="machinesToBeCreated.fields"
     >
       <template #cell(details)="row">
         <b-button size="sm" @click="row.toggleDetails">
@@ -25,7 +26,7 @@
           </b-row>
           <b-row no-gutters align-h="start">
             <b-col md="4" align-self="start">
-              <b>Machine Users:</b>
+              <b>Machine {{isGroupBased ? "Users" : "Group"}}:</b>
               <p>{{ row.item.users }}</p>
             </b-col>
             <b-col md="4">
@@ -40,11 +41,11 @@
           <b-row no-gutters align-h="start">
             <b-col md="8">
               <b>PPAs:</b>
-              <p>{{ row.item.PPAs }}</p>
+              <p>{{ row.item.PPA }}</p>
             </b-col>
             <b-col md="4">
               <b>Apt Packages:</b>
-              <p>{{ row.item.APTs }}</p>
+              <p>{{ row.item.APT }}</p>
             </b-col>
           </b-row>
         </b-card>
@@ -58,17 +59,19 @@ export default {
   name: "EndOfCreationTable",
   data() {
     return {
-      settings: {
-        machinesToBeCreated: {
-          items: [],
-          fields: [],
-        },
-      }
+      isGroupBased: false,
+      machinesToBeCreated: {
+        items: [],
+        fields: [],
+      },
+      groupFieldDefaults: [], //Default field types based on the machines being group based.
+      userFieldDefaults: [],
+
     }
   },
   methods: {
-    populateMachines(machines) {
-      //TODO: Populate the list of
+    populateMachines(machines, isGroupBased) {
+
     },
     clearMachines() {
       //TODO: Clear the list of machines
