@@ -26,7 +26,6 @@ namespace ScalableTeaching.Helpers
         public async Task<string> GetMachineCredentialStringAsync(MachineAssignment assignment, bool includeClassName = false)
         {
             Machine machine = await _context.Machines.FindAsync(assignment.MachineID);
-            var machineName = machine.Name;
             var hostName = machine.HostName;
             var username = machine.User.Username;
             var course = machine.Course;
@@ -40,7 +39,7 @@ namespace ScalableTeaching.Helpers
             {
                 credentialBuilder.Append(course.ShortCourseName);
             }
-            credentialBuilder.Append(machineName).Append('\n');
+            credentialBuilder.Append(hostName).Append('\n');
 
             //Insert HostName url string
             credentialBuilder.Append('\t').Append("HostName ").Append(hostName).Append('\n');

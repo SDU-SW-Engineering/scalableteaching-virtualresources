@@ -72,9 +72,9 @@ namespace ScalableTeaching.Controllers
             return Ok("Valid - Your credentials are valid for this level of access");
         }
 
-        [HttpPost("validate/manager")]
-        [Authorize(Policy = "ManagerLevel")]
-        public ActionResult PostValidateManager()
+        [HttpPost("validate/educator")]
+        [Authorize(Policy = "EducatorLevel")]
+        public ActionResult PostValidateEducator()
         {
             return Ok("Valid - Your credentials are valid for this level of access");
         }

@@ -18,7 +18,7 @@ namespace ScalableTeaching.Models
         public enum UserType
         {
             User,
-            Manager,
+            Educator,
             Administrator,
         }
 

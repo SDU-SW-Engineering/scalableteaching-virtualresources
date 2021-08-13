@@ -16,7 +16,7 @@ namespace ScalableTeaching.Controllers
 {
     [Route("api/group")]
     [ApiController]
-    [Authorize(Policy = "ManagerLevel")]
+    [Authorize(Policy = "EducatorLevel")]
     public class GroupController : ControllerBase
     {
         private readonly VmDeploymentContext _context;

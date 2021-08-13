@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ScalableTeaching.OpenNebula
 {
-    interface IOpenNebulaAccessor
+    public interface IOpenNebulaAccessor
     {
         /// <summary>
         /// Retrieves the information for the specific virutal machine
@@ -32,7 +32,7 @@ namespace ScalableTeaching.OpenNebula
         /// <param name="Session">Username:Password</param>
         /// <param name="Action">An action string from <see cref="MachineActions"/></param>
         /// <param name="VirtualMachineId">Integer id matching the id of an existing machine</param>
-        /// <returns></returns>
+        /// <returns>success</returns>
         public bool PerformVirtualMachineAction(string Action, int VirtualMachineId);
         /// <summary>
         /// Retrives the information on the available templates
@@ -44,7 +44,7 @@ namespace ScalableTeaching.OpenNebula
         /// </summary>
         /// <param name="TemplateId">Id of template for the virtual machine </param>
         /// <param name="VirtualMachineName">The future name of the virutal machine</param>
-        /// <returns></returns>
+        /// <returns>Touple of success and new machine id</returns>
         public (bool, int) CreateVirtualMachine(int TemplateId, string VirtualMachineName);
 
     }
