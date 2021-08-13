@@ -110,7 +110,7 @@ import CourseAPI from "@/api/CourseAPI";
 import GroupAPI from "@/api/GroupAPI";
 import StringHelper from "@/helpers/StringHelper";
 
-export default {
+export default { //TODO: Getting errors when using page
   name: "GroupManagement",
   mounted() {
     this.getSelectableCourses()
@@ -138,6 +138,11 @@ export default {
         {
           key: 'groupName',
           label: 'Group Name',
+          sortable: true
+        },
+        {
+          key: 'groupIndex',
+          label: 'Group Number',
           sortable: true
         }
       ],
@@ -168,6 +173,7 @@ export default {
             groupName: result.body[i].groupName,
             courseID: result.body[i].courseID,
             groupID: result.body[i].groupID,
+            groupIndex: result.body[i].groupIndex,
             courseName: '',
             members: []
           }
