@@ -144,6 +144,7 @@ import StringHelper from "@/helpers/StringHelper";
 
 export default {
   name: "PerUserMachineCreation",
+  props: ['classObject'],
   data() {
     return {
       linuxGroupsField: "",
@@ -182,7 +183,8 @@ export default {
           apt: apt,
           ppa: ppa,
           ports: ports,
-          linuxGroups: linuxGroups
+          linuxgroups: linuxGroups,
+          courseid: this.classObject.this.classObject.courseID
         });
       }
       return machines

@@ -118,6 +118,7 @@ import StringHelper from "@/helpers/StringHelper";
 
 export default {
   name: "SingleMachineCreation",
+  props: ['classObject'],
   data() {
     return {
       linuxGroupsField: "",
@@ -148,7 +149,8 @@ getMachinesToBeCreated(){
         apt: StringHelper.breakStringIntoTokenList(this.aptField),
         ppa: StringHelper.breakStringIntoTokenList(this.ppaField),
         ports: ports,
-        linuxGroups: StringHelper.breakStringIntoTokenList(this.linuxGroupsField)
+        linuxgroups: StringHelper.breakStringIntoTokenList(this.linuxGroupsField),
+        courseid: this.classObject.this.classObject.courseID
       });
       return machines
     },

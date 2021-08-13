@@ -45,6 +45,7 @@
     <SingleMachineCreation
         v-if="creationStep === 2 && replicationDirective.selected === 0"
         ref="SingleMachineCreation"
+        v-bind:classObject="classname.selected"
     />
 
     <PerGroupMachineCreation
@@ -56,11 +57,13 @@
     <PerUserMachineCreation
         v-if="creationStep === 2 && replicationDirective.selected === 2"
         ref="PerUserMachineCreation"
+        v-bind:classObject="classname.selected"
     />
 
     <EndOfCreationTable
         v-if="creationStep === 3"
-        ref="EndOfCreationTable"
+        ref="EndOfCreationTableRef"
+        v-bind:machineSettings="parseToTable"
     />
 
   </div>
@@ -72,6 +75,7 @@ import PerUserMachineCreation from "@/components/MachineCreationComponents/PerUs
 import EndOfCreationTable from "@/components/MachineCreationComponents/EndOfCreationTable";
 import CourseAPI from "@/api/CourseAPI";
 import SingleMachineCreation from "@/components/MachineCreationComponents/SingleMachineCreation";
+import MachineCreationAPI from "@/api/MachineCreationAPI";
 
 export default {
   name: "MachineCreation",
@@ -86,6 +90,10 @@ export default {
       resetBox: '',
       debugText: 'No Debug Text Yet',
       classnameOptions: [],
+      parseToTable: {
+        machinesToBeCreatedList: [],
+        isGroupBased: false,
+      },
       replicationDirective: {
         options: [
           {text: "Single Machine", value: 0},
@@ -103,7 +111,8 @@ export default {
     nextCreationStep() {
       if (this.creationStep < 2) this.creationStep++
       else if (this.creationStep === 2 && this.machineCustomizationValid()) {
-        this.$refs.EndOfCreationTable.populateMachines(this.getMachinesToBeCreated(), this.replicationDirective.selected === 1)
+        this.parseToTable.machinesToBeCreatedList = this.getMachinesToBeCreated()
+        this.parseToTable.isGroupBased = this.replicationDirective.selected === 1
         this.creationStep++
       }
     },
@@ -167,9 +176,10 @@ export default {
         newName: ""
       }
     },
-    finish() {
-      let machinesToBeCreated = this.$refs.EndOfCreationTable.getMachinesToBeCreated()
-      //TODO: Make call to backend
+    async finish() {
+      let machinesToBeCreated = this.$refs.EndOfCreationTableRef.getMachinesToBeCreated()
+      let result = await MachineCreationAPI.createMachines(machinesToBeCreated)
+
     },
     async updateClassSelectionList() {
       this.classnameOptions = []
