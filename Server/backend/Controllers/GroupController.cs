@@ -201,7 +201,7 @@ namespace ScalableTeaching.Controllers
         private string GetUsername()
         {
             //Claim from the jwt token
-            return HttpContext.User.Claims.First(claim => claim.Type == "username").Value;
+            return HttpContext.User.Claims.First(claim => claim.Type == "username").Value.ToLower();
         }
     }
 }

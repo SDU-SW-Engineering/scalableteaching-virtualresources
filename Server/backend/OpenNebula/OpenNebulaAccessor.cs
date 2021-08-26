@@ -17,8 +17,8 @@ namespace ScalableTeaching.OpenNebula
         public OpenNebulaAccessor(string ServerUrl, string Session)
         {
             VmManagementProxy = XmlRpcProxyGen.Create<IVmManagement>();
-            VmManagementProxy.Url = ServerUrl;
             VmTemplateManagementProxy = XmlRpcProxyGen.Create<IVmTemplateManagement>();
+            VmManagementProxy.Url = ServerUrl;
             VmTemplateManagementProxy.Url = ServerUrl;
             _Session = Session;
         }

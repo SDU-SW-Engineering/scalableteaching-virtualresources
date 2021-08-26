@@ -36,10 +36,21 @@ namespace ScalableTeaching.Controllers
         public async Task<IActionResult> GetMachineCredential(Guid id)
         {
             if (id == Guid.Empty) return BadRequest("Must be a valid guid");
-            var credentialQueryable = GetAssignedMachines(id);
-            if (await credentialQueryable.AnyAsync())
-                return Ok(_configBuilder.GetMachineCredentialStringAsync(await credentialQueryable.FirstAsync()));
-            return NotFound("The user has no credentials for the requested machine, or the machine does not exist");
+            var _machine = await _context.Machines.FindAsync(id);
+            if (_machine == null) return BadRequest("Machine does not exist");
+
+            if (_machine.UserUsername != GetUsername())// Machine not owned by requesting user
+            {
+                var _assignments = _machine.MachineAssignments.Where(assignment => assignment.UserUsername == GetUsername());
+                if (_assignments.Any())
+                    return Ok(_configBuilder.GetMachineCredentialStringAsync(_machine, _assignments.First().UserUsername));
+                else
+                    return BadRequest("You are not assigned to this machine");
+            }
+            else // Machine is owned by requesting user
+            {
+                return Ok(_configBuilder.GetMachineCredentialStringAsync(_machine, GetUsername()));
+            }
         }//TODO: Untested
 
         /// <summary>
@@ -58,9 +69,21 @@ namespace ScalableTeaching.Controllers
         /// <returns></returns>
         private async Task<string> CompleteMachineCredentials()
         {
-            var credentials = await GetAssignedMachines().ToListAsync();
+            //Find all owned machines
+            List<Machine> machines = await _context.Machines.Where(machine => machine.UserUsername == GetUsername()).ToListAsync();
+            //Find all directly assigned machines
+            (await _context.Users.FindAsync(GetUsername())).MachineAssignments.ForEach(async assignement =>
+            {
+                machines.Add(await _context.Machines.FindAsync(assignement.MachineID));
+            });
+            //Find all group assigned machines
+            List<Group> groups = (await _context.Users.FindAsync(GetUsername())).GroupAssignments.ConvertAll<Group>(assignment => assignment.Group);//TODO: Might suffer ef error
+            foreach (var group in groups)
+            {
+                group.MachineAssignments.ConvertAll<Machine>(assignment => assignment.Machine); //TODO: Might suffer ef error
+            }
             var builder = new StringBuilder();
-            credentials.ForEach(c => builder.Append(_configBuilder.GetMachineCredentialStringAsync(c)));
+            machines.ForEach(machine => builder.Append(_configBuilder.GetMachineCredentialStringAsync(machine, GetUsername())));
             return builder.ToString();
         }
         //TODO: Untested
@@ -114,21 +137,20 @@ namespace ScalableTeaching.Controllers
             return await ZipBuilder.BuildZip(files, GetUsername() + "_ScalableTeachingUserCredentials.zip");
         }
 
-        private IQueryable<MachineAssignment> GetAssignedMachines(Guid machineId = new Guid())
+
+
+
+        private async Task<bool> IsAssignedToMachine(string username, Machine machine)
         {
-            IQueryable<MachineAssignment> credentialQueryable;
-            if (machineId == new Guid())
-            {
-                credentialQueryable = _context.MachineAssignments.Where(cred =>
-                        cred.UserUsername == GetUsername() &&
-                        cred.MachineID == machineId);
-            }
-            else
-            {
-                credentialQueryable = _context.MachineAssignments.Where(cred =>
-                    cred.Machine.User.Username == GetUsername());
-            }
-            return credentialQueryable;
+            if (machine == null) return false;
+            if (username.Length == 0 || username == null) return false;
+            if (machine.UserUsername == username) return true;
+            if (machine.MachineAssignments.Where(assignement => assignement.UserUsername == username).Any()) return true;
+            return false;
+        }
+        private async Task<bool> IsAssignedToMachine(string username, Guid machineID)
+        {
+            return await IsAssignedToMachine(username, await _context.Machines.FindAsync(machineID));
         }
 
         /// <summary>
@@ -137,7 +159,7 @@ namespace ScalableTeaching.Controllers
         /// <returns>Username of logged in user</returns>
         private string GetUsername()
         {
-            return HttpContext.User.Claims.First(claim => claim.Type == "username").Value;
+            return HttpContext.User.Claims.First(claim => claim.Type == "username").Value.ToLower();
         }
     }
 }

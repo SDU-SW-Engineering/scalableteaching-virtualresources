@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace ScalableTeaching.Models
 {
@@ -13,6 +14,8 @@ namespace ScalableTeaching.Models
         public UserType AccountType { get; set; }
         [Required]
         public string UserPrivateKey { get; set; }
+        public virtual List<GroupAssignment> GroupAssignments { get; set; }
+        public virtual List<MachineAssignment> MachineAssignments { get; set; }
 
 
         public enum UserType

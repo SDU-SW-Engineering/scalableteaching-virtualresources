@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ScalableTeaching.Data;
@@ -10,9 +11,10 @@ using ScalableTeaching.Data;
 namespace ScalableTeaching.Migrations
 {
     [DbContext(typeof(VmDeploymentContext))]
-    partial class VmDeploymentContextModelSnapshot : ModelSnapshot
+    [Migration("20210826102259_updatedmodels")]
+    partial class updatedmodels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

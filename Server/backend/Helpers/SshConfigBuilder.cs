@@ -23,40 +23,42 @@ namespace ScalableTeaching.Helpers
         /// <param name="assignment">The credential object representing a credential pair for a user</param>
         /// <param name="includeClassName">True indicates that the host name will be prefixed with the short version of the course name</param>
         /// <returns>Config string for specified machine</returns>
-        public async Task<string> GetMachineCredentialStringAsync(MachineAssignment assignment, bool includeClassName = false)
+        public async Task<string> GetMachineCredentialStringAsync(Machine machine, string username, bool includeClassName = false)
         {
-            Machine machine = await _context.Machines.FindAsync(assignment.MachineID);
-            var hostName = machine.HostName;
-            var username = machine.User.Username;
-            var course = machine.Course;
-            List<LocalForward> LocalForwards = _context.LocalForwards.Where(port => port.MachineID == assignment.MachineID).ToList();
-
-            StringBuilder credentialBuilder = new();
-
-            //Insert host name string
-            credentialBuilder.Append("Host ");
-            if (includeClassName)
+           return await Task.Run<string>(() =>
             {
-                credentialBuilder.Append(course.ShortCourseName);
-            }
-            credentialBuilder.Append(hostName).Append('\n');
+                var hostName = machine.HostName;
+                var course = machine.Course;
+                List<int> ports = machine.Ports;
 
-            //Insert HostName url string
-            credentialBuilder.Append('\t').Append("HostName ").Append(hostName).Append('\n');
+                StringBuilder credentialBuilder = new();
 
-            //Insert Username for the machine
-            credentialBuilder.Append('\t').Append("User").Append(username).Append('\n');
+                //Insert host name string
+                credentialBuilder.Append("Host ");
+                if (includeClassName)
+                {
+                    credentialBuilder.Append(course.ShortCourseName);
+                }
+                credentialBuilder.Append(hostName).Append('\n');
 
-            //Insert strings for portnumbers
-            foreach (var port in LocalForwards)
-            {
-                credentialBuilder.Append('\t').Append("LocalForward ").Append(port.PortNumber).Append("127.0.0.1:").Append(port.PortNumber).Append('\n');
-            }
+                //Insert HostName url string
+                credentialBuilder.Append('\t').Append("HostName ").Append(hostName).Append('\n');
 
-            //Insert Identityfile string
-            credentialBuilder.Append('\t').Append("IdentityFile ").Append("~/.ssh/id_rsa_scalable_").Append(assignment.UserUsername);
+                //Insert Username for the machine
+                credentialBuilder.Append('\t').Append("User").Append(username).Append('\n');
 
-            return credentialBuilder.ToString();
+                //Insert strings for portnumbers
+                foreach (var port in ports)
+                {
+                    credentialBuilder.Append('\t').Append("LocalForward ").Append(port).Append("127.0.0.1:").Append(port).Append('\n');
+                }
+
+                //Insert Identityfile string
+                credentialBuilder.Append('\t').Append("IdentityFile ").Append("~/.ssh/id_rsa_scalable_").Append(username);
+
+                return credentialBuilder.ToString();
+            });
+
         }
 
         public void BuildAuthorisedKeysFile(Machine machine)

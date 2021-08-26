@@ -57,7 +57,7 @@ namespace ScalableTeaching.Controllers
             }
 
             await _context.GroupAssignments
-                .AddAsync(new GroupAssignment() { GroupID = dto.GroupID, UserUsername = dto.UserUsername });
+                .AddAsync(new GroupAssignment() { GroupID = dto.GroupID, UserUsername = dto.UserUsername.ToLower() });
             await _context.SaveChangesAsync();
             // ReSharper disable once Mvc.ActionNotResolved
             return CreatedAtAction("members", new { groupid = dto.GroupID });
@@ -130,7 +130,7 @@ namespace ScalableTeaching.Controllers
 
         private string GetUsername()
         {
-            return HttpContext.User.Claims.Where(claim => claim.Type == "username").First().Value;
+            return HttpContext.User.Claims.Where(claim => claim.Type == "username").First().Value.ToLower();
         }
 
     }

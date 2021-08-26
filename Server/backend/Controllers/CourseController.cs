@@ -147,7 +147,7 @@ namespace ScalableTeaching.Controllers
         }
         private string GetUsername()
         {
-            return HttpContext.User.Claims.Where(claim => claim.Type == "username").First().Value;
+            return HttpContext.User.Claims.Where(claim => claim.Type == "username").First().Value.ToLower();
         }
     }
 }

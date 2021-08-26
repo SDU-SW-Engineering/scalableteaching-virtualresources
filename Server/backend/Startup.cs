@@ -29,21 +29,20 @@ namespace ScalableTeaching
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHostedService<MachineCreatorService>();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "backend", Version = "v1" });
             });
             services.AddDbContext<VmDeploymentContext>(options =>
-            {
+                //Build database connection string from environment
                 options.UseLazyLoadingProxies().UseNpgsql(
                     "Host=" + Environment.GetEnvironmentVariable("dbhost") +
                     ";Database=" + Environment.GetEnvironmentVariable("db") +
                     ";Username=" + Environment.GetEnvironmentVariable("dbuser") +
                     ";Password=" + Environment.GetEnvironmentVariable("dbpass")
-                    );
-            });
+                    )
+            );
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -69,7 +68,9 @@ namespace ScalableTeaching
 
             services.AddSingleton<IConfiguration>(Configuration);
             services.AddSingleton<IOpenNebulaAccessor>(new OpenNebulaAccessor(Environment.GetEnvironmentVariable("OpenNebulaLocation"), Environment.GetEnvironmentVariable("OpenNebulaSession")));
+            services.AddSingleton<MachineConfigurator>();
             services.AddScoped<SshConfigBuilder>();
+            services.AddHostedService<MachineControllerService>();
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.File($"{Environment.GetEnvironmentVariable("ScalableTeachingBaseLocation")}/logs/log-.txt", rollingInterval: RollingInterval.Day)
                 .CreateLogger();

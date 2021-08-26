@@ -6,7 +6,7 @@ namespace ScalableTeaching.OpenNebula.XmlRpcInterfaces
     /// <summary>
     /// Interfaces for method calls on the template
     /// </summary>
-    internal interface IVmTemplateManagement : IXmlRpcProxy
+    public interface IVmTemplateManagement : IXmlRpcProxy
     {
         /// <summary>
         /// Retrieves an xml blob containing information about the templates/images available.

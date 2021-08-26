@@ -14,6 +14,7 @@ namespace ScalableTeaching.Models
         public virtual Course Course { get; set; }
 
         public virtual List<GroupAssignment> GroupAssignments { get; set; }
+        public virtual List<MachineAssignment> MachineAssignments { get; set; }
 
     }
 }

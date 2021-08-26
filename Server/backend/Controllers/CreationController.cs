@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ namespace ScalableTeaching.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Policy = "EducatorLevel")]
     public class CreationController : ControllerBase
     {
         private string ValidateAptRegex = @"^[0-9A-Za-z.+-]$";
@@ -58,7 +60,11 @@ namespace ScalableTeaching.Controllers
                     HostName = machine.Hostname,
                     MachineID = NewMachineID,
                     UserUsername = GetUsername(),
-                    MachineCreationStatus = CreationStatus.REGISTERED                    
+                    MachineCreationStatus = CreationStatus.REGISTERED,
+                    Apt = machine.Apt,
+                    LinuxGroups = machine.LinuxGroups,
+                    Ports = machine.Ports,
+                    Ppa = machine.Ppa
                 });
                 _context.MachineAssignments.Add(new()
                 {
@@ -124,7 +130,7 @@ namespace ScalableTeaching.Controllers
         /// <returns>Username of logged in user</returns>
         private string GetUsername()
         {
-            return HttpContext.User.Claims.First(claim => claim.Type == "username").Value;
+            return HttpContext.User.Claims.First(claim => claim.Type == "username").Value.ToLower();
         }
     }
 }

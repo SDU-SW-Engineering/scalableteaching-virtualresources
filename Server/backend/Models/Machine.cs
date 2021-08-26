@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace ScalableTeaching.Models
@@ -15,8 +16,15 @@ namespace ScalableTeaching.Models
         public Guid CourseID { get; set; }
         public CreationStatus MachineCreationStatus { get; set; }
         public int? OpenNebulaID { get; set; }
+        public List<string> Apt { get; set; }
+        public List<string> Ppa { get; set; }
+        public List<string> LinuxGroups { get; set; }
+        public List<int> Ports { get; set; }
+
         public virtual User User { get; set; }
         public virtual Course Course { get; set; }
+        public virtual MachineStatus MachineStatus { get; set; }
+        public virtual List<MachineAssignment> MachineAssignments { get; set; }
 
         public override string ToString()
         {
@@ -30,8 +38,7 @@ namespace ScalableTeaching.Models
         CREATED,
         QUEUED_FOR_CONFIGURATION,
         CONFIGURED,
+        SHEDULED_FOR_DELETION,
         DELETED
     }
-
-    
 }

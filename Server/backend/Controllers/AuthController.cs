@@ -31,7 +31,7 @@ namespace ScalableTeaching.Controllers
             try
             {
                 UserDTO user = await SSOHelper.GetSSOData(tokendata);
-                User databaseUserReturn = await _context.Users.FindAsync(user.Username);
+                User databaseUserReturn = await _context.Users.FindAsync(user.Username.ToLower());
                 if (databaseUserReturn == null)
                 {
                     _context.Users.Add(new User()
@@ -40,7 +40,7 @@ namespace ScalableTeaching.Controllers
                         Mail = user.Mail,
                         GeneralName = user.Gn,
                         Surname = user.Sn,
-                        Username = user.Username,
+                        Username = user.Username.ToLower(),
                         UserPrivateKey = SSHKeyHelper.ExportKeyAsPEM(RSA.Create(2048))
                     });
                     await _context.SaveChangesAsync();
