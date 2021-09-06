@@ -5,11 +5,9 @@ VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backend", "Backend.csproj", "{638874D8-E9C6-446A-BD69-CD5717ECEED2}"
 EndProject
-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{DE770E74-9246-410A-877F-CC30928385E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenNebula", "..\OpenNebula\OpenNebula.csproj", "{80079072-59AF-4E0A-917F-CF1A6824603D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenNebula", "..\OpenNebula\OpenNebula.csproj", "{80079072-59AF-4E0A-917F-CF1A6824603D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenNebulaTest", "..\OpenNebulaTest\OpenNebulaTest.csproj", "{FE74DD01-D4DF-4473-9C26-BC884B9BFB20}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenNebulaTest", "..\OpenNebulaTest\OpenNebulaTest.csproj", "{FE74DD01-D4DF-4473-9C26-BC884B9BFB20}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +19,6 @@ Global
 		{638874D8-E9C6-446A-BD69-CD5717ECEED2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{638874D8-E9C6-446A-BD69-CD5717ECEED2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{638874D8-E9C6-446A-BD69-CD5717ECEED2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DE770E74-9246-410A-877F-CC30928385E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DE770E74-9246-410A-877F-CC30928385E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DE770E74-9246-410A-877F-CC30928385E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DE770E74-9246-410A-877F-CC30928385E4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{80079072-59AF-4E0A-917F-CF1A6824603D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{80079072-59AF-4E0A-917F-CF1A6824603D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{80079072-59AF-4E0A-917F-CF1A6824603D}.Release|Any CPU.ActiveCfg = Release|Any CPU
