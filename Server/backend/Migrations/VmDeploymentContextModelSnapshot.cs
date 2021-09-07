@@ -135,21 +135,27 @@ namespace ScalableTeaching.Migrations
 
             modelBuilder.Entity("ScalableTeaching.Models.MachineAssignment", b =>
                 {
-                    b.Property<Guid>("MachineID")
+                    b.Property<Guid>("MachineAssignmentID")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("UserUsername")
-                        .HasColumnType("text");
-
                     b.Property<Guid?>("GroupID")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MachineID")
                         .HasColumnType("uuid");
 
                     b.Property<string>("OneTimePassword")
                         .HasColumnType("text");
 
-                    b.HasKey("MachineID", "UserUsername");
+                    b.Property<string>("UserUsername")
+                        .HasColumnType("text");
+
+                    b.HasKey("MachineAssignmentID");
 
                     b.HasIndex("GroupID");
+
+                    b.HasIndex("MachineID");
 
                     b.HasIndex("UserUsername");
 
@@ -160,6 +166,27 @@ namespace ScalableTeaching.Migrations
                 {
                     b.Property<Guid>("MachineID")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("LastPoll")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("MachineCpuUtilizationPercent")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("MachineIp")
+                        .HasColumnType("text");
+
+                    b.Property<int>("MachineLCMState")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MachineMac")
+                        .HasColumnType("text");
+
+                    b.Property<int>("MachineMemmoryUtilizationBytes")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MachineState")
+                        .HasColumnType("integer");
 
                     b.HasKey("MachineID");
 
@@ -266,9 +293,7 @@ namespace ScalableTeaching.Migrations
 
                     b.HasOne("ScalableTeaching.Models.User", "User")
                         .WithMany("MachineAssignments")
-                        .HasForeignKey("UserUsername")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserUsername");
 
                     b.Navigation("Group");
 

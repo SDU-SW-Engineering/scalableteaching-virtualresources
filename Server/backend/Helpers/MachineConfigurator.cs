@@ -13,8 +13,8 @@ namespace ScalableTeaching.Helpers
     public class MachineConfigurator
     {
         private string _defaultUsername;
-        private const string VM_SCALABLE_TEACHING_PATH = "/home/admin/scalable-teaching";
-        private const string SERVER_SCALABLE_TEACHING_PATH = "/home/admin/scalable-teaching";
+        private const string VM_SCALABLE_TEACHING_PATH = "/home/admin/ScalableTeaching";
+        private const string SERVER_SCALABLE_TEACHING_PATH = "/ScalableTeaching";
         public MachineConfigurator()
         {
             _defaultUsername = Environment.GetEnvironmentVariable("VM_DEFAULT_USERNAME");

@@ -34,7 +34,7 @@ namespace ScalableTeaching.OpenNebula.XmlRpcInterfaces
         /// <param name="TemplateId">Id of template</param>
         /// <param name="VirtualMachineName">Name for the virtual machine to be</param>
         /// <returns></returns>
-        [XmlRpcMethod("one.templatepool.instantiate")]
+        [XmlRpcMethod("one.template.instantiate")]
         Object[] VmTemplateInstantiate(string Session, int TemplateId, string VirtualMachineName);
     }
 

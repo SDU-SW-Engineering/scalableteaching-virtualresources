@@ -6,7 +6,7 @@ namespace ScalableTeaching.Helpers
 {
     public sealed class CryptoHelper
     {
-        private static readonly string PRIVATE_KEY_LOCATION = "./PrivateKey.pem";
+        private static readonly string PRIVATE_KEY_LOCATION = "./TokenKey/PrivateKey.pem";
         private static CryptoHelper instance = null;
         private static readonly object _lock = new();
         private RSA rsa = null;

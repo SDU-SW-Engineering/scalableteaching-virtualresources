@@ -142,11 +142,15 @@ namespace ScalableTeaching.Controllers
 
         private async Task<bool> IsAssignedToMachine(string username, Machine machine)
         {
-            if (machine == null) return false;
-            if (username.Length == 0 || username == null) return false;
-            if (machine.UserUsername == username) return true;
-            if (machine.MachineAssignments.Where(assignement => assignement.UserUsername == username).Any()) return true;
-            return false;
+            return await Task<bool>.Run(() =>
+            {
+                if (machine == null) return false;
+                if (username.Length == 0 || username == null) return false;
+                if (machine.UserUsername == username) return true;
+                if (machine.MachineAssignments.Where(assignement => assignement.UserUsername == username).Any()) return true;
+                return false;
+            });
+
         }
         private async Task<bool> IsAssignedToMachine(string username, Guid machineID)
         {

@@ -16,7 +16,6 @@ namespace ScalableTeaching.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<MachineAssignment>().HasKey(c => new { c.MachineID, c.UserUsername });
             modelBuilder.Entity<GroupAssignment>().HasKey(c => new { c.GroupID, c.UserUsername });
         }
     }

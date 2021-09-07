@@ -5,15 +5,14 @@ namespace ScalableTeaching.Models
 {
     public class MachineAssignment
     {
+        [Key]
+        public Guid MachineAssignmentID { get; set; }
         public Guid MachineID { get; set; }
-        [Required]
-        public string UserUsername { get; set; }
-
 #nullable enable
+        public string? UserUsername { get; set; }
+        public Guid? GroupID { get; set; }
         public string? OneTimePassword { get; set; }
 #nullable restore
-
-        public Guid? GroupID { get; set; }
 
         public virtual User User { get; set; }
         public virtual Machine Machine { get; set; }

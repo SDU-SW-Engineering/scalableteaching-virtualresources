@@ -18,7 +18,7 @@ namespace ScalableTeaching.Controllers
     [Authorize(Policy = "EducatorLevel")]
     public class CreationController : ControllerBase
     {
-        private string ValidateAptRegex = @"^[0-9A-Za-z.+-]$";
+        private string ValidateAptRegex = @"^[0-9A-Za-z.+-]+$";
         private string ValidatePpaRegex = @"^(ppa:([a-z-]+)\/[a-z-]+)$";
         private string ValidateLinuxGroup = @"^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$";
         private string ValidateHostname = @"^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$";
@@ -68,11 +68,12 @@ namespace ScalableTeaching.Controllers
                 });
                 _context.MachineAssignments.Add(new()
                 {
+                    MachineAssignmentID = Guid.NewGuid(),
                     GroupID = machine.OwningGroup,
                     MachineID = NewMachineID,
-                    OneTimePassword = new string(Enumerable.Repeat(chars, 12).Select(s=>s[Randomizer.Next(s.Length)]).ToArray()),
+                    OneTimePassword = new string(Enumerable.Repeat(chars, 12).Select(s => s[Randomizer.Next(s.Length)]).ToArray()),
                     UserUsername = null
-                });
+                }); ;
             }
 
             await _context.SaveChangesAsync();
@@ -85,7 +86,6 @@ namespace ScalableTeaching.Controllers
         [HttpPost("userbased")]
         public async Task<ActionResult<Machine>> PostMachineUserBased(CreateMachineUsersBased machines)
         {
-
             var Randomizer = new Random();
             //Validate input
             foreach (var machine in machines.Machines)
@@ -108,15 +108,20 @@ namespace ScalableTeaching.Controllers
                     HostName = machine.Hostname,
                     MachineID = NewMachineID,
                     UserUsername = GetUsername(),
-                    MachineCreationStatus = CreationStatus.REGISTERED
+                    MachineCreationStatus = CreationStatus.REGISTERED,
+                    Apt = machine.Apt,
+                    LinuxGroups = machine.LinuxGroups,
+                    Ports = machine.Ports,
+                    Ppa = machine.Ppa
                 });
-                _context.MachineAssignments.Add(new()
+                machine.AssignedUsers.ForEach(user => _context.MachineAssignments.Add(new()
                 {
+                    MachineAssignmentID = Guid.NewGuid(),
                     GroupID = null,
                     MachineID = NewMachineID,
                     OneTimePassword = new string(Enumerable.Repeat(chars, 12).Select(s => s[Randomizer.Next(s.Length)]).ToArray()),
-                    UserUsername = null
-                });
+                    UserUsername = user
+                }));
             }
 
             await _context.SaveChangesAsync();

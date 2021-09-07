@@ -19,13 +19,14 @@ namespace ScalableTeaching.Services
         private readonly MachineConfigurator _machineConfigurator;
         private readonly IServiceScopeFactory _factory;
 
-        private readonly List<Machine> _creationQueue = new();
+        private readonly List<Guid> _creationQueue = new();
         private readonly List<(Machine, DateTimeOffset)> _deletionQueue = new();
 
 
         private Timer _CreationQueueingTimer;
         private Timer _CreatedTimer;
         private Timer _DeletionTimer;
+        private Timer _StatusTimer;
 
         public MachineControllerService(IOpenNebulaAccessor accessor, MachineConfigurator machineConfigurator, IServiceScopeFactory factory)
         {
@@ -37,6 +38,7 @@ namespace ScalableTeaching.Services
         {
             _CreationQueueingTimer = new(CreationQueueingTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(2));
             _CreatedTimer = new(CreatedTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(5));
+            _StatusTimer = new(StatusTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
             _DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromDays(1));
 
             return Task.CompletedTask;
@@ -62,7 +64,7 @@ namespace ScalableTeaching.Services
 
         private void DeletionTimerCallback(object state)
         {
-            var _context = _factory.CreateScope().ServiceProvider.GetRequiredService<VmDeploymentContext>();
+            var _context = GetContext();
             _deletionQueue.ForEach(machine =>
             {
                 if(machine.Item2.UtcDateTime < DateTime.UtcNow)
@@ -78,14 +80,14 @@ namespace ScalableTeaching.Services
 
         private async void CreationQueueingTimerCallback(object state)
         {
-            var _context = _factory.CreateScope().ServiceProvider.GetRequiredService<VmDeploymentContext>();
+            var _context = GetContext();
             var RegisteredMachines = _context.Machines.Where(machine => machine.MachineCreationStatus == CreationStatus.REGISTERED).ToList();
             RegisteredMachines.ForEach(machine =>
             {
                 machine.MachineCreationStatus = CreationStatus.QUEUED_FOR_CREATION;
                 var CreationResult = _accessor.CreateVirtualMachine(int.Parse(Environment.GetEnvironmentVariable("OpenNebulaDefaultTemplate")), machine.HostName);
                 machine.OpenNebulaID = CreationResult.Item2;
-                _creationQueue.Add(machine);
+                _creationQueue.Add(machine.MachineID);
             });
             _context.Machines.UpdateRange(RegisteredMachines);
             await _context.SaveChangesAsync();
@@ -94,15 +96,17 @@ namespace ScalableTeaching.Services
 
         private async void CreatedTimerCallback(object state)
         {
-            var _context = _factory.CreateScope().ServiceProvider.GetRequiredService<VmDeploymentContext>();
-            var MachineStatusMap = _accessor.GetAllVirtualMachineInfo(false, -2).ToDictionary<VmModel, int>(machine => {
-                return machine.MachineId;
-            });
-            foreach (Machine machine in _creationQueue)
+            var _context = GetContext();
+            var PollTime = DateTimeOffset.UtcNow;
+            
+            Dictionary<int, VmModel> MachineStatusMap = _accessor.GetAllVirtualMachineInfo(false, -2).ToDictionary(machine => machine.MachineId); //Index OpenNebula Machines by their id
+
+            var machines = _context.Machines.Where(machine => _creationQueue.Contains(machine.MachineID));
+            foreach (Machine machine in machines)
             {
-                machine.MachineStatus = new MachineStatus(machine.MachineID, MachineStatusMap.GetValueOrDefault((int)machine.OpenNebulaID));
+                machine.MachineStatus = MachineStatus.MachineStatusFactory(machine.MachineID, MachineStatusMap.GetValueOrDefault((int)machine.OpenNebulaID), PollTime);
                 _context.MachineStatuses.Update(machine.MachineStatus);
-                if(machine.MachineStatus.MachineState == MachineStates.ACTIVE)
+                if (machine.MachineStatus.MachineState == MachineStates.ACTIVE)
                 {
                     await _machineConfigurator.ConfigureMachine(machine);
                     machine.MachineCreationStatus = CreationStatus.CONFIGURED;
@@ -110,6 +114,27 @@ namespace ScalableTeaching.Services
                 }
                 await _context.SaveChangesAsync();
             }
+        }
+
+        private async void StatusTimerCallback(object state)
+        {
+            var _context = GetContext();
+            var PollTime = DateTimeOffset.UtcNow;
+
+            Dictionary<int, VmModel> MachineStatusMap = _accessor.GetAllVirtualMachineInfo(false, -2).ToDictionary(machine => machine.MachineId);
+
+            var machines = _context.Machines.Where(machine => MachineStatusMap.ContainsKey((int)machine.OpenNebulaID)).ToList();
+
+            foreach(var machine in machines)
+            {
+                machine.MachineStatus = MachineStatus.MachineStatusFactory(machine.MachineID, MachineStatusMap.GetValueOrDefault((int)machine.OpenNebulaID),PollTime);
+                _context.Update(machine);
+            }
+        }
+
+        private VmDeploymentContext GetContext()
+        {
+            return _factory.CreateScope().ServiceProvider.GetRequiredService<VmDeploymentContext>();
         }
     }
 }

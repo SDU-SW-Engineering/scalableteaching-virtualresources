@@ -24,7 +24,6 @@ namespace ScalableTeaching.Controllers
         private readonly IOpenNebulaAccessor _accessor;
         private readonly MachineControllerService _MachineControllerService;
         private readonly SshConfigBuilder _sshConfigBuilder;
-        private string _username;
         private readonly string ValidateAptRegex = @"^[0-9A-Za-z.+-]$";
         private readonly string ValidatePpaRegex = @"^(ppa:([a-z-]+)\/[a-z-]+)$";
         private readonly string ValidateLinuxGroup = @"^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$";
@@ -43,6 +42,7 @@ namespace ScalableTeaching.Controllers
         [HttpGet]
         public async Task<ActionResult<List<MachineManagementReturn>>> GetAvailableMachines()//TODO: Might suffer EF issues
         {
+            //TODO: Fix machine assignement stuff
             List<Machine> machines = _context.Machines.Where(machine => machine.UserUsername == GetUsername()).ToList();
             _context.MachineAssignments.Where(assignment => assignment.UserUsername == GetUsername()).ToList().ForEach(assignment => machines.Add(assignment.Machine));
             List<MachineManagementReturn> returnList = new();
@@ -55,7 +55,7 @@ namespace ScalableTeaching.Controllers
                 {
                     if (assignment.UserUsername == null)
                     {
-                        assignment.Group.GroupAssignments.ForEach(gassignment => usernames.Add(gassignment.UserUsername));
+                        assignment.Group.GroupAssignments.ForEach(gassignment => usernames.Add(gassignment.UserUsername));//TODO: Fix machine assignement stuff
                     }
                 });
                 returnList.Add(new MachineManagementReturn()
@@ -83,7 +83,7 @@ namespace ScalableTeaching.Controllers
             var machine = await _context.Machines.FindAsync(id);
             if (machine == null) return BadRequest("Machine Not Found");
             //Validate machine "ownership"
-            if (!machine.MachineAssignments.Where(assignment => assignment.User.Username == GetUsername()).Any() && machine.UserUsername != GetUsername()) return BadRequest("You are note assigned to this machine");
+            if (!machine.MachineAssignments.Where(assignment => assignment.User.Username == GetUsername()).Any() && machine.UserUsername != GetUsername()) return BadRequest("You are note assigned to this machine");//TODO: Fix machine assignement stuff
             //Reboot Machine
             if (_accessor.PerformVirtualMachineAction(MachineActions.REBOOT, (int)machine.OpenNebulaID)) return Ok();
             else return StatusCode(StatusCodes.Status500InternalServerError);
@@ -100,7 +100,7 @@ namespace ScalableTeaching.Controllers
             var machine = await _context.Machines.FindAsync(id);
             if (machine == null) return BadRequest("Machine Not Found");
             //Validate machine "ownership"
-            if (!machine.MachineAssignments.Where(assignment => assignment.User.Username == GetUsername()).Any() && machine.UserUsername != GetUsername()) return BadRequest("You are note assigned to this machine");
+            if (!machine.MachineAssignments.Where(assignment => assignment.User.Username == GetUsername()).Any() && machine.UserUsername != GetUsername()) return BadRequest("You are note assigned to this machine");//TODO: Fix machine assignement stuff
             //Reboot Machine
             if (_accessor.PerformVirtualMachineAction(MachineActions.REBOOT_HARD, (int)machine.OpenNebulaID)) return Ok();
             else return StatusCode(StatusCodes.Status500InternalServerError);
@@ -163,6 +163,7 @@ namespace ScalableTeaching.Controllers
                 });
                 _context.MachineAssignments.Add(new()
                 {
+                    MachineAssignmentID = Guid.NewGuid(),
                     GroupID = machine.OwningGroup,
                     MachineID = NewMachineID,
                     OneTimePassword = new string(Enumerable.Repeat(chars, 12).Select(s => s[Randomizer.Next(s.Length)]).ToArray()),
@@ -207,6 +208,7 @@ namespace ScalableTeaching.Controllers
                 });
                 _context.MachineAssignments.Add(new()
                 {
+                    MachineAssignmentID = Guid.NewGuid(),
                     GroupID = null,
                     MachineID = NewMachineID,
                     OneTimePassword = new string(Enumerable.Repeat(chars, 12).Select(s => s[Randomizer.Next(s.Length)]).ToArray()),

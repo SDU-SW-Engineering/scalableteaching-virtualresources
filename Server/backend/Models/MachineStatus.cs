@@ -13,26 +13,33 @@ namespace ScalableTeaching.Models
     {
         [Key]
         public Guid MachineID { get; set; }
-        public DateTimeOffset LastPoll { get; }
-        public MachineStates MachineState { get; }
-        public LCMStates MachineLCMState { get; }
-        public decimal MachineCpuUtilizationPercent { get; }
-        public int MachineMemmoryUtilizationBytes { get; }
-        public string MachineIp { get; }
-        public string MachineMac { get; }
+        public DateTimeOffset LastPoll { get; set; }
+        public MachineStates MachineState { get; set; }
+        public LCMStates MachineLCMState { get; set; }
+        public decimal MachineCpuUtilizationPercent { get; set; }
+        public int MachineMemmoryUtilizationBytes { get; set; }
+        public string MachineIp { get; set; }
+        public string MachineMac { get; set; }
 
         public virtual Machine Machine { get; set; }
 
+        public static MachineStatus MachineStatusFactory(Guid MachineID, VmModel MachineStatus, DateTimeOffset PollTime)
+        {
+            return new MachineStatus()
+            {
+                MachineID = MachineID,
+                MachineCpuUtilizationPercent = MachineStatus.MachineCpuUtilizationPercent,
+                MachineIp = MachineStatus.MachineIp,
+                MachineLCMState = MachineStatus.MachineLCMState,
+                MachineMac = MachineStatus.MachineMac,
+                MachineMemmoryUtilizationBytes = MachineStatus.MachineMemmoryUtilizationBytes,
+                MachineState = MachineStatus.MachineState,
+                LastPoll = PollTime.ToUniversalTime(),
+            };
+        }
+        public MachineStatus()
+        {
 
-        public MachineStatus() { }
-        public MachineStatus(Guid MachineID, VmModel MachineStatus) {
-            this.MachineID = MachineID;
-            this.MachineCpuUtilizationPercent = MachineStatus.MachineCpuUtilizationPercent;
-            this.MachineIp = MachineStatus.MachineIp;
-            this.MachineLCMState = MachineStatus.MachineLCMState;
-            this.MachineMac = MachineStatus.MachineMac;
-            this.MachineMemmoryUtilizationBytes = MachineStatus.MachineMemmoryUtilizationBytes;
-            this.MachineState = MachineStatus.MachineState;
         }
     }
 }
