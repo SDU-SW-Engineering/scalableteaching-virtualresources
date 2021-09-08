@@ -55,7 +55,7 @@ namespace ScalableTeaching.Controllers
                 {
                     if (assignment.UserUsername == null)
                     {
-                        assignment.Group.GroupAssignments.ForEach(gassignment => usernames.Add(gassignment.UserUsername));//TODO: Fix machine assignement stuff
+                        assignment.Group.GroupAssignments.ForEach(gassignment => usernames.Add(gassignment.UserUsername));
                     }
                 });
                 returnList.Add(new MachineManagementReturn()

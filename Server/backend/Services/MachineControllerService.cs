@@ -67,7 +67,8 @@ namespace ScalableTeaching.Services
             var _context = GetContext();
             _deletionQueue.ForEach(machine =>
             {
-                if(machine.Item2.UtcDateTime < DateTime.UtcNow)
+                Console.WriteLine($"MachineControllerService.DeletionTimerCallback:Machines Scheduled for creation: {String.Join(", ", _creationQueue)}");
+                if (machine.Item2.UtcDateTime < DateTime.UtcNow)
                 {
                     if (_accessor.PerformVirtualMachineAction(MachineActions.TERMINATE_HARD, (int)machine.Item1.OpenNebulaID))
                     {
@@ -79,9 +80,10 @@ namespace ScalableTeaching.Services
         }
 
         private async void CreationQueueingTimerCallback(object state)
-        {
+        {   
             var _context = GetContext();
             var RegisteredMachines = _context.Machines.Where(machine => machine.MachineCreationStatus == CreationStatus.REGISTERED).ToList();
+            Console.WriteLine($"MachineControllerService.CreationQueueingTimerCallback:Machines to be Scheduled for creation: {String.Join(",\n", RegisteredMachines)}");
             RegisteredMachines.ForEach(machine =>
             {
                 machine.MachineCreationStatus = CreationStatus.QUEUED_FOR_CREATION;
@@ -98,19 +100,17 @@ namespace ScalableTeaching.Services
         {
             var _context = GetContext();
             var PollTime = DateTimeOffset.UtcNow;
-            
-            Dictionary<int, VmModel> MachineStatusMap = _accessor.GetAllVirtualMachineInfo(false, -2).ToDictionary(machine => machine.MachineId); //Index OpenNebula Machines by their id
-
             var machines = _context.Machines.Where(machine => _creationQueue.Contains(machine.MachineID));
             foreach (Machine machine in machines)
             {
-                machine.MachineStatus = MachineStatus.MachineStatusFactory(machine.MachineID, MachineStatusMap.GetValueOrDefault((int)machine.OpenNebulaID), PollTime);
-                _context.MachineStatuses.Update(machine.MachineStatus);
+                Console.WriteLine($"MachineControllerService.CreatedTimerCallback:Machines Scheduled for creation: {String.Join(", ", _creationQueue)}");
                 if (machine.MachineStatus.MachineState == MachineStates.ACTIVE)
                 {
+                    Console.WriteLine($"MachineControllerService.CreatedTimerCallback: Machine Booted after creation: { machine.MachineID}");
                     await _machineConfigurator.ConfigureMachine(machine);
                     machine.MachineCreationStatus = CreationStatus.CONFIGURED;
                     _context.Machines.Update(machine);
+                    _creationQueue.Remove(machine.MachineID);
                 }
                 await _context.SaveChangesAsync();
             }
@@ -118,18 +118,19 @@ namespace ScalableTeaching.Services
 
         private async void StatusTimerCallback(object state)
         {
+            Console.WriteLine($"MachineControllerService.StatusTimerCallback: Callback Time: {DateTimeOffset.Now}");
             var _context = GetContext();
             var PollTime = DateTimeOffset.UtcNow;
 
-            Dictionary<int, VmModel> MachineStatusMap = _accessor.GetAllVirtualMachineInfo(false, -2).ToDictionary(machine => machine.MachineId);
-
-            var machines = _context.Machines.Where(machine => MachineStatusMap.ContainsKey((int)machine.OpenNebulaID)).ToList();
-
+            Dictionary<int, VmModel> MachineStatusMap = _accessor.GetAllVirtualMachineInfo(false, -2).ToDictionary(machine => { return machine.MachineId; });
+            var ValidMachineIDs = MachineStatusMap.Keys.ToList();
+            var machines = _context.Machines.Where(machine => ValidMachineIDs.Contains((int)machine.OpenNebulaID)).ToList();
+            Console.WriteLine($"MachineControllerService.StatusTimerCallback: ON IDs {String.Join(", ", ValidMachineIDs)}");
             foreach(var machine in machines)
             {
-                machine.MachineStatus = MachineStatus.MachineStatusFactory(machine.MachineID, MachineStatusMap.GetValueOrDefault((int)machine.OpenNebulaID),PollTime);
-                _context.Update(machine);
+                _context.MachineStatuses.Update(MachineStatus.MachineStatusFactory(machine.MachineID, MachineStatusMap.GetValueOrDefault((int)machine.OpenNebulaID),PollTime));
             }
+            await _context.SaveChangesAsync();
         }
 
         private VmDeploymentContext GetContext()
