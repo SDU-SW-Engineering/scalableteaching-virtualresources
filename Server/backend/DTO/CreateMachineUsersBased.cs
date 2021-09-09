@@ -12,7 +12,7 @@ namespace ScalableTeaching.DTO
     public class CreateMachineUsersBasedSingle
     {
         public string Hostname { get; set; }
-        public List<string> AssignedUsers { get; set; }
+        public List<string> Users { get; set; }
         public List<string> Apt { get; set; }
         public List<string> Ppa { get; set; }
         public List<int> Ports { get; set; }

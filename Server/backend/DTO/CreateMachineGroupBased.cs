@@ -12,7 +12,7 @@ namespace ScalableTeaching.DTO
     public class CreateMachineGroupBasedSingle
     {
         public string Hostname { get; set; }
-        public Guid OwningGroup { get; set; }
+        public Guid Group { get; set; }
         public List<string> Apt { get; set; }
         public List<string> Ppa { get; set; }
         public List<int> Ports { get; set; }

@@ -42,9 +42,9 @@ namespace ScalableTeaching.Controllers
             foreach(var machine in machines.Machines)
             {
                 //Validate ownership
-                var group = await _context.Groups.FindAsync(machine.OwningGroup);
+                var group = await _context.Groups.FindAsync(machine.Group);
                 if (group == null) return BadRequest($"Invalid Group id");
-                if (group.CourseID != machine.CourseID) return BadRequest($"GroupID: {machine.OwningGroup} is not assiciated with the course {machine.CourseID}");
+                if (group.CourseID != machine.CourseID) return BadRequest($"GroupID: {machine.Group} is not assiciated with the course {machine.CourseID}");
                 if (group.Course.UserUsername != GetUsername()) return Unauthorized($"You do not have ownership over the course: {machine.CourseID}, and therefor not over the group id requested");
 
                 //Validate Content
@@ -69,7 +69,7 @@ namespace ScalableTeaching.Controllers
                 _context.MachineAssignments.Add(new()
                 {
                     MachineAssignmentID = Guid.NewGuid(),
-                    GroupID = machine.OwningGroup,
+                    GroupID = machine.Group,
                     MachineID = NewMachineID,
                     OneTimePassword = new string(Enumerable.Repeat(chars, 12).Select(s => s[Randomizer.Next(s.Length)]).ToArray()),
                     UserUsername = null
@@ -114,7 +114,7 @@ namespace ScalableTeaching.Controllers
                     Ports = machine.Ports,
                     Ppa = machine.Ppa
                 });
-                machine.AssignedUsers.ForEach(user => _context.MachineAssignments.Add(new()
+                machine.Users.ForEach(user => _context.MachineAssignments.Add(new()
                 {
                     MachineAssignmentID = Guid.NewGuid(),
                     GroupID = null,
