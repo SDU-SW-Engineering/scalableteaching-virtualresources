@@ -37,6 +37,19 @@ namespace ScalableTeaching.Models
                 LastPoll = PollTime.ToUniversalTime(),
             };
         }
+
+        public MachineStatus Update(MachineStatus NewStatus)
+        {
+            MachineCpuUtilizationPercent = NewStatus.MachineCpuUtilizationPercent;
+            MachineIp = NewStatus.MachineIp;
+            MachineLCMState = NewStatus.MachineLCMState;
+            MachineMac = NewStatus.MachineMac;
+            MachineMemmoryUtilizationBytes = NewStatus.MachineMemmoryUtilizationBytes;
+            MachineState = NewStatus.MachineState;
+            LastPoll = NewStatus.LastPoll;
+            return this;
+        }
+
         public MachineStatus()
         {
 

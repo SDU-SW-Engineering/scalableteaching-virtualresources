@@ -14,9 +14,7 @@ namespace ScalableTeaching.Models
         public string? OneTimePassword { get; set; }
 #nullable restore
 
-        public virtual User User { get; set; }
         public virtual Machine Machine { get; set; }
-        public virtual Group Group { get; set; }
 
     }
 }

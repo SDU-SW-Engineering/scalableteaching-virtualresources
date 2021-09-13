@@ -28,6 +28,8 @@ namespace ScalableTeaching.Services
         private Timer _DeletionTimer;
         private Timer _StatusTimer;
 
+        private bool _StatusIsGoing = false;
+
         public MachineControllerService(IOpenNebulaAccessor accessor, MachineConfigurator machineConfigurator, IServiceScopeFactory factory)
         {
             _factory = factory;
@@ -60,6 +62,7 @@ namespace ScalableTeaching.Services
             _CreationQueueingTimer?.Dispose();
             _CreatedTimer?.Dispose();
             _DeletionTimer?.Dispose();
+            _StatusTimer?.Dispose();
         }
 
         private void DeletionTimerCallback(object state)
@@ -80,7 +83,7 @@ namespace ScalableTeaching.Services
         }
 
         private async void CreationQueueingTimerCallback(object state)
-        {   
+        {
             var _context = GetContext();
             var RegisteredMachines = _context.Machines.Where(machine => machine.MachineCreationStatus == CreationStatus.REGISTERED).ToList();
             Console.WriteLine($"MachineControllerService.CreationQueueingTimerCallback:Machines to be Scheduled for creation: {String.Join(",\n", RegisteredMachines)}");
@@ -118,21 +121,37 @@ namespace ScalableTeaching.Services
 
         private async void StatusTimerCallback(object state)
         {
-            Console.WriteLine($"MachineControllerService.StatusTimerCallback: Callback Time: {DateTimeOffset.Now}");
-            var _context = GetContext();
-            var PollTime = DateTimeOffset.UtcNow;
-
-            Dictionary<int, VmModel> MachineStatusMap = _accessor.GetAllVirtualMachineInfo(false, -2).ToDictionary(machine => { return machine.MachineId; });
-            var ValidMachineIDs = MachineStatusMap.Keys.ToList();
-            var machines = _context.Machines.Where(machine => ValidMachineIDs.Contains((int)machine.OpenNebulaID)).ToList();
-            Console.WriteLine($"MachineControllerService.StatusTimerCallback: ON IDs {String.Join(", ", ValidMachineIDs)}");
-            foreach(var machine in machines)
+            if (_StatusIsGoing) return;
+            try
             {
-                _context.MachineStatuses.Update(MachineStatus.MachineStatusFactory(machine.MachineID, MachineStatusMap.GetValueOrDefault((int)machine.OpenNebulaID),PollTime));
-            }
-            await _context.SaveChangesAsync();
-        }
+                _StatusIsGoing = true;
+                Console.WriteLine($"MachineControllerService.StatusTimerCallback: Callback Time: {DateTimeOffset.Now}");
+                var _context = GetContext();
+                var PollTime = DateTimeOffset.UtcNow;
 
+                Dictionary<int, VmModel> MachineStatusMap = _accessor.GetAllVirtualMachineInfo(false, -3).ToDictionary(machine => { return machine.MachineId; });
+                var ValidMachineIDs = MachineStatusMap.Keys.ToList();
+                var machines = _context.Machines.Where(machine => ValidMachineIDs.Contains((int)machine.OpenNebulaID)).ToList();
+                Console.WriteLine($"MachineControllerService.StatusTimerCallback: ON IDs {String.Join(", ", ValidMachineIDs)}");
+                foreach (var machine in machines)
+                {
+                    if ((await _context.MachineStatuses.FindAsync(machine.MachineID)) == null)
+                    {
+                        _context.MachineStatuses.Add(MachineStatus.MachineStatusFactory(machine.MachineID, MachineStatusMap.GetValueOrDefault((int)machine.OpenNebulaID), PollTime));
+                    }
+                    else
+                    {
+                        var status = await _context.MachineStatuses.FindAsync(machine.MachineID);
+                        _context.MachineStatuses.Update(status.Update(MachineStatus.MachineStatusFactory(machine.MachineID, MachineStatusMap.GetValueOrDefault((int)machine.OpenNebulaID), PollTime)));
+                    }
+                    await _context.SaveChangesAsync();
+                }
+            }
+            finally
+            {
+                _StatusIsGoing = false;
+            }
+        }
         private VmDeploymentContext GetContext()
         {
             return _factory.CreateScope().ServiceProvider.GetRequiredService<VmDeploymentContext>();

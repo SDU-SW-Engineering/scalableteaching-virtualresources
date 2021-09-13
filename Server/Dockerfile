@@ -19,5 +19,5 @@ RUN dotnet publish "./backend/backend.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY --from=build /src/appsettings.json .
+COPY --from=build /src/backend/appsettings.json .
 ENTRYPOINT ["dotnet", "backend.dll"]

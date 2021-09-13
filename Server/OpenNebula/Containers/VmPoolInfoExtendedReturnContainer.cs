@@ -7,10 +7,16 @@ namespace ScalableTeaching.OpenNebula.Containers
 {
     public class VmPoolInfoExtendedReturnContainer : OpenNebulaReturnContainer
     {
-        public readonly List<VmModel> VmModelList = new();
+        public List<VmModel> VmModelList;
 
         public VmPoolInfoExtendedReturnContainer(object[] input)
         {
+            if (input is null)
+            {
+                Console.WriteLine("Input was null for VmPoolInfoExtendedReturnContainer");
+            }
+
+            VmModelList = new List<VmModel>();
             XmlDocument ResultDocument;
             ResultDocument = GetCleanXmlDocument(input);
 

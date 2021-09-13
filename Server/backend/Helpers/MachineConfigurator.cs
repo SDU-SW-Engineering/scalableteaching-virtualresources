@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Linq;
 using Renci.SshNet;
+using ScalableTeaching.Data;
 using ScalableTeaching.Models;
 using System;
 using System.Collections.Generic;
@@ -13,10 +15,12 @@ namespace ScalableTeaching.Helpers
     public class MachineConfigurator
     {
         private string _defaultUsername;
+        private readonly IServiceScopeFactory _factory;
         private const string VM_SCALABLE_TEACHING_PATH = "/home/admin/ScalableTeaching";
         private const string SERVER_SCALABLE_TEACHING_PATH = "/ScalableTeaching";
-        public MachineConfigurator()
+        public MachineConfigurator(IServiceScopeFactory factory)
         {
+            _factory = factory;
             _defaultUsername = Environment.GetEnvironmentVariable("VM_DEFAULT_USERNAME");
         }
         public async Task<bool> ConfigureMachine(Machine machine)//TODO: Unifinished due to unknown elements related to lack of access to images on open nebula
@@ -36,12 +40,12 @@ namespace ScalableTeaching.Helpers
                         Groups = machine.LinuxGroups,
                         Username = assignment.UserUsername,
                         UserPassword = assignment.OneTimePassword,
-                        UserPublicKey = SSHKeyHelper.GetSSHPublicKey(SSHKeyHelper.ParseKeyFromPem(assignment.User.UserPrivateKey), assignment.UserUsername)  
+                        UserPublicKey = SSHKeyHelper.GetSSHPublicKey(SSHKeyHelper.ParseKeyFromPem( (await GetContext().Users.FindAsync(assignment.UserUsername)).UserPrivateKey), assignment.UserUsername)  
                     });
                 }
                 else
                 {
-                    foreach(var groupAssignment in assignment.Group.GroupAssignments)
+                    foreach(var groupAssignment in GetContext().GroupAssignments.Where(ga => ga.GroupID == assignment.GroupID))
                     {
                         configurationUsers.Add(new MachineConfigurationUser()
                         {
@@ -87,6 +91,10 @@ namespace ScalableTeaching.Helpers
                 await Task.Run(()=>result.AsyncWaitHandle.WaitOne());
             }
             return true; //TODO: Implement error handeling for configuration 
+        }
+        private VmDeploymentContext GetContext()
+        {
+            return _factory.CreateScope().ServiceProvider.GetRequiredService<VmDeploymentContext>();
         }
         private class MachineConfigurationUser
         {

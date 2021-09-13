@@ -55,7 +55,8 @@ namespace ScalableTeaching.Controllers
                 {
                     if (assignment.UserUsername == null)
                     {
-                        assignment.Group.GroupAssignments.ForEach(gassignment => usernames.Add(gassignment.UserUsername));
+                        var groupAssignments = _context.GroupAssignments.Where(assign => assign.GroupID == assignment.GroupID).ToList();
+                        groupAssignments.ForEach(gassignment => usernames.Add(gassignment.UserUsername));
                     }
                 });
                 returnList.Add(new MachineManagementReturn()
@@ -83,7 +84,7 @@ namespace ScalableTeaching.Controllers
             var machine = await _context.Machines.FindAsync(id);
             if (machine == null) return BadRequest("Machine Not Found");
             //Validate machine "ownership"
-            if (!machine.MachineAssignments.Where(assignment => assignment.User.Username == GetUsername()).Any() && machine.UserUsername != GetUsername()) return BadRequest("You are note assigned to this machine");//TODO: Fix machine assignement stuff
+            if (!machine.MachineAssignments.Where(assignment => assignment.UserUsername == GetUsername()).Any() && machine.UserUsername != GetUsername()) return BadRequest("You are note assigned to this machine");//TODO: Fix machine assignement stuff
             //Reboot Machine
             if (_accessor.PerformVirtualMachineAction(MachineActions.REBOOT, (int)machine.OpenNebulaID)) return Ok();
             else return StatusCode(StatusCodes.Status500InternalServerError);
@@ -100,7 +101,7 @@ namespace ScalableTeaching.Controllers
             var machine = await _context.Machines.FindAsync(id);
             if (machine == null) return BadRequest("Machine Not Found");
             //Validate machine "ownership"
-            if (!machine.MachineAssignments.Where(assignment => assignment.User.Username == GetUsername()).Any() && machine.UserUsername != GetUsername()) return BadRequest("You are note assigned to this machine");//TODO: Fix machine assignement stuff
+            if (!machine.MachineAssignments.Where(assignment => assignment.UserUsername == GetUsername()).Any() && machine.UserUsername != GetUsername()) return BadRequest("You are note assigned to this machine");//TODO: Fix machine assignement stuff
             //Reboot Machine
             if (_accessor.PerformVirtualMachineAction(MachineActions.REBOOT_HARD, (int)machine.OpenNebulaID)) return Ok();
             else return StatusCode(StatusCodes.Status500InternalServerError);
