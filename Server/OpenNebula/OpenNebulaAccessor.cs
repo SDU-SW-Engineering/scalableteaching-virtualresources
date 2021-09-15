@@ -33,7 +33,7 @@ namespace ScalableTeaching.OpenNebula
         /// <inheritdoc cref="IOpenNebulaAccessor.GetVirtualMachineInformation(int)"/>
         public List<VmModel> GetAllVirtualMachineInfo(bool IncludeDoneMachines, int OwnershipMask)
         {
-            Object[] XmlRpcReturn = VmManagementProxy.VmPoolInfoExtended(_Session, -2, -1, -1, IncludeDoneMachines ? -2 : -1);
+            Object[] XmlRpcReturn = VmManagementProxy.VmPoolInfoExtended(_Session, OwnershipMask, -1, -1, IncludeDoneMachines ? -2 : -1);
             VmPoolInfoExtendedReturnContainer returnContainer = new(XmlRpcReturn);
             return returnContainer.VmModelList;
         }
