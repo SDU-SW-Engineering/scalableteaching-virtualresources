@@ -39,7 +39,7 @@ namespace ScalableTeaching.Controllers
 
             var Randomizer = new Random();
             //Validate input
-            foreach(var machine in machines.Machines)
+            foreach (var machine in machines.Machines)
             {
                 //Validate ownership
                 var group = await _context.Groups.FindAsync(machine.Group);
@@ -49,7 +49,7 @@ namespace ScalableTeaching.Controllers
 
                 //Validate Content
                 if (!Regex.IsMatch(machine.Hostname, ValidateHostname)) return BadRequest($"Invalid Hostname: {machine.Hostname}");
-                if (!machine.Apt.AsParallel().All(apt => Regex.IsMatch(apt, ValidateAptRegex))) return BadRequest($"Invalid apt package in list: {String.Join(", ",machine.Apt.ToArray())}");
+                if (!machine.Apt.AsParallel().All(apt => Regex.IsMatch(apt, ValidateAptRegex))) return BadRequest($"Invalid apt package in list: {String.Join(", ", machine.Apt.ToArray())}");
                 if (!machine.Ppa.AsParallel().All(ppa => Regex.IsMatch(ppa, ValidatePpaRegex))) return BadRequest($"Invalid ppa in list: {String.Join(", ", machine.Ppa.ToArray())}");
                 if (!machine.LinuxGroups.AsParallel().All(group => Regex.IsMatch(group, ValidateLinuxGroup))) return BadRequest($"Invalid linux group in list: {String.Join(", ", machine.LinuxGroups)}");
                 if (!machine.Ports.AsParallel().All(port => port > 0 && port <= 65535)) return BadRequest($"Port Out of bound in list: {String.Join(", ", machine.Ports)}");
@@ -114,14 +114,19 @@ namespace ScalableTeaching.Controllers
                     Ports = machine.Ports,
                     Ppa = machine.Ppa
                 });
-                machine.Users.ForEach(user => _context.MachineAssignments.Add(new()
+                machine.Users.ForEach(user =>
                 {
-                    MachineAssignmentID = Guid.NewGuid(),
-                    GroupID = null,
-                    MachineID = NewMachineID,
-                    OneTimePassword = new string(Enumerable.Repeat(chars, 12).Select(s => s[Randomizer.Next(s.Length)]).ToArray()),
-                    UserUsername = user
-                }));
+                    _context.Users.Add(AuthController.NewUser(user));
+                    _context.MachineAssignments.Add(new()
+                    {
+                        MachineAssignmentID = Guid.NewGuid(),
+                        GroupID = null,
+                        MachineID = NewMachineID,
+                        OneTimePassword = new string(Enumerable.Repeat(chars, 12).Select(s => s[Randomizer.Next(s.Length)]).ToArray()),
+                        UserUsername = user
+                    });
+                }
+                );
             }
 
             await _context.SaveChangesAsync();

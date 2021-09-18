@@ -18,55 +18,55 @@ namespace ScalableTeaching.OpenNebula.Containers
             }
 
             VmModelList = new List<VmModel>();
-            Console.WriteLine("VMPoolInfoExtendedReturnContainer: VM Model List Created in ");
+            //Console.WriteLine("VMPoolInfoExtendedReturnContainer: VM Model List Created in ");
             XmlDocument ResultDocument;
             ResultDocument = GetCleanXmlDocument(input);
-            Console.WriteLine("VMPoolInfoExtendedReturnContainer: Clean result document generated");
+            //Console.WriteLine("VMPoolInfoExtendedReturnContainer: Clean result document generated");
 
             XmlNodeList VmTemplateNodes = ResultDocument.GetElementsByTagName("VM");
-            Console.WriteLine("VMPoolInfoExtendedReturnContainer: VMTemplate Nodes recovered");
+            //Console.WriteLine("VMPoolInfoExtendedReturnContainer: VMTemplate Nodes recovered");
 
             foreach (XmlNode VmNode in VmTemplateNodes)
             {
                 var result = true;
-                Console.WriteLine("VMPoolInfoExtendedReturnContainer: Looping nodes");
+                //Console.WriteLine("VMPoolInfoExtendedReturnContainer: Looping nodes");
 
                 var monitoringNode = VmNode.SelectSingleNode("MONITORING");
-                Console.WriteLine("VMPoolInfoExtendedReturnContainer: Monitoring node selected");
+                //Console.WriteLine("VMPoolInfoExtendedReturnContainer: Monitoring node selected");
                 result &= monitoringNode != null;
 
                 result &= int.TryParse(VmNode.SelectSingleNode("ID")?.InnerText, out int machineId);
-                Console.WriteLine("VMPoolInfoExtendedReturnContainer: SelectedMachineID");
+                //Console.WriteLine("VMPoolInfoExtendedReturnContainer: SelectedMachineID");
 
                 var machineName = VmNode.SelectSingleNode("NAME")?.InnerText;
                 result &= machineName != null;
-                Console.WriteLine("VMPoolInfoExtendedReturnContainer: Selected Name Node");
+                //Console.WriteLine("VMPoolInfoExtendedReturnContainer: Selected Name Node");
                 
                 result &= long.TryParse(VmNode.SelectSingleNode("LAST_POLL")?.InnerText, out long lastPollLong);
                 var lastPoll = DateTimeOffset.FromUnixTimeSeconds(lastPollLong);
-                Console.WriteLine("VMPoolInfoExtendedReturnContainer: SelectedlastPoll");
+                //Console.WriteLine("VMPoolInfoExtendedReturnContainer: SelectedlastPoll");
 
                 result &= int.TryParse(VmNode.SelectSingleNode("STATE")?.InnerText, out int machineStateInt);
                 MachineStates machineState = (MachineStates)machineStateInt;
-                Console.WriteLine("VMPoolInfoExtendedReturnContainer: Selected state");
+                //Console.WriteLine("VMPoolInfoExtendedReturnContainer: Selected state");
 
                 result &= int.TryParse(VmNode.SelectSingleNode("LCM_STATE")?.InnerText, out int lcmstateint);
                 LCMStates lcmState = (LCMStates)lcmstateint;
-                Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected lcmstate");
+                //Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected lcmstate");
 
                 result &= decimal.TryParse(monitoringNode.SelectSingleNode("CPU")?.InnerText, out decimal machineCpuPercent);
-                Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected cpu%");
+                //Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected cpu%");
 
                 result &= int.TryParse(monitoringNode.SelectSingleNode("MEMORY")?.InnerText, out int machineMemmoryUtilizationBytes);
-                Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected Memmory bytes");
+                //Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected Memmory bytes");
 
                 var machineIp = monitoringNode.SelectSingleNode("GUEST_IP_ADDRESSES")?.InnerText.Split(',')[0];
                 result &= machineIp != null;
-                Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected ip");
+                //Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected ip");
 
                 var machineMac = VmNode.SelectSingleNode("TEMPLATE")?.SelectSingleNode("NIC")?.SelectSingleNode("MAC")?.InnerText;
                 result &= machineMac != null;
-                Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected mac");
+                //Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected mac");
 
                 if (!result)
                 {
@@ -84,7 +84,7 @@ namespace ScalableTeaching.OpenNebula.Containers
                     machineIp,
                     machineMac
                     ));
-                Console.WriteLine("VMPoolInfoExtendedReturnContainer: Added model to list");
+                //Console.WriteLine("VMPoolInfoExtendedReturnContainer: Added model to list");
             }
         }
     }

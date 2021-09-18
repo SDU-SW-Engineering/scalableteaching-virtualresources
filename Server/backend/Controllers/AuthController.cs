@@ -34,15 +34,7 @@ namespace ScalableTeaching.Controllers
                 User databaseUserReturn = await _context.Users.FindAsync(user.Username.ToLower());
                 if (databaseUserReturn == null)
                 {
-                    _context.Users.Add(new User()
-                    {
-                        AccountType = Models.User.UserType.User,
-                        Mail = user.Mail,
-                        GeneralName = user.Gn,
-                        Surname = user.Sn,
-                        Username = user.Username.ToLower(),
-                        UserPrivateKey = SSHKeyHelper.ExportKeyAsPEM(RSA.Create(2048))
-                    });
+                    _context.Users.Add(NewUser(user.Mail, user.Gn, user.Sn, user.Username));
                     await _context.SaveChangesAsync();
                     user.AccountType = nameof(Models.User.UserType.User);
                 }
@@ -63,6 +55,19 @@ namespace ScalableTeaching.Controllers
             {
                 return Unauthorized("Authentication Failed");
             }
+        }
+
+        internal static User NewUser(string Username, string Email = null, string GeneralName = null, string Surname = null)
+        {
+            return new User()
+            {
+                AccountType = Models.User.UserType.User,
+                Mail = Email,
+                GeneralName = GeneralName,
+                Surname = Surname,
+                Username = Username.ToLower(),
+                UserPrivateKey = SSHKeyHelper.ExportKeyAsPEM(RSA.Create(2048))
+            };
         }
 
         [HttpPost("validate/user")]

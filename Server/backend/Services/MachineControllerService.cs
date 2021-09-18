@@ -38,12 +38,20 @@ namespace ScalableTeaching.Services
             _accessor = accessor;
             _machineConfigurator = machineConfigurator;
         }
-        public Task StartAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken) //TODO: Return Timings to primes
         {
-            _CreationQueueingTimer = new(CreationQueueingTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(3));
-            _CreatedTimer = new(CreatedTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(5));
-            _StatusTimer = new(StatusTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(2));
-            _DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromDays(7));
+
+            //Reasonable times
+            //_CreationQueueingTimer = new(CreationQueueingTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(3));
+            //_CreatedTimer = new(CreatedTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(5));
+            //_StatusTimer = new(StatusTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(2));
+            //_DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromDays(7));
+
+            //Quick times
+            _CreationQueueingTimer = new(CreationQueueingTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromSeconds(23));
+            _CreatedTimer = new(CreatedTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromSeconds(29));
+            _StatusTimer = new(StatusTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromSeconds(11));
+            _DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromDays(1));
 
             return Task.CompletedTask;
         }
@@ -67,6 +75,10 @@ namespace ScalableTeaching.Services
             _StatusTimer?.Dispose();
         }
 
+        /// <summary>
+        /// Deletes machines scheduled for deletion if they have passed the deletion threshold
+        /// </summary>
+        /// <param name="state">unused parameter</param>
         private void DeletionTimerCallback(object state)
         {
             if (_DeletionIsGoing) return;
@@ -93,6 +105,10 @@ namespace ScalableTeaching.Services
             }
         }
 
+        /// <summary>
+        /// Takes newly created machines from the database and schedules them for creation with the open nebula internal scheduler.
+        /// </summary>
+        /// <param name="state"></param>
         private async void CreationQueueingTimerCallback(object state)
         {
             if (_CreationQueueingIsGoing) return;
@@ -107,7 +123,6 @@ namespace ScalableTeaching.Services
                     machine.MachineCreationStatus = CreationStatus.QUEUED_FOR_CREATION;
                     var CreationResult = _accessor.CreateVirtualMachine(int.Parse(Environment.GetEnvironmentVariable("OpenNebulaDefaultTemplate")), machine.HostName);
                     machine.OpenNebulaID = CreationResult.Item2;
-                    _creationQueue.Add(machine.MachineID);
                 });
                 _context.Machines.UpdateRange(RegisteredMachines);
                 await _context.SaveChangesAsync();
@@ -119,6 +134,10 @@ namespace ScalableTeaching.Services
             return;
         }
 
+        /// <summary>
+        /// Takes machines that have the creation status of <see cref="CreationStatus.QUEUED_FOR_CREATION"/> and status of active and configures them and sets them to configured
+        /// </summary>
+        /// <param name="state"></param>
         private async void CreatedTimerCallback(object state)
         {
             if (_CreatedIsGoing) return;
@@ -127,14 +146,24 @@ namespace ScalableTeaching.Services
                 _CreatedIsGoing = true;
                 VmDeploymentContext _context = GetContext();
                 var PollTime = DateTimeOffset.UtcNow;
-                var machines = _context.Machines.Where(machine => _creationQueue.Contains(machine.MachineID)).ToList();
+                var machines = _context.Machines.Where(machine => machine.MachineCreationStatus == CreationStatus.QUEUED_FOR_CREATION).ToList();
                 foreach (Machine machine in machines)
                 {
                     Console.WriteLine($"MachineControllerService.CreatedTimerCallback:Machines Scheduled for creation: {String.Join(", ", _creationQueue)}");
                     if (machine.MachineStatus?.MachineState == MachineStates.ACTIVE)
                     {
                         Console.WriteLine($"MachineControllerService.CreatedTimerCallback: Machine Booted after creation: { machine.MachineID}");
-                        await _machineConfigurator.ConfigureMachine(machine);
+                        try
+                        {
+                            await _machineConfigurator.ConfigureMachine(machine);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"Error occurred configuring machine: {machine.HostName}, {machine.MachineID}");
+                            Console.WriteLine($"Error: {e.Message}");
+                            Console.WriteLine(e.StackTrace);
+                            continue;
+                        }
                         machine.MachineCreationStatus = CreationStatus.CONFIGURED;
                         _context.Machines.Update(machine);
                         _creationQueue.Remove(machine.MachineID);
@@ -183,7 +212,6 @@ namespace ScalableTeaching.Services
         }
         private VmDeploymentContext GetContext()
         {
-            Console.WriteLine("MachineControllerService: Retrieved an instance of VMDeploymentContext");
             return _factory.CreateScope().ServiceProvider.GetRequiredService<VmDeploymentContext>();
         }
     }

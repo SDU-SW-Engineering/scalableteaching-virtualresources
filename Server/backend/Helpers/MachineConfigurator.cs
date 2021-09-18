@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Renci.SshNet;
+using ScalableTeaching.Controllers;
 using ScalableTeaching.Data;
 using ScalableTeaching.Models;
 using System;
@@ -35,25 +36,33 @@ namespace ScalableTeaching.Helpers
             {
                 if(assignment.GroupID == null)
                 {
-                    configurationUsers.Add(new MachineConfigurationUser() 
-                    { 
-                        Groups = machine.LinuxGroups,
-                        Username = assignment.UserUsername,
-                        UserPassword = assignment.OneTimePassword,
-                        UserPublicKey = SSHKeyHelper.GetSSHPublicKey(SSHKeyHelper.ParseKeyFromPem( (await GetContext().Users.FindAsync(assignment.UserUsername)).UserPrivateKey), assignment.UserUsername)  
-                    });
+
+                    if (await GetContext().Users.FindAsync(assignment.UserUsername) == null)
+                    {
+                        GetContext().Users.Add(AuthController.NewUser(assignment.UserUsername));
+                    }
+                    MachineConfigurationUser machineConfigurationUser = new();
+                    machineConfigurationUser.Groups = machine.LinuxGroups;
+                    machineConfigurationUser.Username = assignment.UserUsername;
+                    machineConfigurationUser.UserPassword = assignment.OneTimePassword;
+
+
+
+                    User user = (await GetContext().Users.FindAsync(assignment.UserUsername));
+                    System.Security.Cryptography.RSA privateKey = SSHKeyHelper.ParseKeyFromPem(user.UserPrivateKey);
+                    machineConfigurationUser.UserPublicKey = SSHKeyHelper.GetSSHPublicKey(privateKey, assignment.UserUsername);
+                    configurationUsers.Add(machineConfigurationUser);
                 }
                 else
                 {
                     foreach(var groupAssignment in GetContext().GroupAssignments.Where(ga => ga.GroupID == assignment.GroupID))
                     {
-                        configurationUsers.Add(new MachineConfigurationUser()
-                        {
-                            Groups = machine.LinuxGroups,
-                            Username = groupAssignment.User.Username,
-                            UserPassword = assignment.OneTimePassword,
-                            UserPublicKey = SSHKeyHelper.GetSSHPublicKey(SSHKeyHelper.ParseKeyFromPem(groupAssignment.User.UserPrivateKey), groupAssignment.User.Username)
-                        });
+                        MachineConfigurationUser machineConfigurationUser = new();
+                        machineConfigurationUser.Groups = machine.LinuxGroups;
+                        machineConfigurationUser.Username = groupAssignment.User.Username;
+                        machineConfigurationUser.UserPassword = assignment.OneTimePassword;
+                        machineConfigurationUser.UserPublicKey = SSHKeyHelper.GetSSHPublicKey(SSHKeyHelper.ParseKeyFromPem(groupAssignment.User.UserPrivateKey), groupAssignment.User.Username);
+                        configurationUsers.Add(machineConfigurationUser);
                     }
                 }
             }
@@ -64,18 +73,24 @@ namespace ScalableTeaching.Helpers
             ConfigurationJson.Add("users", JToken.FromObject(configurationUsers));
 
             //Connect and configure
-            var connectionInfo = new ConnectionInfo(machine.HostName, _defaultUsername, new PrivateKeyAuthenticationMethod("admin", new PrivateKeyFile("/home/admin/.ssh/id_rsa")));
+            var connectionInfo = new ConnectionInfo(machine.MachineStatus.MachineIp, _defaultUsername, new PrivateKeyAuthenticationMethod("admin", new PrivateKeyFile($"{SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa")));
 
             //Upload required files
             using (var client = new SftpClient(connectionInfo))
             {
                 client.Connect();
-                client.DeleteDirectory(VM_SCALABLE_TEACHING_PATH);
-                client.CreateDirectory(VM_SCALABLE_TEACHING_PATH);
-                client.UploadFile(SystemConfiguratorStream, $"{VM_SCALABLE_TEACHING_PATH}/SystemConfigurator");
-
+                if (!client.ListDirectory("/home/admin/").Where(file => file.FullName == VM_SCALABLE_TEACHING_PATH).Any())
+                {
+                    client.CreateDirectory(VM_SCALABLE_TEACHING_PATH);
+                }
+                if(!client.ListDirectory(VM_SCALABLE_TEACHING_PATH).Where(file => file.Name == "SystemConfigurator").Any())
+                {
+                    client.UploadFile(SystemConfiguratorStream, $"{VM_SCALABLE_TEACHING_PATH}/SystemConfigurator");
+                }
+                var ConfigBytes = Encoding.UTF8.GetBytes(ConfigurationJson.ToString());
                 var writestream = client.OpenWrite($"{VM_SCALABLE_TEACHING_PATH}/Config.json");
-                await writestream.WriteAsync(Encoding.UTF8.GetBytes(ConfigurationJson.ToString()));
+                await writestream.WriteAsync(ConfigBytes);
+                writestream.Close();
             }
             //Excecute things
             using (var client = new SshClient(connectionInfo))
