@@ -1,5 +1,5 @@
 ﻿using System;
-namespace backend.DTO
+namespace ScalableTeaching.DTO
 {
     public class UserDTO
     {

@@ -1,24 +1,21 @@
-using backend.Data;
-using backend.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using ScalableTeaching.Data;
+using ScalableTeaching.Helpers;
+using ScalableTeaching.OpenNebula;
+using ScalableTeaching.Services;
+using Serilog;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+using static ScalableTeaching.Models.User.UserType;
 
-namespace backend
+namespace ScalableTeaching
 {
     public class Startup
     {
@@ -32,27 +29,25 @@ namespace backend
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IConfiguration>(Configuration);
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "backend", Version = "v1" });
             });
-            services.AddAuthentication(options =>
-            {
-                //options.DefaultAuthenticateScheme = JwtBearerDefaults.Authg
-            });
             services.AddDbContext<VmDeploymentContext>(options =>
-            {
-                //options.UseNpgsql(Environment.GetEnvironmentVariable("VmDeploymentDB"));
-                options.UseNpgsql("Host=hattie.db.elephantsql.com;Database=wasirwtm;Username=wasirwtm;Password=1xZJJyQDw6N4UR0xZ7sXmsff2Qq3hj_Y");
-            });
+                //Build database connection string from environment
+                options.UseLazyLoadingProxies().UseNpgsql(
+                    "Host=" + Environment.GetEnvironmentVariable("dbhost") +
+                    ";Database=" + Environment.GetEnvironmentVariable("db") +
+                    ";Username=" + Environment.GetEnvironmentVariable("dbuser") +
+                    ";Password=" + Environment.GetEnvironmentVariable("dbpass")
+                    )
+            );
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-                .AddJwtBearer(x =>
+            }).AddJwtBearer(x =>
                 {
                     x.RequireHttpsMetadata = false; //TODO: Set to true for production
                     x.TokenValidationParameters = new TokenValidationParameters
@@ -65,14 +60,24 @@ namespace backend
                 });
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("Administrator", policy => policy.RequireClaim("account_type", "Administrator"));
-                options.AddPolicy("Manager", policy => policy.RequireClaim("account_type", "Manager","Administrator"));
-                options.AddPolicy("User", policy => policy.RequireClaim("account_type", "User", "Manager", "Administrator"));
-            })
+                options.AddPolicy("AdministratorLevel", policy => policy.RequireClaim("account_type", nameof(Administrator)));
+                options.AddPolicy("EducatorLevel", policy => policy.RequireClaim("account_type", nameof(Educator), nameof(Administrator)));
+                options.AddPolicy("UserLevel", policy => policy.RequireClaim("account_type", nameof(User), nameof(Educator), nameof(Administrator)));
+            });
+
+
+            services.AddSingleton<IConfiguration>(Configuration);
+            services.AddSingleton<IOpenNebulaAccessor>(new OpenNebulaAccessor(Environment.GetEnvironmentVariable("OpenNebulaLocation"), Environment.GetEnvironmentVariable("OpenNebulaSession")));
+            services.AddSingleton<MachineConfigurator>();
+            services.AddScoped<SshConfigBuilder>();
+            services.AddHostedService<MachineControllerService>();
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.File($"{Environment.GetEnvironmentVariable("ScalableTeachingBaseLocation")}/logs/log-.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime)
         {
             if (env.IsDevelopment())
             {
@@ -85,12 +90,23 @@ namespace backend
 
             app.UseRouting();
 
+            app.UseAuthentication();
+
             app.UseAuthorization();
+
+
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+
+            lifetime.ApplicationStopped.Register(OnShutdown);
+        }
+
+        private void OnShutdown()
+        {
+            Log.CloseAndFlush();
         }
     }
 }

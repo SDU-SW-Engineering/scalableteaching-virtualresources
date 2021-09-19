@@ -1,8 +1,7 @@
 <template>
   <div id="app">
-    <!--TODO: Handle sign in verification v-if="isSignedIn()" -->
     <NavBar/>
-    <router-view />
+    <router-view/>
   </div>
 
 </template>
@@ -18,14 +17,15 @@
 </style>
 
 <script>
-  import NavBar from "@/components/NavBar";
-  import store from "@/store/store"
-  export default {
-    components: {NavBar},
-    computed: {
-      isSignedIn (){
-        return store.state.isSignedIn;
-      }
+import NavBar from "@/components/NavBar";
+import store from "@/store/store";
+
+export default {
+  components: {NavBar},
+  computed: {
+    isSimpleSignedIn(){
+      return store.state.isSignedIn;
     }
   }
+}
 </script>

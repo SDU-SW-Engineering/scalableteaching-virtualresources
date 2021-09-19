@@ -1,14 +1,10 @@
-﻿using backend.DTO;
+﻿using Microsoft.IdentityModel.Tokens;
+using ScalableTeaching.DTO;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.IdentityModel.Tokens;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
-using System.Threading.Tasks;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
-namespace backend.Helpers
+namespace ScalableTeaching.Helpers
 {
     public class JwtHelper
     {
@@ -22,7 +18,7 @@ namespace backend.Helpers
                 new Claim("mail", User.Mail),
                 new Claim("sn", User.Sn),
                 new Claim("gn", User.Gn),
-                new Claim("Cn", User.Cn),
+                new Claim("cn", User.Cn),
                 new Claim("account_type", User.AccountType)
             };
             var token = new JwtSecurityToken(
@@ -34,11 +30,6 @@ namespace backend.Helpers
                 new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
 
             return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        public static UserDTO Decode(String Token)
-        {
-            return null;
         }
     }
 }
