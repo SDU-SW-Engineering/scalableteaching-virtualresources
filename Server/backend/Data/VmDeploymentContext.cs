@@ -13,6 +13,7 @@ namespace ScalableTeaching.Data
         public DbSet<Group> Groups { get; set; }
         public DbSet<GroupAssignment> GroupAssignments { get; set; }
         public DbSet<MachineStatus> MachineStatuses { get; set; }
+        public DbSet<MachineDeletionRequest> MachineDeletionRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

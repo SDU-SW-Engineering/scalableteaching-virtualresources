@@ -21,9 +21,9 @@ namespace ScalableTeaching.Helpers
             keyBuilder.Append(key);
             keyBuilder.Append(' ');
             keyBuilder.Append(username);
-            keyBuilder.Append("@scalable-teaching-sdu");
+            keyBuilder.Append("@scalable-teaching-sdu\n");
             return keyBuilder.ToString();
-        }//TODO: Untested
+        }
 
         /// <summary>
         /// Formats a privatekey in a PEM format
@@ -51,7 +51,7 @@ namespace ScalableTeaching.Helpers
             }
             keyBuilder.Append("\n-----END RSA PRIVATE KEY-----\n");
             return keyBuilder.ToString();
-        }//TODO: Untested
+        }
 
         /// <summary>
         /// Parses a RSA PEM formatted RSA private key
@@ -63,6 +63,6 @@ namespace ScalableTeaching.Helpers
             var rsa = RSA.Create();
             rsa.ImportFromPem(PEMPrivateKey.AsSpan());
             return rsa;
-        }//TODO: Untested
+        }
     }
 }

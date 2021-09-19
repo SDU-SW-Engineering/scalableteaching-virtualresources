@@ -39,22 +39,22 @@ namespace ScalableTeaching.Helpers
                 {
                     credentialBuilder.Append(course.ShortCourseName);
                 }
-                credentialBuilder.Append(hostName).Append('\n');
+                credentialBuilder.Append(hostName).Append(Environment.NewLine);
 
                 //Insert HostName url string
-                credentialBuilder.Append('\t').Append("HostName ").Append(hostName).Append('\n');
+                credentialBuilder.Append('\u0009').Append("HostName ").Append(hostName).Append(Environment.NewLine);
 
                 //Insert Username for the machine
-                credentialBuilder.Append('\t').Append("User").Append(username).Append('\n');
+                credentialBuilder.Append('\u0009').Append("User ").Append(username).Append(Environment.NewLine);
 
                 //Insert strings for portnumbers
                 foreach (var port in ports)
                 {
-                    credentialBuilder.Append('\t').Append("LocalForward ").Append(port).Append("127.0.0.1:").Append(port).Append('\n');
+                    credentialBuilder.Append('\u0009').Append("LocalForward ").Append(port).Append(' ').Append("127.0.0.1:").Append(port).Append(Environment.NewLine);
                 }
 
                 //Insert Identityfile string
-                credentialBuilder.Append('\t').Append("IdentityFile ").Append("~/.ssh/id_rsa_scalable_").Append(username);
+                credentialBuilder.Append('\u0009').Append("IdentityFile ").Append("~/.ssh/id_rsa_scalable_").Append(username);
 
                 return credentialBuilder.ToString();
             });

@@ -162,6 +162,30 @@ namespace ScalableTeaching.Migrations
                     b.ToTable("MachineAssignments");
                 });
 
+            modelBuilder.Entity("ScalableTeaching.Models.MachineDeletionRequest", b =>
+                {
+                    b.Property<Guid>("MachineID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("DeletionDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<Guid?>("MachineID1")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserUsername")
+                        .HasColumnType("text");
+
+                    b.HasKey("MachineID");
+
+                    b.HasIndex("MachineID1");
+
+                    b.HasIndex("UserUsername");
+
+                    b.ToTable("MachineDeletionRequests");
+                });
+
             modelBuilder.Entity("ScalableTeaching.Models.MachineStatus", b =>
                 {
                     b.Property<Guid>("MachineID")
@@ -296,6 +320,21 @@ namespace ScalableTeaching.Migrations
                         .HasForeignKey("UserUsername");
 
                     b.Navigation("Machine");
+                });
+
+            modelBuilder.Entity("ScalableTeaching.Models.MachineDeletionRequest", b =>
+                {
+                    b.HasOne("ScalableTeaching.Models.Machine", "Machine")
+                        .WithMany()
+                        .HasForeignKey("MachineID1");
+
+                    b.HasOne("ScalableTeaching.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserUsername");
+
+                    b.Navigation("Machine");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ScalableTeaching.Models.MachineStatus", b =>

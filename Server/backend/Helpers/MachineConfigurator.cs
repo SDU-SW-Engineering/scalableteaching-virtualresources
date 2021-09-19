@@ -91,6 +91,7 @@ namespace ScalableTeaching.Helpers
                 var writestream = client.OpenWrite($"{VM_SCALABLE_TEACHING_PATH}/Config.json");
                 await writestream.WriteAsync(ConfigBytes);
                 writestream.Close();
+
             }
             //Excecute things
             using (var client = new SshClient(connectionInfo))
@@ -100,10 +101,14 @@ namespace ScalableTeaching.Helpers
                 MemoryStream extout = new();
 
                 client.Connect();
-                var command = client.CreateCommand($"{VM_SCALABLE_TEACHING_PATH}/SystemConfigurator $> {VM_SCALABLE_TEACHING_PATH}/ConfigurationOutput.log");
-                var result = command.BeginExecute();
-
-                await Task.Run(()=>result.AsyncWaitHandle.WaitOne());
+                var makeExcecutableCommand = client.CreateCommand($"{VM_SCALABLE_TEACHING_PATH}/SystemConfigurator $> {VM_SCALABLE_TEACHING_PATH}/ConfigurationOutput.log");
+                var makeExcecutableCommandResult = makeExcecutableCommand.BeginExecute();
+                await Task.Run(() => makeExcecutableCommandResult.AsyncWaitHandle.WaitOne());
+                
+                var excecuteCommand = client.CreateCommand($"{VM_SCALABLE_TEACHING_PATH}/SystemConfigurator $> {VM_SCALABLE_TEACHING_PATH}/ConfigurationOutput.log");
+                var excecuteCommandresult = excecuteCommand.BeginExecute();
+                await Task.Run(()=> excecuteCommandresult.AsyncWaitHandle.WaitOne());
+                client.Disconnect();
             }
             return true; //TODO: Implement error handeling for configuration 
         }

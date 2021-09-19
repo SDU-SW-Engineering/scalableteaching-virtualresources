@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using ScalableTeaching.Data;
 using ScalableTeaching.DTO;
 using ScalableTeaching.Models;
@@ -22,7 +23,6 @@ namespace ScalableTeaching.Controllers
     {
         private readonly VmDeploymentContext _context;
         private readonly IOpenNebulaAccessor _accessor;
-        private readonly MachineControllerService _MachineControllerService;
         private readonly SshConfigBuilder _sshConfigBuilder;
         private readonly string ValidateAptRegex = @"^[0-9A-Za-z.+-]$";
         private readonly string ValidatePpaRegex = @"^(ppa:([a-z-]+)\/[a-z-]+)$";
@@ -30,11 +30,10 @@ namespace ScalableTeaching.Controllers
         private readonly string ValidateHostname = @"^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$";
         private readonly string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz1234567890.,-_!?";
 
-        public MachineController(VmDeploymentContext context, IOpenNebulaAccessor accessor, MachineControllerService machineControllerService, SshConfigBuilder sshConfigBuilder)
+        public MachineController(VmDeploymentContext context, IOpenNebulaAccessor accessor, SshConfigBuilder sshConfigBuilder)
         {
             _context = context;
             _accessor = accessor;
-            _MachineControllerService = machineControllerService;
             _sshConfigBuilder = sshConfigBuilder;
         }
 
@@ -43,19 +42,19 @@ namespace ScalableTeaching.Controllers
         public async Task<ActionResult<List<MachineManagementReturn>>> GetAvailableMachines()//TODO: Might suffer EF issues
         {
             //TODO: Fix machine assignement stuff
-            List<Machine> machines = _context.Machines.Where(machine => machine.UserUsername == GetUsername()).ToList();
-            _context.MachineAssignments.Where(assignment => assignment.UserUsername == GetUsername()).ToList().ForEach(assignment => machines.Add(assignment.Machine));
+            List<Machine> machines = await _context.Machines.Where(machine => machine.UserUsername == GetUsername()).ToListAsync();
+            (await _context.MachineAssignments.Where(assignment => assignment.UserUsername == GetUsername()).ToListAsync()).ForEach(assignment => machines.Add(assignment.Machine));
             List<MachineManagementReturn> returnList = new();
 
             foreach (Machine machine in machines)
             {
                 List<string> usernames = new();
                 usernames.Add(machine.UserUsername);
-                machine.MachineAssignments.ForEach(assignment =>
+                machine.MachineAssignments.ForEach(async assignment =>
                 {
                     if (assignment.UserUsername == null)
                     {
-                        var groupAssignments = _context.GroupAssignments.Where(assign => assign.GroupID == assignment.GroupID).ToList();
+                        var groupAssignments = await _context.GroupAssignments.Where(assign => assign.GroupID == assignment.GroupID).ToListAsync();
                         groupAssignments.ForEach(gassignment => usernames.Add(gassignment.UserUsername));
                     }
                 });
@@ -119,12 +118,22 @@ namespace ScalableTeaching.Controllers
             if (machine == null) return BadRequest("Machine Not Found");
             //Validate machine "ownership"
             if (machine.UserUsername != GetUsername()) return BadRequest("You do not own this machine");
+            //Validate machine not allready scheduled for deletion
+            if ((await _context.MachineDeletionRequests.FindAsync()) != null) return BadRequest("Machine allready scheduled for deletion");
             //Schedule for deletion
+            DateTime deletiontime = DateTime.UtcNow.AddDays(30);
+            _context.MachineDeletionRequests.Add(new MachineDeletionRequest()
+            {
+                MachineID = machine.MachineID,
+                DeletionDate = deletiontime,
+                UserUsername = GetUsername()
+            });
             machine.MachineCreationStatus = CreationStatus.SHEDULED_FOR_DELETION;
             _context.Machines.Update(machine);
             await _context.SaveChangesAsync();
-            var deletionTime = _MachineControllerService.ScheduleForDeletion(machine);
-            return Ok($"Machine scheduled for deletion: {deletionTime.ToLocalTime()}");
+
+            //Return on successfull
+            return Ok($"Machine scheduled for deletion: {deletiontime.ToLocalTime()}");
         }
 
         // POST: api/machine/create/groupbased

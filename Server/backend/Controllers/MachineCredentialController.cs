@@ -41,17 +41,21 @@ namespace ScalableTeaching.Controllers
 
             if (_machine.UserUsername != GetUsername())// Machine not owned by requesting user
             {
-                var _assignments = _machine.MachineAssignments.Where(assignment => assignment.UserUsername == GetUsername());
+                var _assignments = _machine.MachineAssignments.Where(
+                    assignment => assignment.UserUsername == GetUsername());
                 if (_assignments.Any())
-                    return Ok(_configBuilder.GetMachineCredentialStringAsync(_machine, _assignments.First().UserUsername));
+                    return Ok(new { credentialString = 
+                        await _configBuilder.
+                        GetMachineCredentialStringAsync(_machine, _assignments.First().UserUsername) });
                 else
                     return BadRequest("You are not assigned to this machine");
             }
             else // Machine is owned by requesting user
             {
-                return Ok(_configBuilder.GetMachineCredentialStringAsync(_machine, GetUsername()));
+                return Ok(new { credentialString =
+                    await _configBuilder.GetMachineCredentialStringAsync(_machine, GetUsername())});
             }
-        }//TODO: Untested
+        }
 
         /// <summary>
         /// Builds a complete ssh config string 
@@ -60,7 +64,7 @@ namespace ScalableTeaching.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllMachineCredentials()
         {
-            return Ok(await CompleteMachineCredentials());
+            return Ok(new { credentialString = await CompleteMachineCredentials()});
         }
 
         /// <summary>
@@ -70,23 +74,38 @@ namespace ScalableTeaching.Controllers
         private async Task<string> CompleteMachineCredentials()
         {
             //Find all owned machines
-            List<Machine> machines = await _context.Machines.Where(machine => machine.UserUsername == GetUsername()).ToListAsync();
+            List<Machine> machines = await _context.Machines
+                .Where(machine => machine.UserUsername == GetUsername()).ToListAsync();
             //Find all directly assigned machines
-            (await _context.Users.FindAsync(GetUsername())).MachineAssignments.ForEach(async assignement =>
+            var machineAssignments = await _context.MachineAssignments
+                .Where(assignment => assignment.UserUsername == GetUsername()).ToListAsync();
+            foreach(var assignment in machineAssignments)
             {
-                machines.Add(await _context.Machines.FindAsync(assignement.MachineID));
-            });
+                machines.Add(_context.Machines.Find(assignment.MachineID));
+            }
             //Find all group assigned machines
-            List<Group> groups = (await _context.Users.FindAsync(GetUsername())).GroupAssignments.ConvertAll<Group>(assignment => assignment.Group);//TODO: Might suffer ef error
+            var groupAssignments = await _context.GroupAssignments
+                .Where(assignment => assignment.UserUsername == GetUsername()).ToListAsync();
+            List<Group> groups = groupAssignments.Select(assignment => assignment.Group).ToList();
             foreach (var group in groups)
             {
-                group.MachineAssignments.ConvertAll<Machine>(assignment => assignment.Machine); //TODO: Might suffer ef error
+                var assignments = await _context.MachineAssignments
+                    .Where(assignment => assignment.GroupID == group.GroupID).ToListAsync();
+                var groupAssignedMachines = new List<Machine>();
+                assignments.ForEach(assignment =>
+                {
+                    machines.Add(assignment.Machine);
+                });
             }
+            //Construct string
             var builder = new StringBuilder();
-            machines.ForEach(machine => builder.Append(_configBuilder.GetMachineCredentialStringAsync(machine, GetUsername())));
+            foreach(Machine machine in machines)
+            {
+                builder.Append(await _configBuilder
+                    .GetMachineCredentialStringAsync(machine, GetUsername())).Append(Environment.NewLine);
+            }
             return builder.ToString();
         }
-        //TODO: Untested
 
         /// <summary>
         /// Serves the user an updated config file for their ssh configuration 
@@ -130,13 +149,14 @@ namespace ScalableTeaching.Controllers
             var files = new List<InMemoryFile>
             {
                 await SshConfigFile(),
-                new InMemoryFile("id_rsa_scalable_" + GetUsername(),
+                new InMemoryFile("id_rsa_scalable_" + GetUsername() + ".pub",
                     Encoding.UTF8.GetBytes(SSHKeyHelper.GetSSHPublicKey(userKey, GetUsername()))),
-                new InMemoryFile("id_rsa_scalable_" + GetUsername() + ".pub", (await SshConfigFile()).Content)
+                new InMemoryFile("id_rsa_scalable_" + GetUsername(),
+                Encoding.UTF8.GetBytes(_context.Users.Find(GetUsername()).UserPrivateKey))
             };
             return await ZipBuilder.BuildZip(files, GetUsername() + "_ScalableTeachingUserCredentials.zip");
         }
-
+                                                                                                                       
 
 
 
@@ -147,14 +167,11 @@ namespace ScalableTeaching.Controllers
                 if (machine == null) return false;
                 if (username.Length == 0 || username == null) return false;
                 if (machine.UserUsername == username) return true;
-                if (machine.MachineAssignments.Where(assignement => assignement.UserUsername == username).Any()) return true;
+                if (machine.MachineAssignments
+                .Where(assignement => assignement.UserUsername == username).Any()) return true;
                 return false;
             });
 
-        }
-        private async Task<bool> IsAssignedToMachine(string username, Guid machineID)
-        {
-            return await IsAssignedToMachine(username, await _context.Machines.FindAsync(machineID));
         }
 
         /// <summary>
