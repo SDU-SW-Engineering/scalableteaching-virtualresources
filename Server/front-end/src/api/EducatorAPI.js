@@ -7,13 +7,15 @@ import StorageHelper from "@/helpers/StorageHelper";
  * and status being the http response code
  */
 async function getEducators() {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.educator}`,{
+    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.educator}`, {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
             'Content-Type': 'application/json'
         })
-    }).then(async response => {return {status: response.status, body:await response.json()}})
+    }).then(async response => {
+        return {status: response.status, body: await response.json()};
+    });
 }
 
 /**
@@ -31,7 +33,7 @@ async function postEducator(email) {
         body: JSON.stringify({
             email: email,
         })
-    }).then(response => response.status)
+    }).then(response => response.status);
 }
 
 /**
@@ -46,7 +48,7 @@ async function deleteEducator(email) {
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
             'Content-Type': 'application/json'
         })
-    }).then(response => response.status)
+    }).then(response => response.status);
 }
 
 
@@ -54,4 +56,4 @@ export default {
     getEducators,
     postEducator,
     deleteEducator,
-}
+};

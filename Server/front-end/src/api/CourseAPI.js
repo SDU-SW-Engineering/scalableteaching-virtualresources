@@ -2,24 +2,27 @@ import urlconfig from "@/config/urlconfig";
 import StorageHelper from "@/helpers/StorageHelper";
 
 async function getCourses() {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}`,{
+    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}`, {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
             'Content-Type': 'application/json'
         })
     }).then(async response => {
-        return {status: response.status,  body:await response.json()}})
+        return {status: response.status, body: await response.json()};
+    });
 }
 
 async function getCourse(id) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}/${id}`,{
+    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}/${id}`, {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
             'Content-Type': 'application/json'
         })
-    }).then(async response => {return {status: response.status, body:await response.json()}})
+    }).then(async response => {
+        return {status: response.status, body: await response.json()};
+    });
 }
 
 /**
@@ -32,7 +35,7 @@ async function getCourse(id) {
  * @param CourseID
  */
 async function putCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseID, CourseID) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}/${CourseID}`,{
+    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}/${CourseID}`, {
         method: "PUT",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -45,7 +48,7 @@ async function putCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseID
             SDUCourseID: SDUCourseID,
             CourseID: CourseID
         })
-    }).then(response => response.status)
+    }).then(response => response.status);
 }
 
 /**
@@ -57,7 +60,7 @@ async function putCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseID
  * @param SDUCourseID
  */
 async function postCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseID) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}`,{
+    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}`, {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -69,7 +72,7 @@ async function postCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseI
             ShortCourseName: ShortCourseName,
             SDUCourseID: SDUCourseID
         })
-    }).then(response => response.status)
+    }).then(response => response.status);
 }
 
 /**
@@ -85,7 +88,7 @@ async function deleteCourse(id) {
                 'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
                 'Content-Type': 'application/json'
             })
-        }).then(response => response.status)
+        }).then(response => response.status);
 }
 
 
@@ -95,4 +98,4 @@ export default {
     putCourse,
     postCourse,
     deleteCourse
-}
+};

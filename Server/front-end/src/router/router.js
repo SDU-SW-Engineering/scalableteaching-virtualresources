@@ -1,5 +1,5 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
+import Vue from 'vue';
+import VueRouter from 'vue-router';
 import Machines from "@/views/Machines";
 import Login from "@/views/Login";
 
@@ -8,7 +8,7 @@ import urlconfig from "@/config/urlconfig";
 import store from "@/store/store";
 import StorageHelper from "@/helpers/StorageHelper";
 
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 const routes = [
     {
@@ -48,15 +48,15 @@ const routes = [
         path: '/',
         name: 'InitialSpace'
     }
-]
+];
 
 
 const router = new VueRouter({
     mode: 'history',
     base: process.env.BASE_URL,
     routes
-})
-export default router
+});
+export default router;
 
 
 // eslint-disable-next-line no-unused-vars
@@ -66,22 +66,22 @@ router.beforeEach((to, from, next) => {
     }
     if (AuthService.validateIsSignedIn()) {
         if (to.name === 'Login' || to.name === 'InitialSpace') {
-            next({name: 'Machines'})
+            next({name: 'Machines'});
         }
         if (to.matched.some(record => record.meta.requiresAuth)) {
             if (to.matched.some(record => record.meta.requiredType.includes(store.state.user.account_type))) {
-                next()
+                next();
             } else {
-                next({name: 'Machines'})
+                next({name: 'Machines'});
             }
         }
     } else if (to.name === 'Login' || to.name === 'InitialSpace') {
-        next()
+        next();
     } else {//If you are note signed in, and trying to go somewhere that requires authentication then initial login
         if (from.name === 'Login') {
             console.log("Loop error");
-        }else{
-            StorageHelper.set(StorageHelper.names.attemptedLocation, to.name)
+        } else {
+            StorageHelper.set(StorageHelper.names.attemptedLocation, to.name);
             window.location.href = `https://sso.sdu.dk/login?service=${urlconfig.loginTokenReturnString}`;
         }
     }

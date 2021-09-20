@@ -1,11 +1,12 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import Vue from 'vue';
+import Vuex from 'vuex';
+import StorageHelper from "@/helpers/StorageHelper";
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 const initialState = {
     user: null,
     isSignedIn: false,
-}
+};
 
 /*const initialState = {
     user: {
@@ -34,10 +35,11 @@ export default new Vuex.Store({
             state.isSignedIn = true;
         },
         logout(state) {
+            StorageHelper.clear("API-PublicKey");
             state.user = initialState.user;
             state.isSignedIn = initialState.isSignedIn;
         }
     },
     actions: {},
     modules: {}
-})
+});
