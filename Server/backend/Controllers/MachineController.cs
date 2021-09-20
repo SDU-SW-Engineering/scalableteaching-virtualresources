@@ -66,7 +66,7 @@ namespace ScalableTeaching.Controllers
                     MacAddress = machine.MachineStatus.MachineIp,
                     MachineID = machine.MachineID,
                     Ports = machine.Ports,
-                    Status = machine.MachineStatus.MachineState.ToString(),
+                    Status = machine?.MachineStatus?.MachineState.ToString() ?? "Unconfigured",
                     Users = usernames
                 });
             }

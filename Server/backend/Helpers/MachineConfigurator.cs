@@ -120,34 +120,41 @@ namespace ScalableTeaching.Helpers
                     p.StartInfo.FileName = "openssl";
                     p.StartInfo.Arguments = $"passwd -6 -salt {RandomString(10)} {user.UserPassword}";
                     p.Start();
+                    await p.WaitForExitAsync(); //TODO: Its clipping the data when reading single line
 
                     string output = p.StandardOutput.ReadLine();
+                    Console.WriteLine($"Add user: {user.Username} hashed pw: {output}");
 
                     //Create User
-                    var useraddCommand = client.CreateCommand($"sudo useradd -m p {output} {user.Username.ToLower()}");
+                    var useraddCommand = client.CreateCommand($"sudo useradd -mp {output} {user.Username.ToLower()}");
                     var useraddResult = useraddCommand.BeginExecute();
                     await Task.Run(() => useraddResult.AsyncWaitHandle.WaitOne());
-                    
+                    Console.WriteLine($"MachineConfigurator: useraddCommand text: {useraddCommand.CommandText} Result: {useraddCommand.Result}");
+
                     //Add user to linux groups
                     foreach (var group in user.Groups)
                     {
                         var usermodCommand = client.CreateCommand($"sudo usermod -aG {group} {user.Username.ToLower()}");
                         var usermodResult = usermodCommand.BeginExecute();
                         await Task.Run(() => usermodResult.AsyncWaitHandle.WaitOne());
+                        Console.WriteLine($"MachineConfigurator: usermodCommand text: {usermodCommand.CommandText} .Result {usermodCommand.Result}");
                     }
 
                     //Prep authorized_keys
                     var AuthorizedKeysCommand = 
-                        client.CreateCommand($"sudo mkdir -p /home/{user.Username.ToLower()}/.ssh &&" +
-                        $" sudo touch /home/{user.Username.ToLower()}/.ssh/authorized_keys &&" +
-                        $" sudo chown -R {user.Username.ToLower()}:{user.Username.ToLower()} /home/{user.Username.ToLower()}/.ssh" +
+                        client.CreateCommand($"sudo mkdir -p /home/{user.Username.ToLower()}/.ssh ;" +
+                        $" sudo touch /home/{user.Username.ToLower()}/.ssh/authorized_keys ;" +
+                        $" sudo chown -R {user.Username.ToLower()}:{user.Username.ToLower()} /home/{user.Username.ToLower()}/.ssh ;" +
                         $" sudo chmod -R 600 /home/{user.Username.ToLower()}/.ssh");
                     var AuthorizedKeysResult = AuthorizedKeysCommand.BeginExecute();
                     await Task.Run(() => AuthorizedKeysResult.AsyncWaitHandle.WaitOne());
+                    Console.WriteLine($"MachineConfigurator: AuthorizedKeysCommand text: {AuthorizedKeysCommand.CommandText} .Result {AuthorizedKeysCommand.Result}");
 
-                    var addKeyCommand = client.CreateCommand($"sudo sh -c 'echo \"{user.UserPublicKey}\" >> /home/{user.Username.ToLower()}/.ssh/autorized_keys'");
+                    //Add key
+                    var addKeyCommand = client.CreateCommand($"sudo sh -c 'echo \"{user.UserPublicKey}\" >> /home/{user.Username.ToLower()}/.ssh/authorized_keys'");
                     var addKeyResult = addKeyCommand.BeginExecute();
                     await Task.Run(() => addKeyResult.AsyncWaitHandle.WaitOne());
+                    Console.WriteLine($"MachineConfigurator: addKeyCommand text {addKeyCommand.CommandText} .Result {addKeyCommand.Result}");
 
                 }
 
@@ -155,11 +162,13 @@ namespace ScalableTeaching.Helpers
                 var aptUpdateUpgradeCommand = client.CreateCommand($"sudo apt-get update");
                 var aptUpdateUpgradeResult = aptUpdateUpgradeCommand.BeginExecute();
                 await Task.Run(() => aptUpdateUpgradeResult.AsyncWaitHandle.WaitOne());
+                Console.WriteLine($"MachineConfigurator: aptUpdateUpgradeCommand.Result {aptUpdateUpgradeCommand.Result}");
 
                 //Prep for ppa
                 var ppaPrepCommand = client.CreateCommand($"sudo apt-get install -y software-properties-common");
                 var ppaPrepResult = ppaPrepCommand.BeginExecute();
                 await Task.Run(() => ppaPrepResult.AsyncWaitHandle.WaitOne());
+                Console.WriteLine($"MachineConfigurator: ppaPrepCommand.Result {ppaPrepCommand.Result}");
 
                 //PPA
                 foreach (var ppa in machine.Ppa)
@@ -167,25 +176,29 @@ namespace ScalableTeaching.Helpers
                     var ppaAddCommand = client.CreateCommand($"sudo add-apt-repository -y {ppa}");
                     var ppaAddResult = ppaAddCommand.BeginExecute();
                     await Task.Run(() => ppaAddResult.AsyncWaitHandle.WaitOne());
+                    Console.WriteLine($"MachineConfigurator: ppaAddCommand.Result {ppaAddCommand.Result}");
                 }
 
                 //Post ppa update and upgrade
                 var postPpaUpdateCommand = client.CreateCommand($"sudo apt-get update && sudo apt-get upgrade -y");
                 var postPpaUpdateResult = postPpaUpdateCommand.BeginExecute();
                 await Task.Run(() => postPpaUpdateResult.AsyncWaitHandle.WaitOne());
+                Console.WriteLine($"MachineConfigurator: postPpaUpdateCommand.Result {postPpaUpdateCommand.Result}");
 
                 //Install apts
-                foreach(var apt in machine.Apt)
+                foreach (var apt in machine.Apt)
                 {
                     var aptInstallCommand = client.CreateCommand($"sudo apt-get install -y {apt}");
                     var aptInstallResult = aptInstallCommand.BeginExecute();
                     await Task.Run(() => aptInstallResult.AsyncWaitHandle.WaitOne());
+                    Console.WriteLine($"MachineConfigurator: aptInstallCommand.Result {aptInstallCommand.Result}");
                 }
 
                 //Apt cleanup
                 var aptCleanupCommand = client.CreateCommand($"sudo apt-get autoremove -y");
                 var aptCleanupResult = aptCleanupCommand.BeginExecute();
                 await Task.Run(() => aptCleanupResult.AsyncWaitHandle.WaitOne());
+                Console.WriteLine($"MachineConfigurator: aptCleanupCommand.Result {aptCleanupCommand.Result}");
 
                 client.Disconnect();
             }

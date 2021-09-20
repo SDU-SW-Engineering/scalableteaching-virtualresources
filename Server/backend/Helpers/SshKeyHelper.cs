@@ -30,7 +30,7 @@ namespace ScalableTeaching.Helpers
         /// </summary>
         /// <param name="privateKey">RSA object containing a privatekey</param>
         /// <returns>PEM formatatted RSA privatekey</returns>
-        public static string ExportKeyAsPEM(RSA privateKey)
+        public static string ExportKeyAsPEM(RSA privateKey) //TODO: Change to using manually generated keys by using ssh-keygen, random folders and removing said folders after creation.
         {
             var keyBuilder = new StringBuilder();
             keyBuilder.Append("-----BEGIN RSA PRIVATE KEY-----\n");
