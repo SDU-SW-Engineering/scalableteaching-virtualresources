@@ -51,7 +51,7 @@ import EducatorAPI from "@/api/EducatorAPI";
 export default {
   name: "EducatorAdministration",
   mounted() {
-    this.loadTableData()
+    this.loadTableData();
   },
   data() {
     return {
@@ -81,13 +81,13 @@ export default {
         }
       ],
       users: []
-    }
+    };
   },
   methods: {
     async loadTableData() {
-      this.resetFields()
-      this.tableLoading(true)
-      this.users = []
+      this.resetFields();
+      this.tableLoading(true);
+      this.users = [];
       //Get all groups
       const result = await EducatorAPI.getEducators();
       //If successful
@@ -98,44 +98,44 @@ export default {
             sn: result.body[i].surname,
             gn: result.body[i].generalName,
             email: result.body[i].mail,
-          })
+          });
         }
       }
-      this.tableLoading(false)
+      this.tableLoading(false);
     },
     onRowSelected(items) {
-      this.selectedRow = items
+      this.selectedRow = items;
     },
     async onSubmit() {
-      console.log("OnSubmit: " + this.email)
+      console.log("OnSubmit: " + this.email);
       if (this.email.match(/^[A-Za-z0-9]{1,10}@[a-zA-Z0-9]*\.sdu\.dk$/g) !== null)
-        console.log("APIReturn: " + (await EducatorAPI.postEducator(this.email)))
+        console.log("APIReturn: " + (await EducatorAPI.postEducator(this.email)));
     },
     resetFields() {
-      this.email = ''
-      this.selectedRow = []
+      this.email = '';
+      this.selectedRow = [];
     },
     onReset(event) {
-      event.preventDefault()
-      this.resetFields()
+      event.preventDefault();
+      this.resetFields();
     },
     deprivilegeSelectedUser() {
       if (this.selectedRow.length < 1) {
-        EducatorAPI.deleteEducator(this.selectedRow[0].email)
-        this.resetFields()
+        EducatorAPI.deleteEducator(this.selectedRow[0].email);
+        this.resetFields();
       }
     },
     tableLoading(state) {
       if (state === true) {
-        this.tableIsLoading = true
+        this.tableIsLoading = true;
       } else if (state === false) {
-        this.tableIsLoading = false
+        this.tableIsLoading = false;
       } else {
-        this.tableIsLoading = !this.tableIsLoading
+        this.tableIsLoading = !this.tableIsLoading;
       }
     },
   }
-}
+};
 </script>
 
 <style scoped>

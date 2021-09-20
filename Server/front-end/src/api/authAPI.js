@@ -1,11 +1,11 @@
-import apiHelper from "@/helpers/apiHelper"
+import apiHelper from "@/helpers/apiHelper";
 import urlConfig from "@/config/urlconfig";
 import StorageHelper from "@/helpers/StorageHelper";
 
 export default {
     login,
     getPublicKey
-}
+};
 
 function login(SSOToken) {
     return fetch(urlConfig.login, {
@@ -17,11 +17,11 @@ function login(SSOToken) {
         }),
         body: JSON.stringify({Token: SSOToken, ServiceEndpoint: urlConfig.loginTokenReturnString})
 
-    }).then(res => apiHelper.parseResponse(res))
+    }).then(res => apiHelper.parseResponse(res));
 }
 
-async function getPublicKey(){
+async function getPublicKey() {
     return await fetch(urlConfig.login, {
         method: "GET"
-    }).then(res => apiHelper.parseResponse(res))
+    }).then(res => apiHelper.parseResponse(res));
 }

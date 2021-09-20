@@ -7,13 +7,13 @@
         select-mode="range"
         @row-selected="rowSelected"
     >
-      <template #cell(name)="data">{{data.value}}</template>
-      <template v-if="!machineSettings.isGroupBased" #cell(users)="data">{{joinWithBreaks(data.value)}}</template>
-      <template v-if="machineSettings.isGroupBased" #cell(group)="data">{{data.value}}</template>
-      <template #cell(linuxgroups)="data">{{joinWithBreaks(data.value)}}</template>
-      <template #cell(apt)="data">{{joinWithBreaks(data.value)}}</template>
-      <template #cell(ppa)="data">{{joinWithBreaks(data.value)}}</template>
-      <template #cell(courseid)="data">{{data.value}}</template>
+      <template #cell(name)="data">{{ data.value }}</template>
+      <template v-if="!machineSettings.isGroupBased" #cell(users)="data">{{ joinWithBreaks(data.value) }}</template>
+      <template v-if="machineSettings.isGroupBased" #cell(group)="data">{{ data.value }}</template>
+      <template #cell(linuxgroups)="data">{{ joinWithBreaks(data.value) }}</template>
+      <template #cell(apt)="data">{{ joinWithBreaks(data.value) }}</template>
+      <template #cell(ppa)="data">{{ joinWithBreaks(data.value) }}</template>
+      <template #cell(courseid)="data">{{ data.value }}</template>
     </b-table>
   </b-container>
 </template>
@@ -25,7 +25,7 @@ export default {
   name: "EndOfCreationTable",
   props: ['machineSettings'],
   mounted() {
-    this.populateMachines(this.machineSettings.machinesToBeCreatedList, this.machineSettings.isGroupBased)
+    this.populateMachines(this.machineSettings.machinesToBeCreatedList, this.machineSettings.isGroupBased);
   },
   data() {
     return {
@@ -53,32 +53,32 @@ export default {
         {key: 'linuxgroups', label: 'Linux Groups', sortable: true},
       ],
 
-    }
+    };
   },
   methods: {
-    rowSelected(items){
-      this.selectedRows = items
+    rowSelected(items) {
+      this.selectedRows = items;
     },
     populateMachines(machines, isGroupBased) {
-      this.machinesToBeCreated.fields = isGroupBased ? this.groupFieldDefaults : this.userFieldDefaults
-      this.machinesToBeCreated.items = machines
+      this.machinesToBeCreated.fields = isGroupBased ? this.groupFieldDefaults : this.userFieldDefaults;
+      this.machinesToBeCreated.items = machines;
     },
     clearMachines() {
-      this.machinesToBeCreated.items = []
+      this.machinesToBeCreated.items = [];
     },
-    deselect(){
-    //TODO: Implement machine deselction
+    deselect() {
+      //TODO: Implement machine deselction
 
     },
     getMachinesToBeCreated() {
       //TODO: Return machines that are not de-selected in the table
-      return {machinesToBeCreated: this.machinesToBeCreated.items, isGroupBased: this.machineSettings.isGroupBased}
+      return {machinesToBeCreated: this.machinesToBeCreated.items, isGroupBased: this.machineSettings.isGroupBased};
     },
-    joinWithBreaks(listOfValues){
-      return listOfValues.join('\n')
+    joinWithBreaks(listOfValues) {
+      return listOfValues.join('\n');
     }
   }
-}
+};
 </script>
 
 <style scoped>

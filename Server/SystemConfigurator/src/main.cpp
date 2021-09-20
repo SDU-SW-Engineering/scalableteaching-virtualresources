@@ -48,13 +48,16 @@ int main(int argc, char **argv) {
 int parseConfiguration(scalable::configuration::configuration& config){
     int errorCode{0};
 
-    if(!validateHostname(config.hostname)){
-        errorCode += 1;
-    }
-    else {
-        //Update Hostname
-        updateHostname(config.hostname);
-    }
+    //Dont update hostname
+//    if(!validateHostname(config.hostname)){
+//        errorCode += 1;
+//    }
+//    else {
+//        //Update Hostname
+//        updateHostname(config.hostname);
+//    }
+
+
     //Add groups
     int groupAdd{};
     for(const std::string& string : config.groups) {
