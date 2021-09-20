@@ -81,7 +81,7 @@ export default {
   name: "MachineCreation",
   components: {SingleMachineCreation, PerUserMachineCreation, PerGroupMachineCreation, EndOfCreationTable},
   mounted() {
-    this.updateClassSelectionList()
+    this.updateClassSelectionList();
   },
   data() {
     return {
@@ -105,42 +105,42 @@ export default {
       classname: {
         selected: null,
       }
-    }
+    };
   },
   methods: {
     nextCreationStep() {
-      if (this.creationStep < 2) this.creationStep++
+      if (this.creationStep < 2) this.creationStep++;
       else if (this.creationStep === 2 && this.machineCustomizationValid()) {
-        this.parseToTable.machinesToBeCreatedList = this.getMachinesToBeCreated()
-        this.parseToTable.isGroupBased = this.replicationDirective.selected === 1
-        this.creationStep++
+        this.parseToTable.machinesToBeCreatedList = this.getMachinesToBeCreated();
+        this.parseToTable.isGroupBased = this.replicationDirective.selected === 1;
+        this.creationStep++;
       }
     },
     canNextCreationStep() {
-      if (this.creationStep === 0 && this.classname.selected !== null) return true
-      if (this.creationStep === 1 && this.replicationDirective.selected !== null) return true
-      if (this.creationStep === 2) return true
+      if (this.creationStep === 0 && this.classname.selected !== null) return true;
+      if (this.creationStep === 1 && this.replicationDirective.selected !== null) return true;
+      if (this.creationStep === 2) return true;
     },
     machineCustomizationValid() {
       if (this.replicationDirective.selected === 0) {
-        return this.$refs.SingleMachineCreation.isValidAndComplete()
+        return this.$refs.SingleMachineCreation.isValidAndComplete();
       }
       if (this.replicationDirective.selected === 1) {
-        return this.$refs.PerGroupMachineCreation.isValidAndComplete()
+        return this.$refs.PerGroupMachineCreation.isValidAndComplete();
       }
       if (this.replicationDirective.selected === 2) {
-        return this.$refs.PerUserMachineCreation.isValidAndComplete()
+        return this.$refs.PerUserMachineCreation.isValidAndComplete();
       }
     },
     getMachinesToBeCreated() {
       if (this.replicationDirective.selected === 0) {
-        return this.$refs.SingleMachineCreation.getMachinesToBeCreated()
+        return this.$refs.SingleMachineCreation.getMachinesToBeCreated();
       }
       if (this.replicationDirective.selected === 1) {
-        return this.$refs.PerGroupMachineCreation.getMachinesToBeCreated()
+        return this.$refs.PerGroupMachineCreation.getMachinesToBeCreated();
       }
       if (this.replicationDirective.selected === 2) {
-        return this.$refs.PerUserMachineCreation.getMachinesToBeCreated()
+        return this.$refs.PerUserMachineCreation.getMachinesToBeCreated();
       }
     },
     resetVerification() {
@@ -164,7 +164,7 @@ export default {
           })
           .catch(err => {
             this.resetBox = "ResetValidationErr: " + err;
-          })
+          });
     },
     resetFields() {
       this.creationStep = 0;
@@ -174,25 +174,28 @@ export default {
       this.classname = {
         selected: "null",
         newName: ""
-      }
+      };
     },
     async finish() {
-      let machinesToBeCreated = this.$refs.EndOfCreationTableRef.getMachinesToBeCreated()
-      let result = await MachineCreationAPI.createMachines(machinesToBeCreated)
-
+      let machinesToBeCreated = this.$refs.EndOfCreationTableRef.getMachinesToBeCreated();
+      let result = await MachineCreationAPI.createMachines(
+          machinesToBeCreated.machinesToBeCreated,
+          machinesToBeCreated.isGroupBased
+      );
+      console.log(result);
     },
     async updateClassSelectionList() {
-      this.classnameOptions = []
-      let retrievedClassNames = await CourseAPI.getCourses()
+      this.classnameOptions = [];
+      let retrievedClassNames = await CourseAPI.getCourses();
       retrievedClassNames.body.forEach(course => {
         this.classnameOptions.push({
           value: course,
           text: course.courseName
-        })
-      })
+        });
+      });
     },
   },
-}
+};
 
 </script>
 

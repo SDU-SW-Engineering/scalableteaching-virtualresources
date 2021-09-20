@@ -196,19 +196,19 @@ export default {
         {}
       ],
       fields: [
-        { key: 'machine_name', label: 'Machine Name', sortable: true, sortDirection: 'desc' },
-        { key: 'class_name', label: 'Class Name', sortable: true, class: 'text-center' },
+        {key: 'machine_name', label: 'Machine Name', sortable: true, sortDirection: 'desc'},
+        {key: 'class_name', label: 'Class Name', sortable: true, class: 'text-center'},
         {
           key: 'isActive',
           label: 'Is Active',
           formatter: (value) => {
-            return value ? 'Yes' : 'No'
+            return value ? 'Yes' : 'No';
           },
           sortable: true,
           sortByFormatted: true,
           filterByFormatted: true
         },
-        { key: 'actions', label: 'Actions' }
+        {key: 'actions', label: 'Actions'}
       ],
       totalRows: 1,
       currentPage: 1,
@@ -224,7 +224,7 @@ export default {
         title: '',
         content: ''
       }
-    }
+    };
   },
   computed: {
     sortOptions() {
@@ -232,31 +232,31 @@ export default {
       return this.fields
           .filter(f => f.sortable)
           .map(f => {
-            return { text: f.label, value: f.key }
-          })
+            return {text: f.label, value: f.key};
+          });
     }
   },
   mounted() {
     // Set the initial number of items
-    this.totalRows = this.items.length
+    this.totalRows = this.items.length;
   },
   methods: {
     info(item, index, button) {
-      this.infoModal.title = `Row index: ${index}`
-      this.infoModal.content = JSON.stringify(item, null, 2)
-      this.$root.$emit('bv::show::modal', this.infoModal.id, button)
+      this.infoModal.title = `Row index: ${index}`;
+      this.infoModal.content = JSON.stringify(item, null, 2);
+      this.$root.$emit('bv::show::modal', this.infoModal.id, button);
     },
     resetInfoModal() {
-      this.infoModal.title = ''
-      this.infoModal.content = ''
+      this.infoModal.title = '';
+      this.infoModal.content = '';
     },
     onFiltered(filteredItems) {
       // Trigger pagination to update the number of buttons/pages due to filtering
-      this.totalRows = filteredItems.length
-      this.currentPage = 1
+      this.totalRows = filteredItems.length;
+      this.currentPage = 1;
     }
   }
-}
+};
 </script>
 
 <style scoped>

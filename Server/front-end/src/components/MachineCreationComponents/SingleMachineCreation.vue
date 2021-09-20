@@ -133,15 +133,15 @@ export default {
         {text: "Upload file containing usernames", value: true}
       ],
       machineNamingDirective: "",
-    }
+    };
   },
   methods: {
-getMachinesToBeCreated(){
+    getMachinesToBeCreated() {
       //Machines to be returned
-      let machines = []
+      let machines = [];
       //Intermediate variable extraction
-      let ports = []
-      StringHelper.breakStringIntoTokenList(this.portsField).forEach(portToken => ports.push(parseInt(portToken)))
+      let ports = [];
+      StringHelper.breakStringIntoTokenList(this.portsField).forEach(portToken => ports.push(parseInt(portToken)));
       //Machine list population
       machines.push({
         hostname: this.machineNamingDirective,
@@ -150,102 +150,102 @@ getMachinesToBeCreated(){
         ppa: StringHelper.breakStringIntoTokenList(this.ppaField),
         ports: ports,
         linuxgroups: StringHelper.breakStringIntoTokenList(this.linuxGroupsField),
-        courseid: this.classObject.this.classObject.courseID
+        courseid: this.classObject.courseID
       });
-      return machines
+      return machines;
     },
-    isValidAndComplete(){
-      let rv = true
-      rv = rv && this.validateMachineName()
-      rv = rv && this.validateUsers()
-      let portsValidity = this.validatePorts()
-      let groupsValidity = this.validateGroups()
-      let aptValidity = this.validateAPT()
-      let ppaValidity = this.validatePPA()
-      rv = rv && (portsValidity === null || portsValidity === true)
-      rv = rv && (groupsValidity === null || groupsValidity === true)
-      rv = rv && (aptValidity === null || aptValidity === true)
-      rv = rv && (ppaValidity === null || ppaValidity === true)
-      return rv
+    isValidAndComplete() {
+      let rv = true;
+      rv = rv && this.validateMachineName();
+      rv = rv && this.validateUsers();
+      let portsValidity = this.validatePorts();
+      let groupsValidity = this.validateGroups();
+      let aptValidity = this.validateAPT();
+      let ppaValidity = this.validatePPA();
+      rv = rv && (portsValidity === null || portsValidity === true);
+      rv = rv && (groupsValidity === null || groupsValidity === true);
+      rv = rv && (aptValidity === null || aptValidity === true);
+      rv = rv && (ppaValidity === null || ppaValidity === true);
+      return rv;
     },
-    validateMachineName(){
-      let name = this.machineNamingDirective
-      name = name.replace("%i", "00").replace("%g", "abcde01").replace("%s", "e01")
-      let regex = /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/
-      return name.search(regex) !== -1
+    validateMachineName() {
+      let name = this.machineNamingDirective;
+      name = name.replace("%i", "00").replace("%g", "abcde01").replace("%s", "e01");
+      let regex = /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/;
+      return name.search(regex) !== -1;
     },
-    validateUsers(){
-      let usersString = ""
-      if(this.useUsersFile){
-        usersString=this.usersFile
-      }else{
-        usersString=this.enteredUsersField
+    validateUsers() {
+      let usersString = "";
+      if (this.useUsersFile) {
+        usersString = this.usersFile;
+      } else {
+        usersString = this.enteredUsersField;
       }
-      if(usersString.length === 0) return false
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.linuxGroupsField)
-      for(let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i]
+      if (usersString.length === 0) return false;
+      let cleanTokens = StringHelper.breakStringIntoTokenList(this.linuxGroupsField);
+      for (let i = 0; i < cleanTokens.length; i++) {
+        let token = cleanTokens[i];
         if (token.length > 0) {
           if (token.match(/[a-zA-Z0-9]+/) === null) {
-            return false
+            return false;
           }
         }
       }
-      return true
+      return true;
     },
-    validateGroups(){
-      if (this.linuxGroupsField.length === 0) return null
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.linuxGroupsField)
-      for(let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i]
+    validateGroups() {
+      if (this.linuxGroupsField.length === 0) return null;
+      let cleanTokens = StringHelper.breakStringIntoTokenList(this.linuxGroupsField);
+      for (let i = 0; i < cleanTokens.length; i++) {
+        let token = cleanTokens[i];
         if (token.length > 0) {
           if (token.match(/^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/) === null) {
-            return false
+            return false;
           }
         }
       }
-      return true
+      return true;
     },
-    validatePPA(){
-      if (this.ppaField.length === 0) return null
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.ppaField)
-      for(let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i]
+    validatePPA() {
+      if (this.ppaField.length === 0) return null;
+      let cleanTokens = StringHelper.breakStringIntoTokenList(this.ppaField);
+      for (let i = 0; i < cleanTokens.length; i++) {
+        let token = cleanTokens[i];
         if (token.length > 0) {
           if (token.match(/^(ppa:([a-z-]+)\/[a-z-]+)$/) === null) {
-            return false
+            return false;
           }
         }
       }
-      return true
+      return true;
     },
-    validateAPT(){
-      if (this.aptField.length === 0) return null
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.aptField)
-      for(let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i]
+    validateAPT() {
+      if (this.aptField.length === 0) return null;
+      let cleanTokens = StringHelper.breakStringIntoTokenList(this.aptField);
+      for (let i = 0; i < cleanTokens.length; i++) {
+        let token = cleanTokens[i];
         if (token.length > 0) {
           if (token.match(/[0-9A-Za-z.+-]+/) === null) {
-            return false
+            return false;
           }
         }
       }
-      return true
+      return true;
     },
-    validatePorts(){
-      if (this.portsField.length === 0) return null
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.portsField)
-      for(let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i]
+    validatePorts() {
+      if (this.portsField.length === 0) return null;
+      let cleanTokens = StringHelper.breakStringIntoTokenList(this.portsField);
+      for (let i = 0; i < cleanTokens.length; i++) {
+        let token = cleanTokens[i];
         if (token.length > 0) {
           if (!(token.match(/[0-9]{1,5}/) !== null && (parseInt(token) > 0 && parseInt(token) <= 65535)))
-            return false
+            return false;
         }
       }
-      return true
+      return true;
     }
   }
-}
+};
 </script>
 
 <style scoped>
