@@ -5,7 +5,7 @@ export const names = {
     jwtName: "login-token",
     tokenPublicKey: "API-PublicKey",
     attemptedLocation: "AttemptedLocation"
-}
+};
 
 
 export function saveJWT(token) {
@@ -29,7 +29,7 @@ export function clearJWT() {
  * @throws Error if name is not in Names
  */
 function get(name) {
-    validateName(name)
+    validateName(name);
     if (localStorage.getItem(consentStorage) === null) {
         return sessionStorage.getItem(name);
     } else {
@@ -51,8 +51,8 @@ function set(name, payload) {
         payload = JSON.stringify(payload);
     }
     /*Validate input*/
-    validateName(name)
-    if (payload === null || payload === undefined) throw new Error("payload cannot be null or undefined")
+    validateName(name);
+    if (payload === null || payload === undefined) throw new Error("payload cannot be null or undefined");
 
     /*Handle operation based on consent*/
     if (localStorage.getItem(consentStorage) === null) {
@@ -69,7 +69,7 @@ function set(name, payload) {
  * @throws Error if name is not in Names
  */
 function clear(name) {
-    validateName(name)
+    validateName(name);
     /*Handle operation based on consent*/
     if (localStorage.getItem(consentStorage) === null) {
         return sessionStorage.removeItem(name);
@@ -85,9 +85,9 @@ function clear(name) {
  */
 function validateName(name) {
     // eslint-disable-next-line no-prototype-builtins
-    if (names.hasOwnProperty(name)) throw new Error("Name not in names")
-    if (name === null || name === undefined) throw new Error("Name cannot be null or undefined")
-    if (typeof name !== "string") throw new Error("Type of name is not string")
+    if (names.hasOwnProperty(name)) throw new Error("Name not in names");
+    if (name === null || name === undefined) throw new Error("Name cannot be null or undefined");
+    if (typeof name !== "string") throw new Error("Type of name is not string");
 }
 
 export default {
@@ -95,4 +95,4 @@ export default {
     get,
     clear,
     names
-}
+};

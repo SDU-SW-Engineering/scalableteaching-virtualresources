@@ -113,8 +113,8 @@ import StringHelper from "@/helpers/StringHelper";
 export default { //TODO: Getting errors when using page
   name: "GroupManagement",
   mounted() {
-    this.getSelectableCourses()
-    this.loadTableData()
+    this.getSelectableCourses();
+    this.loadTableData();
   },
   data() {
     return {
@@ -148,22 +148,22 @@ export default { //TODO: Getting errors when using page
       ],
       groups: [],
       selectedRow: [],
-    }
+    };
   },
   methods: {
     tableLoading(state) {
       if (state === true) {
-        this.tableIsLoading = true
+        this.tableIsLoading = true;
       } else if (state === false) {
-        this.tableIsLoading = false
+        this.tableIsLoading = false;
       } else {
-        this.tableIsLoading = !this.tableIsLoading
+        this.tableIsLoading = !this.tableIsLoading;
       }
     },
     async loadTableData() {
-      this.resetFields()
-      this.tableLoading(true)
-      this.groups = []
+      this.resetFields();
+      this.tableLoading(true);
+      this.groups = [];
       //Get all groups
       const result = await GroupAPI.getGroups();
       //If successfull
@@ -176,92 +176,91 @@ export default { //TODO: Getting errors when using page
             groupIndex: result.body[i].groupIndex,
             courseName: '',
             members: []
-          }
+          };
           //Add coursename to each group
-          const resultCourse = await CourseAPI.getCourse(singleResult.courseID)
+          const resultCourse = await CourseAPI.getCourse(singleResult.courseID);
           singleResult.courseName = resultCourse.body.courseName;
           //Add group members to each group
           const resultMembers = await GroupAPI.getGroupMembers(singleResult.groupID);
           if (result.status === 200) {
-            singleResult.members = resultMembers.body.members
+            singleResult.members = resultMembers.body.members;
           }
-          this.groups.push(singleResult)
+          this.groups.push(singleResult);
         }
       }
-      this.tableLoading(false)
+      this.tableLoading(false);
     },
     onRowSelected(items) {
-      this.selectedRow = items
+      this.selectedRow = items;
       if (this.selectedRow.length > 0) {
-        this.form.selectedCourse = this.selectedRow[0].courseID
-        this.form.groupname = this.selectedRow[0].groupName
-        this.form.groupUsers = this.selectedRow[0].members.join()
+        this.form.selectedCourse = this.selectedRow[0].courseID;
+        this.form.groupname = this.selectedRow[0].groupName;
+        this.form.groupUsers = this.selectedRow[0].members.join();
       } else {
-        this.resetFields()
+        this.resetFields();
       }
     },
     async removeSelectedCourse() {
-      await GroupAPI.deleteGroup(this.selectedRow[0].groupID)
-      await this.loadTableData()
+      await GroupAPI.deleteGroup(this.selectedRow[0].groupID);
+      await this.loadTableData();
     },
     validateUsersInput() {
-      let usersField = this.form.groupUsers
-      if (usersField === null || usersField === undefined || usersField.length === 0) return null
+      let usersField = this.form.groupUsers;
+      if (usersField === null || usersField === undefined || usersField.length === 0) return null;
 
       let cleanedUserTokens = StringHelper.breakStringIntoTokenList(this.form.groupUsers);
       for (let i = 0; i < cleanedUserTokens.length; i++) {
-        let token = cleanedUserTokens[i]
-        if (token.length < 3 || token.length > 7) return false
+        let token = cleanedUserTokens[i];
+        if (token.length < 3 || token.length > 7) return false;
       }
 
-      return true
+      return true;
     },
     async submit(event) {
       let respOk = false;
-      event.preventDefault()
+      event.preventDefault();
 
       if (this.selectedRow.length > 0) {
-        let newUserList = StringHelper.breakStringIntoTokenList(this.form.groupUsers).sort()
+        let newUserList = StringHelper.breakStringIntoTokenList(this.form.groupUsers).sort();
         //Update member list
-        if(newUserList.join() !== this.selectedRow[0].members.sort().join)
-        {
-          await GroupAPI.putMembersInGroup(newUserList, this.selectedRow[0].groupID)
+        if (newUserList.join() !== this.selectedRow[0].members.sort().join) {
+          await GroupAPI.putMembersInGroup(newUserList, this.selectedRow[0].groupID);
         }
 
         //Update Group Name
-        let resp = await GroupAPI.putGroup(this.form.groupname, this.form.selectedCourse, this.selectedRow[0].groupID)
-        respOk = resp === 204
+        let resp = await GroupAPI.putGroup(this.form.groupname, this.form.selectedCourse, this.selectedRow[0].groupID);
+        respOk = resp === 204;
       } else {
         //Create Group
-        let resp = await GroupAPI.postGroup(this.form.groupname, this.form.selectedCourse)
-        respOk = resp === 200
+        let resp = await GroupAPI.postGroup(this.form.groupname, this.form.selectedCourse);
+        respOk = resp === 200;
       }
-      this.formInvalidResponse = !respOk
+      this.formInvalidResponse = !respOk;
       if (respOk) {
-        this.resetFields()
-        await this.loadTableData()
+        this.resetFields();
+        await this.loadTableData();
       }
     },
     resetFields() {
       this.form = {
         groupname: '',
         selectedCourse: null
-      }
+      };
     },
     getSelectableCourses: async function () {
-      this.selectableCourses = this.defaultSelectableCourses
+      this.selectableCourses = this.defaultSelectableCourses;
       const result = await CourseAPI.getCourses();
       if (result.status === 200) {
         for (let i = 0; i < result.body.length; i++) {
-          this.selectableCourses.push({value: result.body[i].courseID, text: result.body[i].courseName})
+          this.selectableCourses.push({value: result.body[i].courseID, text: result.body[i].courseName});
         }
       }
     },
     updateFilter() {
-      this.tableFilter = this.form.selectedCourse
+      this.tableFilter = this.form.selectedCourse;
     }
   }
-}
+};
 </script>
 
 <style scoped>

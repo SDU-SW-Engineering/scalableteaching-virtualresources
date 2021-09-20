@@ -23,9 +23,9 @@ import store from "@/store/store";
 export default {
   components: {NavBar},
   computed: {
-    isSimpleSignedIn(){
+    isSimpleSignedIn() {
       return store.state.isSignedIn;
     }
   }
-}
+};
 </script>

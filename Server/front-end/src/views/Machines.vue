@@ -79,19 +79,16 @@
               :aria-describedby="ariaDescribedby"
               class="mt-1"
           >
-            <b-form-checkbox value="name">Machine Name</b-form-checkbox>
-            <b-form-checkbox value="age">Class Name</b-form-checkbox>
+            <b-form-checkbox value="machine_name">Machine Name</b-form-checkbox>
+            <b-form-checkbox value="class_name">Class Name</b-form-checkbox>
             <b-form-checkbox value="isActive">State</b-form-checkbox>
-<!--            <b-form-checkbox value="name">Machine Name</b-form-checkbox>
-            <b-form-checkbox value="age">Class Name</b-form-checkbox>
-            <b-form-checkbox value="isActive">State</b-form-checkbox>-->
           </b-form-checkbox-group>
         </b-form-group>
       </b-col>
 
       <b-col sm="5" md="6" class="my-1">
         <b-form-group
-            label="Per page"
+            label="Number of machines shown"
             label-for="per-page-select"
             label-cols-sm="6"
             label-cols-md="4"
@@ -107,17 +104,6 @@
               size="sm"
           ></b-form-select>
         </b-form-group>
-      </b-col>
-
-      <b-col sm="7" md="6" class="my-1">
-        <b-pagination
-            v-model="currentPage"
-            :total-rows="totalRows"
-            :per-page="perPage"
-            align="fill"
-            size="sm"
-            class="my-0"
-        ></b-pagination>
       </b-col>
     </b-row>
 
@@ -137,12 +123,11 @@
         small
         @filtered="onFiltered"
     >
-      <template #cell(name)="row">
-        {{ row.value.first }} {{ row.value.last }}
-      </template>
-
       <template #cell(actions)="row">
-        <b-button size="sm" @click="info(row.item, row.index, $event.target)" class="mr-1">
+        <!--<b-button size="sm" @click="info(row.item, row.index, $event.target)" class="mr-1">-->
+        <!--  Reboot-->
+        <!--</b-button>-->
+        <b-button size="sm" @click="reboot(row.item.id)" class="mr-1">
           Reboot
         </b-button>
         <b-button size="sm" @click="row.toggleDetails">
@@ -159,61 +144,45 @@
       </template>
     </b-table>
 
-    <!-- Reboot verification -->
-    <b-modal :id="infoModal.id" :title="infoModal.title" ok-only @hide="resetInfoModal">
-      <pre>{{ infoModal.content }}</pre>
-    </b-modal>
+    <!--&lt;!&ndash; Reboot verification &ndash;&gt;-->
+    <!--<b-modal :id="infoModal.id" :title="infoModal.title" ok-only @hide="resetInfoModal">-->
+    <!--  <pre>{{ infoModal.content }}</pre>-->
+    <!--  <p>Can i have the cake</p>-->
+    <!--</b-modal>-->
   </b-container>
 </template>
 <script>
+import MachinesAPI from "@/api/MachinesAPI";
+
 export default {
   name: "Machines",
+  mounted() {
+    this.loadTableData();
+    // Set the initial number of items
+    this.totalRows = this.items.length;
+  },
   data() {
     return {
-      items: [
-/*        { isActive: true, age: 40, name: { first: 'Dickerson', last: 'Macdonald' } },
-        { isActive: false, age: 21, name: { first: 'Larsen', last: 'Shaw' } },
-        {
-          isActive: false,
-          age: 9,
-          name: { first: 'Mini', last: 'Navarro' },
-          _rowVariant: 'success'
-        },
-        { isActive: false, age: 89, name: { first: 'Geneva', last: 'Wilson' } },
-        { isActive: true, age: 38, name: { first: 'Jami', last: 'Carney' } },
-        { isActive: false, age: 27, name: { first: 'Essie', last: 'Dunlap' } },
-        { isActive: true, age: 40, name: { first: 'Thor', last: 'Macdonald' } },
-        {
-          isActive: true,
-          age: 87,
-          name: { first: 'Larsen', last: 'Shaw' },
-          _cellVariants: { age: 'danger', isActive: 'warning' }
-        },
-        { isActive: false, age: 26, name: { first: 'Mitzi', last: 'Navarro' } },
-        { isActive: false, age: 22, name: { first: 'Genevieve', last: 'Wilson' } },
-        { isActive: true, age: 38, name: { first: 'John', last: 'Carney' } },
-        { isActive: false, age: 29, name: { first: 'Dick', last: 'Dunlap' } }*/
-        {}
-      ],
+      items: [],
       fields: [
-        { key: 'machine_name', label: 'Machine Name', sortable: true, sortDirection: 'desc' },
-        { key: 'class_name', label: 'Class Name', sortable: true, class: 'text-center' },
+        {key: 'machine_name', label: 'Machine Name', sortable: true, sortDirection: 'desc'},
+        {key: 'class_name', label: 'Class Name', sortable: true, class: 'text-center'},
         {
           key: 'isActive',
-          label: 'Is Active',
+          label: 'Running',
           formatter: (value) => {
-            return value ? 'Yes' : 'No'
+            return value ? 'Yes' : 'No';
           },
           sortable: true,
           sortByFormatted: true,
           filterByFormatted: true
         },
-        { key: 'actions', label: 'Actions' }
+        {key: 'actions', label: 'Actions'}
       ],
       totalRows: 1,
       currentPage: 1,
-      perPage: 5,
-      pageOptions: [5, 10, 25, 50, 100],
+      perPage: 10,
+      pageOptions: [10, 25, 50, 100],
       sortBy: '',
       sortDesc: false,
       sortDirection: 'asc',
@@ -224,7 +193,7 @@ export default {
         title: '',
         content: ''
       }
-    }
+    };
   },
   computed: {
     sortOptions() {
@@ -232,31 +201,50 @@ export default {
       return this.fields
           .filter(f => f.sortable)
           .map(f => {
-            return { text: f.label, value: f.key }
-          })
+            return {text: f.label, value: f.key};
+          });
     }
   },
-  mounted() {
-    // Set the initial number of items
-    this.totalRows = this.items.length
-  },
+
   methods: {
+    async reboot(machineId) {
+      await MachinesAPI.postRebootMachine(machineId);
+    },
+    async loadTableData() {
+      let response = await MachinesAPI.getUsersMachines();
+      console.log(response);
+      if (response.status === 200) {
+        let machines = response.body;
+        this.items = machines.map(m => {
+          return {
+            isActive: m.status === "ACTIVE",
+            machine_name: m.hostname,
+            ip: m.ipAddress,
+            class_name: m.course.courseName,
+            ports: m.ports,
+            id: m.machineID,
+            //TODO: Fix backend return users
+            //TODO: Fix backend return mac
+          };
+        });
+      }
+    },
     info(item, index, button) {
-      this.infoModal.title = `Row index: ${index}`
-      this.infoModal.content = JSON.stringify(item, null, 2)
-      this.$root.$emit('bv::show::modal', this.infoModal.id, button)
+      this.infoModal.title = `Row index: ${index}`;
+      this.infoModal.content = JSON.stringify(item, null, 2);
+      this.$root.$emit('bv::show::modal', this.infoModal.id, button);
     },
     resetInfoModal() {
-      this.infoModal.title = ''
-      this.infoModal.content = ''
+      this.infoModal.title = '';
+      this.infoModal.content = '';
     },
     onFiltered(filteredItems) {
       // Trigger pagination to update the number of buttons/pages due to filtering
-      this.totalRows = filteredItems.length
-      this.currentPage = 1
+      this.totalRows = filteredItems.length;
+      this.currentPage = 1;
     }
   }
-}
+};
 </script>
 
 <style scoped>

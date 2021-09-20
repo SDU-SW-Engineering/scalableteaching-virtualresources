@@ -22,7 +22,7 @@ namespace scalable{
     int addUser(const std::string& username, const std::string& userPassword, const std::string &userPublicKey) {
         if(userExists(username)) return 1;
         //Create initial command
-        std::string passcmd {"openssl passwd -6 -salt "};
+        std::string passcmd {"sudo openssl passwd -6 -salt "};
         //Specify a random salt
         passcmd.append(randomAlphaNumString(10));
         //Specify user password
@@ -33,7 +33,7 @@ namespace scalable{
 
 
         //Creat initial command
-        std::string usercmd {"useradd -m -p "};
+        std::string usercmd {"sudo useradd -m -p "};
         //Add hashed password to command
         usercmd.append(hashedPassword);
         usercmd.append(" ");
@@ -49,7 +49,7 @@ namespace scalable{
     int addGroup(const std::string& groupName){
         if(groupExists(groupName)) return 1;
         //Create initial command
-        std::string groupcmd  {"groupadd "};
+        std::string groupcmd  {"sudo groupadd "};
         groupcmd.append(groupName);
         run(groupcmd.c_str());
         return 0;
@@ -65,7 +65,7 @@ namespace scalable{
             addGroup(groupname);
         }
         if(userExists(username)){
-            std::string assigncmd{"usermod -a "};
+            std::string assigncmd{"sudo usermod -a "};
             assigncmd.append(username);
             assigncmd.append(" -G ");
             assigncmd.append(groupname);

@@ -2,7 +2,7 @@
   <div></div>
 </template>
 <script>
-import AuthService from '@/services/AuthService'
+import AuthService from '@/services/AuthService';
 import router from "@/router/router";
 import store from "@/store/store";
 import urlconfig from "@/config/urlconfig";
@@ -28,14 +28,14 @@ export default {
         } else {
           (async () => {
             if (await AuthService.login(loginComponent.ticket)) {
-              let attemptLocation = StorageHelper.get(StorageHelper.names.attemptedLocation)
-              if(attemptLocation !== null){
-                router.push({name: attemptLocation});
+              let attemptLocation = StorageHelper.get(StorageHelper.names.attemptedLocation);
+              if (attemptLocation !== null) {
+                await router.push({name: attemptLocation});
               }
-              router.push({name: 'Machines'});
+              await router.push({name: 'Machines'});
             } else {
-              console.log("Login Error")
-              router.push({name: 'InitialSpace'})
+              console.log("Login Error");
+              await router.push({name: 'InitialSpace'});
             }
           })();
         }
@@ -49,5 +49,5 @@ export default {
       return store.state.isSignedIn;
     }
   }
-}
+};
 </script>
