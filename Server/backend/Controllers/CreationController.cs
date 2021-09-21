@@ -116,7 +116,8 @@ namespace ScalableTeaching.Controllers
                 });
                 machine.Users.ForEach(user =>
                 {
-                    _context.Users.Add(AuthController.NewUser(user));
+                    if (_context.Users.Find(user.ToLower()) == null)
+                        _context.Users.Add(AuthController.NewUser(user));
                     _context.MachineAssignments.Add(new()
                     {
                         MachineAssignmentID = Guid.NewGuid(),

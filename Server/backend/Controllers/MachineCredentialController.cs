@@ -114,8 +114,11 @@ namespace ScalableTeaching.Controllers
         [HttpGet("file/sshconfig")]
         public async Task<FileStreamResult> DownloadSshConfigFile()
         {
-            return (await SshConfigFile()).ToFileStreamResult();
-        }//TODO: Test
+            var file = (await SshConfigFile());
+            Response.Headers.Append("content-type", "binary/octet-stream");
+            Response.Headers.Append("Content-Length", file.Content.Length.ToString());
+            return file.ToFileStreamResult();
+        }
 
         /// <summary>
         /// Rest get endpoint returning the usercredentials and ssh configuration in a zip file
@@ -124,6 +127,7 @@ namespace ScalableTeaching.Controllers
         [HttpGet("file/zip")]
         public async Task<FileStreamResult> DownloadSshZip()
         {
+            Response.Headers.Append("Content-Disposition", "attachment; filename=Configs.zip");
             return (await GetConfigAndKeysAsZip()).ToFileStreamResult();
         }
 

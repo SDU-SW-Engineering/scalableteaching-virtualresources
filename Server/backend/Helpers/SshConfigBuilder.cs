@@ -42,7 +42,7 @@ namespace ScalableTeaching.Helpers
                 credentialBuilder.Append(hostName).Append(Environment.NewLine);
 
                 //Insert HostName url string
-                credentialBuilder.Append('\u0009').Append("HostName ").Append(hostName).Append(Environment.NewLine);
+                credentialBuilder.Append('\u0009').Append("HostName ").Append(machine.MachineStatus.MachineIp).Append(Environment.NewLine);
 
                 //Insert Username for the machine
                 credentialBuilder.Append('\u0009').Append("User ").Append(username).Append(Environment.NewLine);
