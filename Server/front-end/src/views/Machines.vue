@@ -208,7 +208,7 @@ export default {
 
   methods: {
     async reboot(machineId) {
-      await MachinesAPI.postRebootMachine(machineId);
+      console.log(await MachinesAPI.postRebootMachine(machineId));
     },
     async loadTableData() {
       let response = await MachinesAPI.getUsersMachines();

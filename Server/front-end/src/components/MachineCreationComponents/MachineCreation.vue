@@ -170,7 +170,7 @@ export default {
       this.creationStep = 0;
       this.debugText = "No Debug Text Yet";
       this.resetBox = "";
-      this.replicationDirective.selected = 0;
+      this.replicationDirective.selected = null;
       this.classname = {
         selected: "null",
         newName: ""
@@ -182,7 +182,7 @@ export default {
           machinesToBeCreated.machinesToBeCreated,
           machinesToBeCreated.isGroupBased
       );
-      console.log(result);
+      this.resetFields();
     },
     async updateClassSelectionList() {
       this.classnameOptions = [];

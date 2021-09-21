@@ -162,7 +162,7 @@ export default {
           ppa: ppa,
           ports: ports,
           linuxgroups: linuxGroups,
-          courseid: this.classObject.this.classObject.courseID
+          courseid: this.classObject.courseID
         });
       }
       return machines;
