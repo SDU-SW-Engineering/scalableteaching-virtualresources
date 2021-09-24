@@ -10,7 +10,6 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace ScalableTeaching.Controllers
@@ -82,12 +81,8 @@ namespace ScalableTeaching.Controllers
             {
                 if (!await _context.Users.Where(u => u.Username == username).AnyAsync())
                 {
-                    await _context.Users.AddAsync(new User()
-                    {
-                        Username = username,
-                        AccountType = Models.User.UserType.User,
-                        UserPrivateKey = SSHKeyHelper.ExportKeyAsPEM(RSA.Create(2048))
-                    });
+
+                    await _context.Users.AddAsync(await UserFactory.Create(username));
                 }
                 await _context.GroupAssignments
                     .AddAsync(new GroupAssignment() { GroupID = dto.GroupID, UserUsername = username });

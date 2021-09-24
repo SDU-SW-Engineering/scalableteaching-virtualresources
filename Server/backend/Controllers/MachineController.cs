@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ScalableTeaching.Data;
 using ScalableTeaching.DTO;
+using ScalableTeaching.Helpers;
 using ScalableTeaching.Models;
 using ScalableTeaching.OpenNebula;
 using System;
@@ -11,8 +12,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using ScalableTeaching.Services;
-using ScalableTeaching.Helpers;
 
 namespace ScalableTeaching.Controllers
 {
@@ -62,11 +61,11 @@ namespace ScalableTeaching.Controllers
                 {
                     Course = (CourseDTO)machine.Course,
                     Hostname = machine.HostName,
-                    IpAddress = machine.MachineStatus.MachineIp,
-                    MacAddress = machine.MachineStatus.MachineIp,
+                    IpAddress = machine.MachineStatus?.MachineIp ?? "Configuring",
+                    MacAddress = machine.MachineStatus?.MachineMac ?? "Configuring",
                     MachineID = machine.MachineID,
                     Ports = machine.Ports,
-                    Status = machine?.MachineStatus?.MachineState.ToString() ?? "Unconfigured",
+                    Status = machine.MachineStatus?.MachineState.ToString() ?? "Unconfigured",
                     Users = usernames
                 });
             }

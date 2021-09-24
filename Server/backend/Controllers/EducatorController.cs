@@ -4,10 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using ScalableTeaching.Data;
 using ScalableTeaching.DTO;
 using ScalableTeaching.Helpers;
-using ScalableTeaching.Models;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -44,9 +42,10 @@ namespace ScalableTeaching.Controllers
             if (email == null || email.Length == 0) return BadRequest("Input Empty");
             if (!(new Regex(@"^[A-Za-z0-9]{1,10}@[a-zA-Z0-9]*\.sdu\.dk$").IsMatch(email))) return BadRequest("Email was invalid");
             var foundUser = await _context.Users.FindAsync(email.Split("@")[0]);
-            if (foundUser == null) { 
-            
-                await _context.Users.AddAsync(AuthController.NewUser(Email: email, Username: email.Split("@")[0]));
+            if (foundUser == null)
+            {
+
+                await _context.Users.AddAsync(await UserFactory.Create(Email: email, Username: email.Split("@")[0]));
                 await _context.SaveChangesAsync();
                 return Ok("New user created based on entered email");
             }

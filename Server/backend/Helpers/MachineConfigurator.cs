@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Renci.SshNet;
-using ScalableTeaching.Controllers;
 using ScalableTeaching.Data;
 using ScalableTeaching.Models;
 using System;
@@ -9,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ScalableTeaching.Helpers
@@ -40,7 +38,7 @@ namespace ScalableTeaching.Helpers
 
                     if (await GetContext().Users.FindAsync(assignment.UserUsername) == null)
                     {
-                        GetContext().Users.Add(AuthController.NewUser(assignment.UserUsername));
+                        GetContext().Users.Add(await UserFactory.Create(assignment.UserUsername));
                     }
                     MachineConfigurationUser machineConfigurationUser = new();
                     machineConfigurationUser.Groups = machine.LinuxGroups;
@@ -50,8 +48,7 @@ namespace ScalableTeaching.Helpers
 
 
                     User user = (await GetContext().Users.FindAsync(assignment.UserUsername));
-                    System.Security.Cryptography.RSA privateKey = SSHKeyHelper.ParseKeyFromPem(user.UserPrivateKey);
-                    machineConfigurationUser.UserPublicKey = SSHKeyHelper.GetSSHPublicKey(privateKey, assignment.UserUsername);
+                    machineConfigurationUser.UserPublicKey = user.UserPublicKey;
                     configurationUsers.Add(machineConfigurationUser);
                 }
                 else
@@ -62,46 +59,17 @@ namespace ScalableTeaching.Helpers
                         machineConfigurationUser.Groups = machine.LinuxGroups;
                         machineConfigurationUser.Username = groupAssignment.User.Username;
                         machineConfigurationUser.UserPassword = assignment.OneTimePassword;
-                        machineConfigurationUser.UserPublicKey = SSHKeyHelper.GetSSHPublicKey(SSHKeyHelper.ParseKeyFromPem(groupAssignment.User.UserPrivateKey), groupAssignment.User.Username);
+                        machineConfigurationUser.UserPublicKey = groupAssignment.User.UserPublicKey;
                         configurationUsers.Add(machineConfigurationUser);
                     }
                 }
             }
-            //ConfigurationJson.Add("hostname", machine.HostName);
-            //ConfigurationJson.Add("groups", JToken.FromObject(machine.LinuxGroups));
-            //ConfigurationJson.Add("aptPPA", JToken.FromObject(machine.Ppa));
-            //ConfigurationJson.Add("aptPackages", JToken.FromObject(machine.Apt));
-            //ConfigurationJson.Add("users", JToken.FromObject(configurationUsers));
-
-            //Connect and configure
             var connectionInfo = new ConnectionInfo(machine.MachineStatus.MachineIp, _defaultUsername, new PrivateKeyAuthenticationMethod("admin", new PrivateKeyFile($"{SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa")));
-
-            ////Upload required files
-            //using (var client = new SftpClient(connectionInfo))
-            //{
-            //    client.Connect();
-            //    if (!client.ListDirectory("/home/admin/").Where(file => file.FullName == VM_SCALABLE_TEACHING_PATH).Any())
-            //    {
-            //        client.CreateDirectory(VM_SCALABLE_TEACHING_PATH);
-            //    }
-            //    if(!client.ListDirectory(VM_SCALABLE_TEACHING_PATH).Where(file => file.Name == "SystemConfigurator").Any())
-            //    {
-            //        client.UploadFile(SystemConfiguratorStream, $"{VM_SCALABLE_TEACHING_PATH}/SystemConfigurator");
-            //    }
-            //    var ConfigBytes = Encoding.UTF8.GetBytes(ConfigurationJson.ToString());
-            //    var writestream = client.OpenWrite($"{VM_SCALABLE_TEACHING_PATH}/Config.json");
-            //    await writestream.WriteAsync(ConfigBytes);
-            //    writestream.Close();
-
-            //}
-            //Excecute things
             using (var client = new SshClient(connectionInfo))
             {
                 MemoryStream stdin = new();
                 MemoryStream stdout = new();
                 MemoryStream extout = new();
-
-                //ConfigurationJson.Add("users", JToken.FromObject(configurationUsers));
                 client.Connect();
 
                 //Add groups
@@ -122,32 +90,26 @@ namespace ScalableTeaching.Helpers
                     p.Start();
                     await p.WaitForExitAsync(); //TODO: Its clipping the data when reading single line
 
-                    string output = p.StandardOutput.ReadLine();
+                    string output = (await p.StandardOutput.ReadToEndAsync()).Trim();
                     Console.WriteLine($"Add user: {user.Username} hashed pw: {output}");
 
+
                     //Create User
-                    var useraddCommand = client.CreateCommand($"sudo useradd -mp {output} {user.Username.ToLower()}");
-                    var useraddResult = useraddCommand.BeginExecute();
-                    await Task.Run(() => useraddResult.AsyncWaitHandle.WaitOne());
+                    var useraddCommand = await PerformSSHCommand(client, $"sudo useradd -s \"/usr/bin/bash\" -mp {output} {user.Username.ToLower()}");
                     Console.WriteLine($"MachineConfigurator: useraddCommand text: {useraddCommand.CommandText} Result: {useraddCommand.Result}");
 
                     //Add user to linux groups
                     foreach (var group in user.Groups)
                     {
-                        var usermodCommand = client.CreateCommand($"sudo usermod -aG {group} {user.Username.ToLower()}");
-                        var usermodResult = usermodCommand.BeginExecute();
-                        await Task.Run(() => usermodResult.AsyncWaitHandle.WaitOne());
+                        var usermodCommand = await PerformSSHCommand(client, $"sudo usermod -aG {group} {user.Username.ToLower()}");
                         Console.WriteLine($"MachineConfigurator: usermodCommand text: {usermodCommand.CommandText} .Result {usermodCommand.Result}");
                     }
 
                     //Prep authorized_keys
-                    var AuthorizedKeysCommand = 
-                        client.CreateCommand($"sudo mkdir -p /home/{user.Username.ToLower()}/.ssh ;" +
-                        $" sudo touch /home/{user.Username.ToLower()}/.ssh/authorized_keys ;" +
-                        $" sudo chown -R {user.Username.ToLower()}:{user.Username.ToLower()} /home/{user.Username.ToLower()}/.ssh ;" +
-                        $" sudo chmod -R 600 /home/{user.Username.ToLower()}/.ssh");
-                    var AuthorizedKeysResult = AuthorizedKeysCommand.BeginExecute();
-                    await Task.Run(() => AuthorizedKeysResult.AsyncWaitHandle.WaitOne());
+                    var AuthorizedKeysCommand = await PerformSSHCommand(client, $"sudo mkdir -p /home/{user.Username.ToLower()}/.ssh &&" +
+                        $" sudo touch /home/{user.Username.ToLower()}/.ssh/authorized_keys &&" +
+                        $" sudo chown -R {user.Username.ToLower()}:{user.Username.ToLower()} /home/{user.Username.ToLower()}/.ssh &&" +
+                        $" sudo chmod -R 755 /home/{user.Username.ToLower()}/.ssh");
                     Console.WriteLine($"MachineConfigurator: AuthorizedKeysCommand text: {AuthorizedKeysCommand.CommandText} .Result {AuthorizedKeysCommand.Result}");
 
                     //Add key
@@ -156,54 +118,54 @@ namespace ScalableTeaching.Helpers
                     await Task.Run(() => addKeyResult.AsyncWaitHandle.WaitOne());
                     Console.WriteLine($"MachineConfigurator: addKeyCommand text {addKeyCommand.CommandText} .Result {addKeyCommand.Result}");
 
+                    //Remove password requirement from sudo
+                    var nopasswdCommand = await PerformSSHCommand(client, $"sudo sh -c 'echo \"{user.Username.ToLower()} ALL=(ALL) NOPASSWD:ALL\" > /etc/sudoers.d/{user.Username.ToLower()}'");
+                    Console.WriteLine($"MachineConfigurator: nopasswdCommand text {nopasswdCommand.CommandText} .Result {nopasswdCommand.Result}");
                 }
 
-                //Update Upgrade
-                var aptUpdateUpgradeCommand = client.CreateCommand($"sudo apt-get update");
-                var aptUpdateUpgradeResult = aptUpdateUpgradeCommand.BeginExecute();
-                await Task.Run(() => aptUpdateUpgradeResult.AsyncWaitHandle.WaitOne());
+                //Update
+                var aptUpdateUpgradeCommand = await PerformSSHCommand(client, $"sudo apt-get update");
                 Console.WriteLine($"MachineConfigurator: aptUpdateUpgradeCommand.Result {aptUpdateUpgradeCommand.Result}");
 
                 //Prep for ppa
-                var ppaPrepCommand = client.CreateCommand($"sudo apt-get install -y software-properties-common");
-                var ppaPrepResult = ppaPrepCommand.BeginExecute();
-                await Task.Run(() => ppaPrepResult.AsyncWaitHandle.WaitOne());
+                var ppaPrepCommand = await PerformSSHCommand (client, $"sudo apt-get install -y software-properties-common");
                 Console.WriteLine($"MachineConfigurator: ppaPrepCommand.Result {ppaPrepCommand.Result}");
 
                 //PPA
                 foreach (var ppa in machine.Ppa)
                 {
-                    var ppaAddCommand = client.CreateCommand($"sudo add-apt-repository -y {ppa}");
-                    var ppaAddResult = ppaAddCommand.BeginExecute();
-                    await Task.Run(() => ppaAddResult.AsyncWaitHandle.WaitOne());
+                    var ppaAddCommand = await PerformSSHCommand (client, $"sudo add-apt-repository -y {ppa}");
                     Console.WriteLine($"MachineConfigurator: ppaAddCommand.Result {ppaAddCommand.Result}");
                 }
 
                 //Post ppa update and upgrade
-                var postPpaUpdateCommand = client.CreateCommand($"sudo apt-get update && sudo apt-get upgrade -y");
-                var postPpaUpdateResult = postPpaUpdateCommand.BeginExecute();
-                await Task.Run(() => postPpaUpdateResult.AsyncWaitHandle.WaitOne());
+                var postPpaUpdateCommand = await PerformSSHCommand (client, $"sudo apt-get update && sudo apt-get upgrade -y");
                 Console.WriteLine($"MachineConfigurator: postPpaUpdateCommand.Result {postPpaUpdateCommand.Result}");
 
                 //Install apts
                 foreach (var apt in machine.Apt)
                 {
-                    var aptInstallCommand = client.CreateCommand($"sudo apt-get install -y {apt}");
-                    var aptInstallResult = aptInstallCommand.BeginExecute();
-                    await Task.Run(() => aptInstallResult.AsyncWaitHandle.WaitOne());
+                    var aptInstallCommand = await PerformSSHCommand(client, $"sudo apt-get install -y {apt}");
                     Console.WriteLine($"MachineConfigurator: aptInstallCommand.Result {aptInstallCommand.Result}");
                 }
 
                 //Apt cleanup
-                var aptCleanupCommand = client.CreateCommand($"sudo apt-get autoremove -y");
-                var aptCleanupResult = aptCleanupCommand.BeginExecute();
-                await Task.Run(() => aptCleanupResult.AsyncWaitHandle.WaitOne());
+                SshCommand aptCleanupCommand = await PerformSSHCommand(client, $"sudo apt-get autoremove -y");
                 Console.WriteLine($"MachineConfigurator: aptCleanupCommand.Result {aptCleanupCommand.Result}");
 
                 client.Disconnect();
             }
             return true; //TODO: Implement error handeling for configuration 
         }
+
+        private static async Task<SshCommand> PerformSSHCommand(SshClient client, string command)
+        {
+            var _command = client.CreateCommand(command);
+            var _commandResult = _command.BeginExecute();
+            await Task.Run(() => _commandResult.AsyncWaitHandle.WaitOne());
+            return _command;
+        }
+
         private VmDeploymentContext GetContext()
         {
             return _factory.CreateScope().ServiceProvider.GetRequiredService<VmDeploymentContext>();

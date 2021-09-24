@@ -44,16 +44,22 @@ namespace ScalableTeaching.Controllers
                 var _assignments = _machine.MachineAssignments.Where(
                     assignment => assignment.UserUsername == GetUsername());
                 if (_assignments.Any())
-                    return Ok(new { credentialString = 
+                    return Ok(new
+                    {
+                        credentialString =
                         await _configBuilder.
-                        GetMachineCredentialStringAsync(_machine, _assignments.First().UserUsername) });
+                        GetMachineCredentialStringAsync(_machine, _assignments.First().UserUsername)
+                    });
                 else
                     return BadRequest("You are not assigned to this machine");
             }
             else // Machine is owned by requesting user
             {
-                return Ok(new { credentialString =
-                    await _configBuilder.GetMachineCredentialStringAsync(_machine, GetUsername())});
+                return Ok(new
+                {
+                    credentialString =
+                    await _configBuilder.GetMachineCredentialStringAsync(_machine, GetUsername())
+                });
             }
         }
 
@@ -64,7 +70,7 @@ namespace ScalableTeaching.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllMachineCredentials()
         {
-            return Ok(new { credentialString = await CompleteMachineCredentials()});
+            return Ok(new { credentialString = await CompleteMachineCredentials() });
         }
 
         /// <summary>
@@ -79,7 +85,7 @@ namespace ScalableTeaching.Controllers
             //Find all directly assigned machines
             var machineAssignments = await _context.MachineAssignments
                 .Where(assignment => assignment.UserUsername == GetUsername()).ToListAsync();
-            foreach(var assignment in machineAssignments)
+            foreach (var assignment in machineAssignments)
             {
                 machines.Add(_context.Machines.Find(assignment.MachineID));
             }
@@ -99,7 +105,7 @@ namespace ScalableTeaching.Controllers
             }
             //Construct string
             var builder = new StringBuilder();
-            foreach(Machine machine in machines)
+            foreach (Machine machine in machines)
             {
                 builder.Append(await _configBuilder
                     .GetMachineCredentialStringAsync(machine, GetUsername())).Append(Environment.NewLine);
@@ -147,22 +153,17 @@ namespace ScalableTeaching.Controllers
         /// <returns>Credentials in a zip file</returns>
         private async Task<InMemoryFile> GetConfigAndKeysAsZip()
         {
-            var userKey =
-                SSHKeyHelper.ParseKeyFromPem((await _context.Users.FirstAsync(user => user.Username == GetUsername()))
-                    .UserPrivateKey);
+            User user = await _context.Users.FirstAsync(user => user.Username == GetUsername());
             var files = new List<InMemoryFile>
             {
                 await SshConfigFile(),
                 new InMemoryFile("id_rsa_scalable_" + GetUsername() + ".pub",
-                    Encoding.UTF8.GetBytes(SSHKeyHelper.GetSSHPublicKey(userKey, GetUsername()))),
+                    Encoding.UTF8.GetBytes(user.UserPublicKey)),
                 new InMemoryFile("id_rsa_scalable_" + GetUsername(),
-                Encoding.UTF8.GetBytes(_context.Users.Find(GetUsername()).UserPrivateKey))
+                Encoding.UTF8.GetBytes(user.UserPrivateKey))
             };
             return await ZipBuilder.BuildZip(files, GetUsername() + "_ScalableTeachingUserCredentials.zip");
         }
-                                                                                                                       
-
-
 
         private async Task<bool> IsAssignedToMachine(string username, Machine machine)
         {

@@ -17,6 +17,8 @@ FROM build AS publish
 RUN dotnet publish "./backend/backend.csproj" -c Release -o /app/publish
 
 FROM base AS final
+RUN apt-get update
+RUN apt-get install -y openssh-client
 WORKDIR /app
 COPY --from=publish /app/publish .
 COPY --from=build /src/backend/appsettings.json .

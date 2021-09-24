@@ -14,6 +14,8 @@ namespace ScalableTeaching.Models
         public UserType AccountType { get; set; }
         [Required]
         public string UserPrivateKey { get; set; }
+        [Required]
+        public string UserPublicKey { get; set; }
         public virtual List<GroupAssignment> GroupAssignments { get; set; }
         public virtual List<MachineAssignment> MachineAssignments { get; set; }
 

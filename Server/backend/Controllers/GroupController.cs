@@ -9,7 +9,6 @@ using ScalableTeaching.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace ScalableTeaching.Controllers
@@ -166,7 +165,8 @@ namespace ScalableTeaching.Controllers
             var usersToBeCreated = new List<User>();
             foreach (string username in dto.Users)
             {
-                usersToBeCreated.Add(new User() { AccountType = Models.User.UserType.User, Username = username, UserPrivateKey = SSHKeyHelper.ExportKeyAsPEM(RSA.Create(2048)) });
+
+                usersToBeCreated.Add(await UserFactory.Create(username));
             }
 
             //Await group creation and the adding of users, and save these data points

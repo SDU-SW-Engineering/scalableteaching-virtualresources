@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using ScalableTeaching.Data;
+using ScalableTeaching.DTO;
+using ScalableTeaching.Helpers;
+using ScalableTeaching.Models;
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ScalableTeaching.Data;
-using ScalableTeaching.DTO;
-using ScalableTeaching.Models;
 
 namespace ScalableTeaching.Controllers
 {
@@ -114,10 +113,10 @@ namespace ScalableTeaching.Controllers
                     Ports = machine.Ports,
                     Ppa = machine.Ppa
                 });
-                machine.Users.ForEach(user =>
+                foreach (var user in machine.Users)
                 {
                     if (_context.Users.Find(user.ToLower()) == null)
-                        _context.Users.Add(AuthController.NewUser(user));
+                        _context.Users.Add(await UserFactory.Create(user));
                     _context.MachineAssignments.Add(new()
                     {
                         MachineAssignmentID = Guid.NewGuid(),
@@ -127,7 +126,6 @@ namespace ScalableTeaching.Controllers
                         UserUsername = user
                     });
                 }
-                );
             }
 
             await _context.SaveChangesAsync();

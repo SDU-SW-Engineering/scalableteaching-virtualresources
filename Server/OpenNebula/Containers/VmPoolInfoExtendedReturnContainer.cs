@@ -41,7 +41,7 @@ namespace ScalableTeaching.OpenNebula.Containers
                 var machineName = VmNode.SelectSingleNode("NAME")?.InnerText;
                 result &= machineName != null;
                 //Console.WriteLine("VMPoolInfoExtendedReturnContainer: Selected Name Node");
-                
+
                 result &= long.TryParse(VmNode.SelectSingleNode("LAST_POLL")?.InnerText, out long lastPollLong);
                 var lastPoll = DateTimeOffset.FromUnixTimeSeconds(lastPollLong);
                 //Console.WriteLine("VMPoolInfoExtendedReturnContainer: SelectedlastPoll");
