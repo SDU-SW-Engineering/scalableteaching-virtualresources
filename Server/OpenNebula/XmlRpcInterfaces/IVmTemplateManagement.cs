@@ -33,9 +33,11 @@ namespace ScalableTeaching.OpenNebula.XmlRpcInterfaces
         /// <param name="Session">username:password</param>
         /// <param name="TemplateId">Id of template</param>
         /// <param name="VirtualMachineName">Name for the virtual machine to be</param>
+        /// <param name="CreateOnHold">true if machine should be put on hold after creation</param>
+        /// <param name="TemplateCustomizations">String containing customizations for the template <see href="https://docs.opennebula.io/6.0/integration_and_development/system_interfaces/api.html#one-template-instantiate"/></param>
         /// <returns></returns>
         [XmlRpcMethod("one.template.instantiate")]
-        Object[] VmTemplateInstantiate(string Session, int TemplateId, string VirtualMachineName);
+        Object[] VmTemplateInstantiate(string Session, int TemplateId, string VirtualMachineName, bool CreateOnHold, string TemplateCustomizations);
     }
 
 }

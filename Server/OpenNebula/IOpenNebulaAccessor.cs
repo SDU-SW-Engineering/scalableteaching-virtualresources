@@ -39,13 +39,16 @@ namespace ScalableTeaching.OpenNebula
         /// </summary>
         /// <returns></returns>
         public List<VmTemplateModel> GetAllVirtualMachineTemplateInfo();
+
         /// <summary>
         /// Instantiates a virtual machine
         /// </summary>
         /// <param name="TemplateId">Id of template for the virtual machine </param>
         /// <param name="VirtualMachineName">The future name of the virutal machine</param>
+        /// <param name="memmory">Specifies the amount of ram for the machine to be allocated</param>
+        /// <param name="vcpu">Specifies the number of vcpu that the machine is allocated</param>
         /// <returns>Touple of success and new machine id</returns>
-        public (bool, int) CreateVirtualMachine(int TemplateId, string VirtualMachineName);
+        public (bool, int) CreateVirtualMachine(int TemplateId, string VirtualMachineName, int memmory = 1024, int vcpu = 1);
 
     }
 }
