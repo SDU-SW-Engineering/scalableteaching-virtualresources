@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ScalableTeaching.DTO
 {
@@ -18,5 +16,8 @@ namespace ScalableTeaching.DTO
         public List<int> Ports { get; set; }
         public List<string> LinuxGroups { get; set; }
         public Guid CourseID { get; set; }
+        public int? Memmory { get; set; }
+        public int? VCPU { get; set; }
+        public int? Storage { get; set; }
     }
 }

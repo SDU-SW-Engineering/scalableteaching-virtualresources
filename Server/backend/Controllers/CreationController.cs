@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using ScalableTeaching.Data;
+using ScalableTeaching.DTO;
+using ScalableTeaching.Helpers;
+using ScalableTeaching.Models;
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ScalableTeaching.Data;
-using ScalableTeaching.DTO;
-using ScalableTeaching.Models;
 
 namespace ScalableTeaching.Controllers
 {
@@ -53,6 +52,12 @@ namespace ScalableTeaching.Controllers
                 if (!machine.Ppa.AsParallel().All(ppa => Regex.IsMatch(ppa, ValidatePpaRegex))) return BadRequest($"Invalid ppa in list: {String.Join(", ", machine.Ppa.ToArray())}");
                 if (!machine.LinuxGroups.AsParallel().All(group => Regex.IsMatch(group, ValidateLinuxGroup))) return BadRequest($"Invalid linux group in list: {String.Join(", ", machine.LinuxGroups)}");
                 if (!machine.Ports.AsParallel().All(port => port > 0 && port <= 65535)) return BadRequest($"Port Out of bound in list: {String.Join(", ", machine.Ports)}");
+
+                if (machine.VCPU != null && (machine.VCPU < 1 || machine.VCPU > 8)) return BadRequest($"Machine VCPU count out of bounds: {machine.VCPU}, VCPU count must be greater than 0 and less than 9");
+
+                if (machine.Memmory != null && (machine.Memmory < 1024 || machine.Memmory > 8192)) return BadRequest($"Machine memmory amount out of bounds: {machine.Memmory}, Memmory must be greater that 1023 and less than 8193");
+                if (machine.Memmory != null && machine.Memmory % 1024 != 0) return BadRequest($"Invalid memmory amount: {machine.Memmory}, Memmory must be a multiple of 1024");
+
                 var NewMachineID = Guid.NewGuid();
                 _context.Machines.Add(new Machine
                 {
@@ -64,7 +69,10 @@ namespace ScalableTeaching.Controllers
                     Apt = machine.Apt,
                     LinuxGroups = machine.LinuxGroups,
                     Ports = machine.Ports,
-                    Ppa = machine.Ppa
+                    Ppa = machine.Ppa,
+                    Memmory = machine.Memmory ?? 1024,
+                    VCPU = machine.VCPU ?? 1,
+                    Storage = machine.Storage ?? 30720
                 });
                 _context.MachineAssignments.Add(new()
                 {
@@ -101,6 +109,13 @@ namespace ScalableTeaching.Controllers
                 if (!machine.Ppa.AsParallel().All(ppa => Regex.IsMatch(ppa, ValidatePpaRegex))) return BadRequest($"Invalid ppa in list: {String.Join(", ", machine.Ppa.ToArray())}");
                 if (!machine.LinuxGroups.AsParallel().All(group => Regex.IsMatch(group, ValidateLinuxGroup))) return BadRequest($"Invalid linux group in list: {String.Join(", ", machine.LinuxGroups)}");
                 if (!machine.Ports.AsParallel().All(port => port > 0 && port <= 65535)) return BadRequest($"Port Out of bound in list: {String.Join(", ", machine.Ports)}");
+                
+                if (machine.VCPU != null && (machine.VCPU < 1 || machine.VCPU > 8)) return BadRequest($"Machine VCPU count out of bounds: {machine.VCPU}, VCPU count must be greater than 0 and less than 9");
+                
+                if (machine.Memmory != null && (machine.Memmory < 1024 || machine.Memmory > 8192)) return BadRequest($"Machine memmory amount out of bounds: {machine.Memmory}, Memmory must be greater that 1023 and less than 8193");
+                if (machine.Memmory != null && machine.Memmory % 1024 != 0) return BadRequest($"Invalid memmory amount: {machine.Memmory}, Memmory must be a multiple of 1024");
+
+
                 var NewMachineID = Guid.NewGuid();
                 _context.Machines.Add(new Machine
                 {
@@ -112,12 +127,14 @@ namespace ScalableTeaching.Controllers
                     Apt = machine.Apt,
                     LinuxGroups = machine.LinuxGroups,
                     Ports = machine.Ports,
-                    Ppa = machine.Ppa
+                    Ppa = machine.Ppa,
+                    Memmory = machine.Memmory ?? 1024,
+                    VCPU = machine.VCPU ?? 1
                 });
-                machine.Users.ForEach(user =>
+                foreach (var user in machine.Users)
                 {
                     if (_context.Users.Find(user.ToLower()) == null)
-                        _context.Users.Add(AuthController.NewUser(user));
+                        _context.Users.Add(await UserFactory.Create(user));
                     _context.MachineAssignments.Add(new()
                     {
                         MachineAssignmentID = Guid.NewGuid(),
@@ -127,7 +144,6 @@ namespace ScalableTeaching.Controllers
                         UserUsername = user
                     });
                 }
-                );
             }
 
             await _context.SaveChangesAsync();

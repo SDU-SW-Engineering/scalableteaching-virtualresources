@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ScalableTeaching.Data;
@@ -10,9 +11,10 @@ using ScalableTeaching.Data;
 namespace ScalableTeaching.Migrations
 {
     [DbContext(typeof(VmDeploymentContext))]
-    partial class VmDeploymentContextModelSnapshot : ModelSnapshot
+    [Migration("20210920203919_userkeys")]
+    partial class userkeys
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,9 +113,6 @@ namespace ScalableTeaching.Migrations
                     b.Property<int>("MachineCreationStatus")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Memmory")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("OpenNebulaID")
                         .HasColumnType("integer");
 
@@ -126,9 +125,6 @@ namespace ScalableTeaching.Migrations
                     b.Property<string>("UserUsername")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("VCPU")
-                        .HasColumnType("integer");
 
                     b.HasKey("MachineID");
 
