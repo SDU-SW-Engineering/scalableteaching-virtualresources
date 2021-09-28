@@ -110,6 +110,37 @@
         </b-form-group>
       </b-col>
     </b-row>
+    <!--Machine resource customization-->
+    <b-row>
+      <b-col>
+        <input
+            type="range"
+            min="1024"
+            max="8192"
+            v-model="MemoryRangeValue"
+            step="1024"
+          >
+      </b-col>
+      <b-col>
+        <input
+            type="range"
+            min="1"
+            max="8"
+            v-model="VCPURangeValue"
+            step="1"
+        >
+      </b-col>
+      <b-col>
+        <input
+          type="range"
+          min="30720"
+          max="51200"
+          step="1024"
+          v-model="StorageRangeValue"
+        >
+      </b-col>
+    </b-row>
+
   </b-container>
 </template>
 
@@ -121,6 +152,9 @@ export default {
   props: ['classObject'],
   data() {
     return {
+      MemoryRangeValue:"1024",
+      VCPURangeValue:"1",
+      StorageRangeValue:"30",
       linuxGroupsField: "",
       ppaField: "",
       aptField: "",
@@ -150,7 +184,10 @@ export default {
         ppa: StringHelper.breakStringIntoTokenList(this.ppaField),
         ports: ports,
         linuxgroups: StringHelper.breakStringIntoTokenList(this.linuxGroupsField),
-        courseid: this.classObject.courseID
+        courseid: this.classObject.courseID,
+        memory: parseInt(this.MemoryRangeValue, 10),
+        vcpu: parseInt(this.VCPURangeValue, 10),
+        storage: parseInt(this.StorageRangeValue, 10)
       });
       return machines;
     },
