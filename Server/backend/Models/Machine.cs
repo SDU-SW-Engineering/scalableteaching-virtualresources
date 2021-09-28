@@ -22,6 +22,7 @@ namespace ScalableTeaching.Models
         public List<int> Ports { get; set; }
         public int Memmory { get; set; }
         public int VCPU { get; set; }
+        public int Storage { get; set; }
 
         public virtual User User { get; set; }
         public virtual Course Course { get; set; }

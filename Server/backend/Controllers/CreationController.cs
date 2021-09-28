@@ -71,7 +71,8 @@ namespace ScalableTeaching.Controllers
                     Ports = machine.Ports,
                     Ppa = machine.Ppa,
                     Memmory = machine.Memmory ?? 1024,
-                    VCPU = machine.VCPU ?? 1
+                    VCPU = machine.VCPU ?? 1,
+                    Storage = machine.Storage ?? 30
                 });
                 _context.MachineAssignments.Add(new()
                 {

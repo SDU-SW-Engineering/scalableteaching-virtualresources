@@ -24,7 +24,7 @@ namespace ScalableTeaching.OpenNebula
         }
 
         /// <inheritdoc cref="IOpenNebulaAccessor.CreateVirtualMachine(int, string, int, int)(int, string)"/>
-        public (bool, int) CreateVirtualMachine(int TemplateId, string VirtualMachineName, int memmory = 1024, int vcpu = 1)
+        public (bool, int) CreateVirtualMachine(int TemplateId, string VirtualMachineName, int memmory = 1024, int vcpu = 1, int storage = 30720)
         {
             if (!(memmory % 1024 == 0 && memmory <= 8192 && memmory >= 1024)) throw new ArgumentException("The given memmory value was invalid. Memmory must be a multiple of 1024 and at max 8192");
             if (!(vcpu >= 1 && vcpu <= 8)) throw new ArgumentException("The given cpu count was invalid. cpu count must be a natural number no greater than 8");

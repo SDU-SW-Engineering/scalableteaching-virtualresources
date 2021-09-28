@@ -18,5 +18,6 @@ namespace ScalableTeaching.DTO
         public Guid CourseID { get; set; }
         public int? Memmory { get; set; }
         public int? VCPU { get; set; }
+        public int? Storage { get; set; }
     }
 }
