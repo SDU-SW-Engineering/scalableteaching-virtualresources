@@ -28,8 +28,9 @@ namespace ScalableTeaching.OpenNebula
         {
             if (!(memmory % 1024 == 0 && memmory <= 8192 && memmory >= 1024)) throw new ArgumentException("The given memmory value was invalid. Memmory must be a multiple of 1024 and at max 8192");
             if (!(vcpu >= 1 && vcpu <= 8)) throw new ArgumentException("The given cpu count was invalid. cpu count must be a natural number no greater than 8");
+            if (!(storage >= 30720 && storage <= 51200)) throw new ArgumentException("The given strage value was invalid. ");
 
-            string TemplateString = $"MEMMORY={memmory}\nVCPU={vcpu}";
+            string TemplateString = $"MEMMORY={memmory}\nVCPU={vcpu}\nDISK=[TYPE=fs,SIZE={storage},FORMAT=raw,DEV_PREFIX=sd,TARGET=sda]";
             Object[] XmlRpcReturn = VmTemplateManagementProxy.VmTemplateInstantiate(_Session, TemplateId, VirtualMachineName, false, TemplateString);
             return ((bool)XmlRpcReturn[0], (int)XmlRpcReturn[1]);
         }

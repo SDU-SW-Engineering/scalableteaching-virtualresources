@@ -48,7 +48,7 @@ namespace ScalableTeaching.OpenNebula
         /// <param name="memmory">Specifies the amount of ram for the machine to be allocated</param>
         /// <param name="vcpu">Specifies the number of vcpu that the machine is allocated</param>
         /// <returns>Touple of success and new machine id</returns>
-        public (bool, int) CreateVirtualMachine(int TemplateId, string VirtualMachineName, int memmory = 1024, int vcpu = 1);
+        public (bool, int) CreateVirtualMachine(int TemplateId, string VirtualMachineName, int memmory = 1024, int vcpu = 1, int storage = 30720);
 
     }
 }
