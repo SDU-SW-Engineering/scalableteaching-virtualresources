@@ -24,14 +24,22 @@ namespace ScalableTeaching.OpenNebula
         }
 
         /// <inheritdoc cref="IOpenNebulaAccessor.CreateVirtualMachine(int, string, int, int)(int, string)"/>
-        public (bool, int) CreateVirtualMachine(int TemplateId, string VirtualMachineName, int memmory = 1024, int vcpu = 1, int storage = 30720)
+        public (bool, int) CreateVirtualMachine(int TemplateId, string VirtualMachineName, int memory = 1024, int vcpu = 1, int storage = 30720)
         {
-            if (!(memmory % 1024 == 0 && memmory <= 8192 && memmory >= 1024)) throw new ArgumentException("The given memmory value was invalid. Memmory must be a multiple of 1024 and at max 8192");
+            if (!(memory % 1024 == 0 && memory <= 8192 && memory >= 1024)) throw new ArgumentException("The given memmory value was invalid. Memmory must be a multiple of 1024 and at max 8192");
             if (!(vcpu >= 1 && vcpu <= 8)) throw new ArgumentException("The given cpu count was invalid. cpu count must be a natural number no greater than 8");
             if (!(storage >= 30720 && storage <= 51200)) throw new ArgumentException("The given strage value was invalid. ");
 
-            string TemplateString = $"MEMMORY={memmory}\nVCPU={vcpu}\nDISK=[TYPE=fs,SIZE={storage},FORMAT=raw,DEV_PREFIX=sd,TARGET=sda]";
+            //TODO: Disk attribute restricted \nDISK=[TYPE=fs,SIZE={storage},FORMAT=raw,DEV_PREFIX=sd,TARGET=sda] &lt;DISK&gt;&lt;TYPE&gt;fs&lt;/TYPE&gt;&lt;SIZE&gt;8192&lt;/SIZE&gt;&lt;FORMAT&gt;raw&lt;/FORMAT&gt;&lt;DEV_PREFIX&gt;sd&lt;/DEV_PREFIX&gt;&lt;TARGET&gt;sda&lt;/TARGET&gt;&lt;/DISK&gt;
+            string TemplateString = $"<template><MEMORY>{memory}</MEMORY><VCPU>{vcpu}</VCPU></template>";
             Object[] XmlRpcReturn = VmTemplateManagementProxy.VmTemplateInstantiate(_Session, TemplateId, VirtualMachineName, false, TemplateString);
+            //TODO: remove this
+            if(XmlRpcReturn[1].GetType() == "".GetType())
+            {
+                Console.WriteLine($"Error in machine creation: {XmlRpcReturn[1]}");
+                throw new Exception($"Error in machine creation: {XmlRpcReturn[1]}");
+            }
+
             return ((bool)XmlRpcReturn[0], (int)XmlRpcReturn[1]);
         }
 

@@ -55,8 +55,11 @@ namespace ScalableTeaching.Controllers
 
                 if (machine.VCPU != null && (machine.VCPU < 1 || machine.VCPU > 8)) return BadRequest($"Machine VCPU count out of bounds: {machine.VCPU}, VCPU count must be greater than 0 and less than 9");
 
-                if (machine.Memmory != null && (machine.Memmory < 1024 || machine.Memmory > 8192)) return BadRequest($"Machine memmory amount out of bounds: {machine.Memmory}, Memmory must be greater that 1023 and less than 8193");
-                if (machine.Memmory != null && machine.Memmory % 1024 != 0) return BadRequest($"Invalid memmory amount: {machine.Memmory}, Memmory must be a multiple of 1024");
+                if (machine.Memory != null && (machine.Memory < 1024 || machine.Memory > 8192)) return BadRequest($"Machine memory amount out of bounds: {machine.Storage}, Memory must be greater that 1023 and less than 8193");
+                if (machine.Memory != null && machine.Memory % 1024 != 0) return BadRequest($"Invalid memory amount: {machine.Storage}, Memory must be a multiple of 1024");
+
+                if (machine.Storage != null && (machine.Storage < 30720 || machine.Storage > 51200)) return BadRequest($"Machine storage amount out of bounds: {machine.Storage}, Memmory must be greater that 30719 and less than 51201");
+                if (machine.Storage != null && machine.Storage % 1024 != 0) return BadRequest($"Invalid memmory amount: {machine.Storage}, Memmory must be a multiple of 1024");
 
                 var NewMachineID = Guid.NewGuid();
                 _context.Machines.Add(new Machine
@@ -70,7 +73,7 @@ namespace ScalableTeaching.Controllers
                     LinuxGroups = machine.LinuxGroups,
                     Ports = machine.Ports,
                     Ppa = machine.Ppa,
-                    Memmory = machine.Memmory ?? 1024,
+                    Memory = machine.Memory ?? 1024,
                     VCPU = machine.VCPU ?? 1,
                     Storage = machine.Storage ?? 30720
                 });
@@ -112,8 +115,11 @@ namespace ScalableTeaching.Controllers
                 
                 if (machine.VCPU != null && (machine.VCPU < 1 || machine.VCPU > 8)) return BadRequest($"Machine VCPU count out of bounds: {machine.VCPU}, VCPU count must be greater than 0 and less than 9");
                 
-                if (machine.Memmory != null && (machine.Memmory < 1024 || machine.Memmory > 8192)) return BadRequest($"Machine memmory amount out of bounds: {machine.Memmory}, Memmory must be greater that 1023 and less than 8193");
-                if (machine.Memmory != null && machine.Memmory % 1024 != 0) return BadRequest($"Invalid memmory amount: {machine.Memmory}, Memmory must be a multiple of 1024");
+                if (machine.Memory != null && (machine.Memory < 1024 || machine.Memory > 8192)) return BadRequest($"Machine memmory amount out of bounds: {machine.Memory}, Memmory must be greater that 1023 and less than 8193");
+                if (machine.Memory != null && machine.Memory % 1024 != 0) return BadRequest($"Invalid memmory amount: {machine.Memory}, Memmory must be a multiple of 1024");
+
+                if (machine.Storage != null && (machine.Storage < 30720 || machine.Storage > 51200)) return BadRequest($"Machine storage amount out of bounds: {machine.Storage}, Memmory must be greater that 30719 and less than 51201");
+                if (machine.Storage != null && machine.Storage % 1024 != 0) return BadRequest($"Invalid memmory amount: {machine.Storage}, Memmory must be a multiple of 1024");
 
 
                 var NewMachineID = Guid.NewGuid();
@@ -128,8 +134,9 @@ namespace ScalableTeaching.Controllers
                     LinuxGroups = machine.LinuxGroups,
                     Ports = machine.Ports,
                     Ppa = machine.Ppa,
-                    Memmory = machine.Memmory ?? 1024,
-                    VCPU = machine.VCPU ?? 1
+                    Memory = machine.Memory ?? 1024,
+                    VCPU = machine.VCPU ?? 1,
+                    Storage = machine.Storage ?? 30720
                 });
                 foreach (var user in machine.Users)
                 {

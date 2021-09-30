@@ -20,7 +20,7 @@ namespace ScalableTeaching.Models
         public List<string> Ppa { get; set; }
         public List<string> LinuxGroups { get; set; }
         public List<int> Ports { get; set; }
-        public int Memmory { get; set; }
+        public int Memory { get; set; }
         public int VCPU { get; set; }
         public int Storage { get; set; }
 

@@ -25,10 +25,6 @@ namespace ScalableTeaching.Helpers
         }
         public async Task<bool> ConfigureMachine(Machine machine)//TODO: Unifinished due to unknown elements related to lack of access to images on open nebula
         {
-
-
-            var SystemConfiguratorStream = new MemoryStream(File.ReadAllBytes($"{SERVER_SCALABLE_TEACHING_PATH}/SystemConfigurator"));
-            var ConfigurationJson = new JObject();
             //Construct configuration string
             List<MachineConfigurationUser> configurationUsers = new();
             foreach (var assignment in machine.MachineAssignments)//TODO: Expecting issues with resolution of virtual properties on the items from the database
