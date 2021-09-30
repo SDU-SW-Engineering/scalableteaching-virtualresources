@@ -113,15 +113,17 @@
     <!--Machine resource customization-->
     <b-row>
       <b-col>
+        <label>Memory Amount: {{ MemoryRangeValue }}</label>
         <input
             type="range"
             min="1024"
             max="8192"
             v-model="MemoryRangeValue"
             step="1024"
-          >
+        >
       </b-col>
       <b-col>
+        <lable>VCPU Count: {{ VCPURangeValue }}</lable>
         <input
             type="range"
             min="1"
@@ -130,15 +132,15 @@
             step="1"
         >
       </b-col>
-      <b-col>
-        <input
-          type="range"
-          min="30720"
-          max="51200"
-          step="1024"
-          v-model="StorageRangeValue"
-        >
-      </b-col>
+      <!--      <b-col>
+              <input
+                type="range"
+                min="30720"
+                max="51200"
+                step="1024"
+                v-model="StorageRangeValue"
+              >
+            </b-col>-->
     </b-row>
 
   </b-container>
@@ -146,15 +148,16 @@
 
 <script>
 import StringHelper from "@/helpers/StringHelper";
+import MachineCreationValidationHelper from "../../helpers/MachineCreationValidationHelper";
 
 export default {
   name: "SingleMachineCreation",
   props: ['classObject'],
   data() {
     return {
-      MemoryRangeValue:"1024",
-      VCPURangeValue:"1",
-      StorageRangeValue:"30",
+      MemoryRangeValue: "1024",
+      VCPURangeValue: "1",
+      StorageRangeValue: "30",
       linuxGroupsField: "",
       ppaField: "",
       aptField: "",
@@ -218,68 +221,19 @@ export default {
       } else {
         usersString = this.enteredUsersField;
       }
-      if (usersString.length === 0) return false;
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.linuxGroupsField);
-      for (let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i];
-        if (token.length > 0) {
-          if (token.match(/[a-zA-Z0-9]+/) === null) {
-            return false;
-          }
-        }
-      }
-      return true;
+      return MachineCreationValidationHelper.validateUsers(usersString);
     },
     validateGroups() {
-      if (this.linuxGroupsField.length === 0) return null;
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.linuxGroupsField);
-      for (let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i];
-        if (token.length > 0) {
-          if (token.match(/^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/) === null) {
-            return false;
-          }
-        }
-      }
-      return true;
+      return MachineCreationValidationHelper.validateGroups(this.linuxGroupsField);
     },
     validatePPA() {
-      if (this.ppaField.length === 0) return null;
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.ppaField);
-      for (let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i];
-        if (token.length > 0) {
-          if (token.match(/^(ppa:([a-z-]+)\/[a-z-]+)$/) === null) {
-            return false;
-          }
-        }
-      }
-      return true;
+      return MachineCreationValidationHelper.validatePPA(this.ppaField);
     },
     validateAPT() {
-      if (this.aptField.length === 0) return null;
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.aptField);
-      for (let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i];
-        if (token.length > 0) {
-          if (token.match(/[0-9A-Za-z.+-]+/) === null) {
-            return false;
-          }
-        }
-      }
-      return true;
+      return MachineCreationValidationHelper.validateAPT(this.aptField);
     },
     validatePorts() {
-      if (this.portsField.length === 0) return null;
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.portsField);
-      for (let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i];
-        if (token.length > 0) {
-          if (!(token.match(/[0-9]{1,5}/) !== null && (parseInt(token) > 0 && parseInt(token) <= 65535)))
-            return false;
-        }
-      }
-      return true;
+      return MachineCreationValidationHelper.validatePorts(this.portsField);
     }
   }
 };

@@ -118,6 +118,39 @@
         </b-form-group>
       </b-col>
     </b-row>
+    <!--Machine resource customization-->
+    <b-row>
+      <b-col>
+        <label>Memory Amount: {{MemoryRangeValue}}</label>
+        <input
+            type="range"
+            min="1024"
+            max="8192"
+            v-model="MemoryRangeValue"
+            step="1024"
+          >
+      </b-col>
+      <b-col>
+        <lable>VCPU Count: {{VCPURangeValue}}</lable>
+        <input
+            type="range"
+            min="1"
+            max="8"
+            v-model="VCPURangeValue"
+            step="1"
+        >
+      </b-col>
+<!--      <b-col>
+        <input
+          type="range"
+          min="30720"
+          max="51200"
+          step="1024"
+          v-model="StorageRangeValue"
+        >
+      </b-col>-->
+    </b-row>
+
   </b-container>
 </template>
 
@@ -133,6 +166,9 @@ export default {
       groupSelectionOptions: [],
       portsField: "",
       aptField: "",
+      MemoryRangeValue:"1024",
+      VCPURangeValue:"1",
+      StorageRangeValue:"30",
       linuxGroupsField: "",
       ppaField: "",
       selectedGroups: [null],
@@ -163,6 +199,9 @@ export default {
           ports: ports,
           linuxgroups: linuxGroups,
           courseid: this.classObject.courseID
+          memory: parseInt(this.MemoryRangeValue, 10),
+          vcpu: parseInt(this.VCPURangeValue, 10),
+          storage: parseInt(this.StorageRangeValue, 10)
         });
       }
       return machines;
