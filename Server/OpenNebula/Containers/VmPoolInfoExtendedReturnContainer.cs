@@ -1,6 +1,7 @@
 ﻿using ScalableTeaching.OpenNebula.Models;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace ScalableTeaching.OpenNebula.Containers
@@ -33,12 +34,14 @@ namespace ScalableTeaching.OpenNebula.Containers
 
                 var monitoringNode = VmNode.SelectSingleNode("MONITORING");
                 //Console.WriteLine("VMPoolInfoExtendedReturnContainer: Monitoring node selected");
+                Console.WriteLine("VMPoolInfoExtendedReturnContainer: Error in result - Trashing result");
                 result &= monitoringNode != null;
 
                 result &= int.TryParse(VmNode.SelectSingleNode("ID")?.InnerText, out int machineId);
                 //Console.WriteLine("VMPoolInfoExtendedReturnContainer: SelectedMachineID");
 
                 var machineName = VmNode.SelectSingleNode("NAME")?.InnerText;
+                Console.WriteLine("VMPoolInfoExtendedReturnContainer: Error in result - Trashing result");
                 result &= machineName != null;
                 //Console.WriteLine("VMPoolInfoExtendedReturnContainer: Selected Name Node");
 
@@ -55,17 +58,22 @@ namespace ScalableTeaching.OpenNebula.Containers
                 //Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected lcmstate");
 
                 result &= decimal.TryParse(monitoringNode.SelectSingleNode("CPU")?.InnerText, out decimal machineCpuPercent);
+                Console.WriteLine("VMPoolInfoExtendedReturnContainer: Error in result - Trashing result");
                 //Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected cpu%");
 
                 result &= int.TryParse(monitoringNode.SelectSingleNode("MEMORY")?.InnerText, out int machineMemmoryUtilizationBytes);
+                Console.WriteLine("VMPoolInfoExtendedReturnContainer: Error in result - Trashing result");
                 //Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected Memmory bytes");
 
-                var machineIp = monitoringNode.SelectSingleNode("GUEST_IP_ADDRESSES")?.InnerText.Split(',')[0];
+                var machineIp = Regex.Match(monitoringNode.SelectSingleNode("GUEST_IP_ADDRESSES")?.InnerText, @"(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})").Value;
+                Console.WriteLine("VMPoolInfoExtendedReturnContainer: Error in result - Trashing result");
                 result &= machineIp != null;
                 //Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected ip");
 
                 var machineMac = VmNode.SelectSingleNode("TEMPLATE")?.SelectSingleNode("NIC")?.SelectSingleNode("MAC")?.InnerText;
+                Console.WriteLine("VMPoolInfoExtendedReturnContainer: Error in result - Trashing result");
                 result &= machineMac != null;
+
                 //Console.WriteLine("VMPoolInfoExtendedReturnContainer: selected mac");
 
                 if (!result)
