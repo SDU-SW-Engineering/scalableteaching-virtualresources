@@ -127,6 +127,7 @@ namespace ScalableTeaching.Controllers
             var builder = new StringBuilder();
             foreach (Machine machine in machines)
             {
+                if(machine?.MachineStatus?.MachineIp != null)
                 builder.Append(await _configBuilder
                     .GetMachineCredentialStringAsync(machine, username)).Append(Environment.NewLine);
             }

@@ -12,7 +12,7 @@ namespace ScalableTeaching.OpenNebula.Containers
 
         public VmPoolInfoExtendedReturnContainer(object[] input)
         {
-            Console.WriteLine("VMPoolInfoExtendedReturnContainer creation started");
+            //Console.WriteLine("VMPoolInfoExtendedReturnContainer creation started");
             if (input is null)
             {
                 Console.WriteLine("Input was null for VmPoolInfoExtendedReturnContainer");

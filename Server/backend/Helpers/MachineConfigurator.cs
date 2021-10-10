@@ -292,9 +292,10 @@ namespace ScalableTeaching.Helpers
             Console.WriteLine("Starting ssh process");
             p_ssh.Start();
             Console.WriteLine("SSH process started, awaiting");
-            await p_ssh.WaitForExitAsync();
+            p_ssh.WaitForExit();
             Console.WriteLine("ssh completed");
-            Console.WriteLine($"Did ssh into {machine.HostName} {machine.MachineStatus.MachineIp}, status: Exit code: {p_ssh.ExitCode}\nout: {p_ssh.StandardOutput.ReadToEnd()} \nerr: {p_ssh.StandardError.ReadToEnd()}");
+            
+            //Console.WriteLine($"Did ssh into {machine.HostName} {machine.MachineStatus.MachineIp}, status: Exit code: {p_ssh.ExitCode}\nout: {p_ssh.StandardOutput.ReadToEnd()} \nerr: {p_ssh.StandardError.ReadToEnd()}");
 
             return true; //TODO: Implement error handeling for configuration 
         }
