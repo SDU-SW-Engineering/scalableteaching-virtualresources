@@ -17,7 +17,7 @@ namespace ScalableTeaching.Helpers
                 result.EnsureSuccessStatusCode();
 
                 Console.WriteLine(await result.Content.ReadAsStringAsync());
-                return await ResolveSSOReponse(result); //TODO: Fix data response
+                return await ResolveSSOReponse(result);
             }
             catch (HttpRequestException e)
             {

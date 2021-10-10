@@ -40,23 +40,33 @@ namespace ScalableTeaching.Controllers
         [HttpGet]
         public async Task<ActionResult<List<MachineManagementReturn>>> GetAvailableMachines()//TODO: Might suffer EF issues
         {
-            //TODO: Fix machine assignement stuff
-            List<Machine> machines = await _context.Machines.Where(machine => machine.UserUsername == GetUsername()).ToListAsync();
-            (await _context.MachineAssignments.Where(assignment => assignment.UserUsername == GetUsername()).ToListAsync()).ForEach(assignment => machines.Add(assignment.Machine));
+            List<Machine> machines = await _context.Machines
+                .Where(machine => machine.UserUsername == GetUsername()).ToListAsync();
+            var UserMachineAsignments = await _context.MachineAssignments
+                .Where(assignment => assignment.UserUsername == GetUsername()).ToListAsync();
+
+            foreach (var assignment in UserMachineAsignments)
+            {
+                machines.Add(await _context.Machines.FindAsync(assignment.MachineID));
+            }
+
             List<MachineManagementReturn> returnList = new();
 
             foreach (Machine machine in machines)
             {
                 List<string> usernames = new();
                 usernames.Add(machine.UserUsername);
-                machine.MachineAssignments.ForEach(async assignment =>
+                var assignments = await _context.MachineAssignments
+                    .Where(assignment => assignment.MachineID == machine.MachineID).ToListAsync();
+                foreach (var assignment in assignments)
                 {
                     if (assignment.UserUsername == null)
                     {
-                        var groupAssignments = await _context.GroupAssignments.Where(assign => assign.GroupID == assignment.GroupID).ToListAsync();
+                        var groupAssignments = await _context.GroupAssignments
+                            .Where(assign => assign.GroupID == assignment.GroupID).ToListAsync();
                         groupAssignments.ForEach(gassignment => usernames.Add(gassignment.UserUsername));
                     }
-                });
+                }
                 returnList.Add(new MachineManagementReturn()
                 {
                     Course = (CourseDTO)machine.Course,
@@ -82,7 +92,11 @@ namespace ScalableTeaching.Controllers
             var machine = await _context.Machines.FindAsync(id);
             if (machine == null) return BadRequest("Machine Not Found");
             //Validate machine "ownership"
-            if (!machine.MachineAssignments.Where(assignment => assignment.UserUsername == GetUsername()).Any() && machine.UserUsername != GetUsername()) return BadRequest("You are note assigned to this machine");//TODO: Fix machine assignement stuff
+            if (!machine.MachineAssignments.Where(assignment => assignment.UserUsername == GetUsername()).Any()
+                && machine.UserUsername != GetUsername())
+            {
+                return BadRequest("You are note assigned to this machine");
+            }
             //Reboot Machine
             if (_accessor.PerformVirtualMachineAction(MachineActions.REBOOT, (int)machine.OpenNebulaID)) return Ok();
             else return StatusCode(StatusCodes.Status500InternalServerError);
@@ -99,7 +113,11 @@ namespace ScalableTeaching.Controllers
             var machine = await _context.Machines.FindAsync(id);
             if (machine == null) return BadRequest("Machine Not Found");
             //Validate machine "ownership"
-            if (!machine.MachineAssignments.Where(assignment => assignment.UserUsername == GetUsername()).Any() && machine.UserUsername != GetUsername()) return BadRequest("You are note assigned to this machine");//TODO: Fix machine assignement stuff
+            if (!machine.MachineAssignments.Where(assignment => assignment.UserUsername == GetUsername()).Any()
+                && machine.UserUsername != GetUsername())
+            {
+                return BadRequest("You are note assigned to this machine");
+            }
             //Reboot Machine
             if (_accessor.PerformVirtualMachineAction(MachineActions.REBOOT_HARD, (int)machine.OpenNebulaID)) return Ok();
             else return StatusCode(StatusCodes.Status500InternalServerError);

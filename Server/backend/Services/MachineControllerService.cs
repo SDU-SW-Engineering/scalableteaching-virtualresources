@@ -144,7 +144,12 @@ namespace ScalableTeaching.Services
                         Console.WriteLine($"MachineControllerService.CreatedTimerCallback: Machine Booted after creation: { machine.MachineID}");
                         try
                         {
-                            await _machineConfigurator.ConfigureMachine(machine);
+                            if (machine.MachineStatus?.MachineIp == null)
+                            {
+                                Console.WriteLine($"Error configuring machine: no ip");
+                                continue;
+                            }
+                            await _machineConfigurator.ConfigureMachineWithFile(machine);//TODO: Return to using ssh based configuration
                         }
                         catch (Exception e)
                         {
@@ -175,8 +180,13 @@ namespace ScalableTeaching.Services
                 var _context = GetContext();
                 var PollTime = DateTimeOffset.UtcNow;
                 List<VmModel> vmModels = _accessor.GetAllVirtualMachineInfo(false, -3);
-                Dictionary<int, VmModel> MachineStatusMap = vmModels.ToDictionary(machine => { return machine.MachineId; });
-                var ValidMachineIDs = MachineStatusMap.Keys.ToList();
+                var ValidMachineIDs = vmModels.AsEnumerable().Select(model => model.MachineId);
+                Dictionary<int, VmModel> MachineStatusMap = new();
+                foreach (var id in ValidMachineIDs)
+                {
+                    MachineStatusMap.Add(id, _accessor.GetVirtualMachineInformation(id));
+                }
+                //Dictionary<int, VmModel> MachineStatusMap = vmModels.ToDictionary(machine => { return machine.MachineId; });
                 var machines = await _context.Machines.Where(machine => ValidMachineIDs.Contains((int)machine.OpenNebulaID)).ToListAsync();
                 Console.WriteLine($"MachineControllerService.StatusTimerCallback: ON IDs {String.Join(", ", ValidMachineIDs)}");
                 foreach (var machine in machines)

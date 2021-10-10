@@ -39,7 +39,7 @@ namespace ScalableTeaching.Models
             if (CourseName.Length < 3) return (false, "Empty Coursename");
             if (ShortCourseName.Length < 3) return (false, "ShortCourseName less that 3 char long");
             if (ShortCourseName.Length > 6) return (false, "ShortCourseName more that 6 char long");
-            if (SDUCourseID.Length < 4) return (false, "Invalid SDU Course ID"); //TODO: Get a propper value for this check
+            if (SDUCourseID.Length < 4) return (false, "Invalid SDU Course ID");
             return (true, "No error detected");
         }
     }

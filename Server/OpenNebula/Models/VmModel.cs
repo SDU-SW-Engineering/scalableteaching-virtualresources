@@ -9,22 +9,24 @@ namespace ScalableTeaching.OpenNebula.Models
         public readonly string MachineName { get; }
         public readonly DateTimeOffset LastPoll { get; }
         public readonly MachineStates MachineState { get; }
-        public readonly LCMStates MachineLCMState { get; }
-        public readonly decimal MachineCpuUtilizationPercent { get; }
-        public readonly int MachineMemmoryUtilizationBytes { get; }
-        public readonly string MachineIp { get; }
-        public readonly string MachineMac { get; }
+#nullable enable
+        public readonly LCMStates? MachineLCMState { get; }
+        public readonly decimal? MachineCpuUtilizationPercent { get; }
+        public readonly int? MachineMemmoryUtilizationBytes { get; }
+        public readonly string? MachineIp { get; }
+        public readonly string? MachineMac { get; }
+
 
         public VmModel(
             int machineId,
             string machineName,
             DateTimeOffset lastPoll,
             MachineStates machineState,
-            LCMStates LCMState,
-            decimal machineCpuUtilizationPercent,
-            int machineMemmoryUtilizationBytes,
-            string machineIp,
-            string machineMac)
+            LCMStates? LCMState,
+            decimal? machineCpuUtilizationPercent,
+            int? machineMemmoryUtilizationBytes,
+            string? machineIp,
+            string? machineMac)
         {
             MachineId = machineId;
             MachineName = machineName;
@@ -36,5 +38,6 @@ namespace ScalableTeaching.OpenNebula.Models
             MachineIp = machineIp;
             MachineMac = machineMac;
         }
+#nullable restore
     }
 }

@@ -74,24 +74,44 @@ namespace ScalableTeaching.Controllers
         }
 
         /// <summary>
+        /// Builds a complete ssh config string 
+        /// </summary>
+        /// <returns>String representing a ssh config files contents</returns>
+        [HttpGet("{username}")]
+        [Authorize(Policy = "AdministratorLevel")]
+        public async Task<IActionResult> GetAllMachineCredentialsForID(string username)
+        {
+            return Ok(new { credentialString = await CompleteMachineCredentials(username) });
+        }
+
+        /// <summary>
         /// Builds a complete ssh config file based on machine credentials for a machine
         /// </summary>
         /// <returns></returns>
         private async Task<string> CompleteMachineCredentials()
         {
+            return await CompleteMachineCredentials(GetUsername());
+        }
+
+        /// <summary>
+        /// Builds a complete ssh config file based on machine credentials for a machine
+        /// </summary>
+        /// <returns></returns>
+        private async Task<string> CompleteMachineCredentials(string username)
+        {
             //Find all owned machines
             List<Machine> machines = await _context.Machines
-                .Where(machine => machine.UserUsername == GetUsername()).ToListAsync();
+                .Where(machine => machine.UserUsername == username).ToListAsync();
             //Find all directly assigned machines
             var machineAssignments = await _context.MachineAssignments
-                .Where(assignment => assignment.UserUsername == GetUsername()).ToListAsync();
+                .Where(assignment => assignment.UserUsername == username).ToListAsync();
             foreach (var assignment in machineAssignments)
             {
                 machines.Add(_context.Machines.Find(assignment.MachineID));
             }
             //Find all group assigned machines
             var groupAssignments = await _context.GroupAssignments
-                .Where(assignment => assignment.UserUsername == GetUsername()).ToListAsync();
+                .Where(assignment => assignment.UserUsername == username).ToListAsync();
             List<Group> groups = groupAssignments.Select(assignment => assignment.Group).ToList();
             foreach (var group in groups)
             {
@@ -108,7 +128,7 @@ namespace ScalableTeaching.Controllers
             foreach (Machine machine in machines)
             {
                 builder.Append(await _configBuilder
-                    .GetMachineCredentialStringAsync(machine, GetUsername())).Append(Environment.NewLine);
+                    .GetMachineCredentialStringAsync(machine, username)).Append(Environment.NewLine);
             }
             return builder.ToString();
         }
@@ -138,31 +158,62 @@ namespace ScalableTeaching.Controllers
         }
 
         /// <summary>
+        /// Rest get endpoint returning the usercredentials and ssh configuration in a zip file
+        /// </summary>
+        /// <returns>Zipfile Stream</returns>
+        [HttpGet("file/zip/username")]
+        [Authorize(Policy = "AdministratorLevel")]
+        public async Task<FileStreamResult> DownloadSshZip(string username)
+        {
+            Response.Headers.Append("Content-Disposition", "attachment; filename=Configs.zip");
+            return (await GetConfigAndKeysAsZip(username)).ToFileStreamResult();
+        }
+
+        /// <summary>
         /// Builds the complete credentials set for the user that made the request
         /// </summary>
         /// <returns>InMemoryFile with the filename "config" and the
         /// contents matching a ssh config file for the specific user</returns>
         private async Task<InMemoryFile> SshConfigFile()
         {
-            return new InMemoryFile("config", Encoding.UTF8.GetBytes(await CompleteMachineCredentials()));
+            return await SshConfigFile(GetUsername());
+        }
+
+        /// <summary>
+        /// Builds the complete credentials set for the user that made the request
+        /// </summary>
+        /// <returns>InMemoryFile with the filename "config" and the
+        /// contents matching a ssh config file for the specific user</returns>
+        private async Task<InMemoryFile> SshConfigFile(string username)
+        {
+            return new InMemoryFile("config", Encoding.UTF8.GetBytes(await CompleteMachineCredentials(username)));
         }
 
         /// <summary>
         /// Takes the complete config file, public and private key of the user and turns them into files and zips them
         /// </summary>
         /// <returns>Credentials in a zip file</returns>
-        private async Task<InMemoryFile> GetConfigAndKeysAsZip()
+        private async Task<InMemoryFile> GetConfigAndKeysAsZip() 
         {
-            User user = await _context.Users.FirstAsync(user => user.Username == GetUsername());
+            return await GetConfigAndKeysAsZip(GetUsername());  
+        }
+
+        /// <summary>
+        /// Takes the complete config file, public and private key of the user and turns them into files and zips them
+        /// </summary>
+        /// <returns>Credentials in a zip file</returns>
+        private async Task<InMemoryFile> GetConfigAndKeysAsZip(string username)
+        {
+            User user = await _context.Users.FirstAsync(user => user.Username == username);
             var files = new List<InMemoryFile>
             {
-                await SshConfigFile(),
-                new InMemoryFile("id_rsa_scalable_" + GetUsername() + ".pub",
+                await SshConfigFile(username),
+                new InMemoryFile("id_rsa_scalable_" + username + ".pub",
                     Encoding.UTF8.GetBytes(user.UserPublicKey)),
-                new InMemoryFile("id_rsa_scalable_" + GetUsername(),
+                new InMemoryFile("id_rsa_scalable_" + username,
                 Encoding.UTF8.GetBytes(user.UserPrivateKey))
             };
-            return await ZipBuilder.BuildZip(files, GetUsername() + "_ScalableTeachingUserCredentials.zip");
+            return await ZipBuilder.BuildZip(files, username + "_ScalableTeachingUserCredentials.zip");
         }
 
         private async Task<bool> IsAssignedToMachine(string username, Machine machine)
