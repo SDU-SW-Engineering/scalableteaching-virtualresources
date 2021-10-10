@@ -131,7 +131,7 @@
           >
       </b-col>
       <b-col>
-        <lable>VCPU Count: {{VCPURangeValue}}</lable>
+        <label>VCPU Count: {{VCPURangeValue}}</label>
         <input
             type="range"
             min="1"
@@ -157,6 +157,7 @@
 <script>
 import GroupAPI from "@/api/GroupAPI";
 import StringHelper from "@/helpers/StringHelper";
+import MachineCreationValidationHelper from "@/helpers/MachineCreationValidationHelper.ts";
 
 export default {
   name: "PerGroupMachineCreation",
@@ -168,10 +169,10 @@ export default {
       aptField: "",
       MemoryRangeValue:"1024",
       VCPURangeValue:"1",
-      StorageRangeValue:"30",
+      StorageRangeValue:"30720",
       linuxGroupsField: "",
       ppaField: "",
-      selectedGroups: [null],
+      selectedGroups: [],
       machineNamingDirective: ""
     };
   },
@@ -193,17 +194,19 @@ export default {
         //Machine list population
         machines.push({
           hostname: this.parseNamingDirectiveToMachineName(group.groupName, i, groups.length),
-          group: group.groupId,
+          group: group.groupID,
           apt: apt,
           ppa: ppa,
           ports: ports,
           linuxgroups: linuxGroups,
-          courseid: this.classObject.courseID
+          courseid: this.classObject.courseID,
           memory: parseInt(this.MemoryRangeValue, 10),
           vcpu: parseInt(this.VCPURangeValue, 10),
           storage: parseInt(this.StorageRangeValue, 10)
         });
       }
+      console.log("SelectedGroups ", this.selectedGroups, groups)
+      console.log("Machines: ", machines)
       return machines;
     },
     parseNamingDirectiveToMachineName(groupIndex, machineIndex, tokenCount) {
@@ -216,18 +219,14 @@ export default {
       return this.machineNamingDirective.replaceAll("%i", number).replaceAll("%s", semesterValue).replaceAll("%g", ("g" + ("000" + groupIndex).slice(-2)));
     },
     isValidAndComplete() {
-      let rv = true;
-      rv = rv && this.validateMachineName();
-      rv = rv && this.validateUsers();
-      let portsValidity = this.validatePorts();
-      let groupsValidity = this.validateGroups();
-      let aptValidity = this.validateAPT();
-      let ppaValidity = this.validatePPA();
-      rv = rv && (portsValidity === null || portsValidity === true);
-      rv = rv && (groupsValidity === null || groupsValidity === true);
-      rv = rv && (aptValidity === null || aptValidity === true);
-      rv = rv && (ppaValidity === null || ppaValidity === true);
-      return rv;
+      return MachineCreationValidationHelper.isValidAndComplete(
+          this.validateMachineName(),
+          this.validateSelectedGroups(),
+          this.portsField,
+          this.linuxGroupsField,
+          this.aptField,
+          this.ppaField
+      );
     },
     validateMachineName() {
       let name = this.machineNamingDirective;
@@ -236,67 +235,27 @@ export default {
       return name.search(regex) !== -1;
     },
     validateSelectedGroups() {
-      let groups = this.selectedGroups;
-      if (groups.length < 1 || (groups.length === 1 && groups[0] === null)) return false;
+      return this.selectedGroups.length !== 0;
     },
     validateGroups() {
-      if (this.linuxGroupsField.length === 0) return null;
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.linuxGroupsField);
-      for (let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i];
-        if (token.length > 0) {
-          if (token.match(/^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/) === null) {
-            return false;
-          }
-        }
-      }
-      return true;
+      return MachineCreationValidationHelper.validateGroups(this.linuxGroupsField);
     },
     validatePPA() {
-      if (this.ppaField.length === 0) return null;
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.ppaField);
-      for (let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i];
-        if (token.length > 0) {
-          if (token.match(/^(ppa:([a-z-]+)\/[a-z-]+)$/) === null) {
-            return false;
-          }
-        }
-      }
-      return true;
+      return MachineCreationValidationHelper.validatePPA(this.ppaField);
     },
     validateAPT() {
-      if (this.aptField.length === 0) return null;
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.aptField);
-      for (let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i];
-        if (token.length > 0) {
-          if (token.match(/[0-9A-Za-z.+-]+/) === null) {
-            return false;
-          }
-        }
-      }
-      return true;
+      return MachineCreationValidationHelper.validateAPT(this.aptField);
     },
     validatePorts() {
-      if (this.portsField.length === 0) return null;
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.portsField);
-      for (let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i];
-        if (token.length > 0) {
-          if (!(token.match(/[0-9]{1,5}/) !== null && (parseInt(token) > 0 && parseInt(token) <= 65535)))
-            return false;
-        }
-      }
-      return true;
+      return MachineCreationValidationHelper.validatePorts(this.portsField);
     },
     async updateGroupList() {
       this.groupSelectionOptions = [];
       this.selectedGroups = [];
       let groupsResponse = await GroupAPI.getGroupsByCourseID(this.classObject.courseID);
       if (groupsResponse.body === undefined) return;
-      for (let i = 0; i < groupsResponse.length; i++) {
-        let group = groupsResponse[i];
+      for (let i = 0; i < groupsResponse.body.length; i++) {
+        let group = groupsResponse.body[i];
         this.groupSelectionOptions.push({
           value: group,
           text: group.groupName
@@ -310,6 +269,9 @@ export default {
     classObject: function (newVal, oldVal) {
       this.updateGroupList();
     }
+  },
+  mounted(){
+    this.updateGroupList();
   }
 };
 </script>

@@ -59,7 +59,7 @@ function validateAPT(aptString: string){
 
 function validatePorts(portsString: string){
     if (portsString.length === 0) return null;
-    let cleanTokens: string[] = StringHelper.breakStringIntoTokenList(this.portsField);
+    let cleanTokens: string[] = StringHelper.breakStringIntoTokenList(portsString);
     for (let i: number = 0; i < cleanTokens.length; i++) {
         let token: string = cleanTokens[i];
         if (token.length > 0) {
@@ -69,10 +69,31 @@ function validatePorts(portsString: string){
     }
     return true;
 }
+
+function isValidAndComplete(MachineNameValidity: boolean,
+                            UsersOrGroupsValidity: boolean,
+                            PortsString: string,
+                            GroupsString: string,
+                            AptString: string,
+                            PpaString: string){
+    let rv = true;
+    rv = rv && MachineNameValidity;
+    rv = rv && UsersOrGroupsValidity;
+    let portsValidity = validatePorts(PortsString);
+    let groupsValidity = validateGroups(GroupsString);
+    let aptValidity = validateAPT(AptString);
+    let ppaValidity = validatePPA(PpaString);
+    rv = rv && (portsValidity === null || portsValidity === true);
+    rv = rv && (groupsValidity === null || groupsValidity === true);
+    rv = rv && (aptValidity === null || aptValidity === true);
+    rv = rv && (ppaValidity === null || ppaValidity === true);
+    return rv;
+}
 export default{
     validateUsers,
     validateGroups,
     validatePPA,
     validateAPT,
     validatePorts,
+    isValidAndComplete
 }

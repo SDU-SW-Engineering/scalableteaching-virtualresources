@@ -25,6 +25,7 @@ export default {
   name: "EndOfCreationTable",
   props: ['machineSettings'],
   mounted() {
+    console.log("Machines recieved by creation table", this.machineSettings.machinesToBeCreatedList)
     this.populateMachines(this.machineSettings.machinesToBeCreatedList, this.machineSettings.isGroupBased);
   },
   data() {

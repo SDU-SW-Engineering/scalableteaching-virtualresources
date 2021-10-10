@@ -148,7 +148,7 @@
 
 <script>
 import StringHelper from "@/helpers/StringHelper";
-import MachineCreationValidationHelper from "../../helpers/MachineCreationValidationHelper";
+import MachineCreationValidationHelper from "../../helpers/MachineCreationValidationHelper.ts";
 
 export default {
   name: "SingleMachineCreation",
@@ -157,7 +157,7 @@ export default {
     return {
       MemoryRangeValue: "1024",
       VCPURangeValue: "1",
-      StorageRangeValue: "30",
+      StorageRangeValue: "30720",
       linuxGroupsField: "",
       ppaField: "",
       aptField: "",
@@ -195,18 +195,14 @@ export default {
       return machines;
     },
     isValidAndComplete() {
-      let rv = true;
-      rv = rv && this.validateMachineName();
-      rv = rv && this.validateUsers();
-      let portsValidity = this.validatePorts();
-      let groupsValidity = this.validateGroups();
-      let aptValidity = this.validateAPT();
-      let ppaValidity = this.validatePPA();
-      rv = rv && (portsValidity === null || portsValidity === true);
-      rv = rv && (groupsValidity === null || groupsValidity === true);
-      rv = rv && (aptValidity === null || aptValidity === true);
-      rv = rv && (ppaValidity === null || ppaValidity === true);
-      return rv;
+      return MachineCreationValidationHelper.isValidAndComplete(
+          this.validateMachineName(),
+          this.validateUsers(),
+          this.portsField,
+          this.linuxGroupsField,
+          this.aptField,
+          this.ppaField
+      );
     },
     validateMachineName() {
       let name = this.machineNamingDirective;

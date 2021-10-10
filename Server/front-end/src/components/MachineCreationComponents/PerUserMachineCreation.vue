@@ -149,7 +149,7 @@
           >
       </b-col>
       <b-col>
-        <lable>VCPU Count: {{VCPURangeValue}}</lable>
+        <label>VCPU Count: {{VCPURangeValue}}</label>
         <input
             type="range"
             min="1"
@@ -174,6 +174,7 @@
 
 <script>
 import StringHelper from "@/helpers/StringHelper";
+import MachineCreationValidationHelper from "@/helpers/MachineCreationValidationHelper.ts";
 
 export default {
   name: "PerUserMachineCreation",
@@ -182,7 +183,7 @@ export default {
     return {
       MemoryRangeValue:"1024",
       VCPURangeValue:"1",
-      StorageRangeValue:"30",
+      StorageRangeValue:"30720",
       linuxGroupsField: "",
       ppaField: "",
       aptField: "",
@@ -220,10 +221,10 @@ export default {
           ppa: ppa,
           ports: ports,
           linuxgroups: linuxGroups,
-          courseid: this.classObject.courseID
-           memory: parseInt(this.MemoryRangeValue, 10),
-           vcpu: parseInt(this.VCPURangeValue, 10),
-           storage: parseInt(this.StorageRangeValue, 10)
+          courseid: this.classObject.courseID,
+          memory: parseInt(this.MemoryRangeValue, 10),
+          vcpu: parseInt(this.VCPURangeValue, 10),
+          storage: parseInt(this.StorageRangeValue, 10)
         });
       }
       return machines;
@@ -238,22 +239,18 @@ export default {
       return this.machineNamingDirective.replaceAll("%i", number).replaceAll("%s", semesterValue).replaceAll("%u", user);
     },
     isValidAndComplete() {
-      let rv = true;
-      rv = rv && this.validateMachineName();
-      rv = rv && this.validateUsers();
-      let portsValidity = this.validatePorts();
-      let groupsValidity = this.validateGroups();
-      let aptValidity = this.validateAPT();
-      let ppaValidity = this.validatePPA();
-      rv = rv && (portsValidity === null || portsValidity === true);
-      rv = rv && (groupsValidity === null || groupsValidity === true);
-      rv = rv && (aptValidity === null || aptValidity === true);
-      rv = rv && (ppaValidity === null || ppaValidity === true);
-      return rv;
+      return MachineCreationValidationHelper.isValidAndComplete(
+          this.validateMachineName(),
+          this.validateUsers(),
+          this.portsField,
+          this.linuxGroupsField,
+          this.aptField,
+          this.ppaField
+      );
     },
     validateMachineName() {
       let name = this.machineNamingDirective;
-      name = name.replace("%i", "00").replace("%g", "abcde01").replace("%s", "e01");
+      name = name.replace("%i", "00").replace("%u", "abcde01").replace("%s", "e01");
       let regex = /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/;
       return name.search(regex) !== -1;
     },
@@ -264,68 +261,19 @@ export default {
       } else {
         usersString = this.enteredUsersField;
       }
-      if (usersString.length === 0) return false;
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.linuxGroupsField);
-      for (let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i];
-        if (token.length > 0) {
-          if (token.match(/[a-zA-Z0-9]+/) === null) {
-            return false;
-          }
-        }
-      }
-      return true;
+      return MachineCreationValidationHelper.validateUsers(usersString);
     },
     validateGroups() {
-      if (this.linuxGroupsField.length === 0) return null;
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.linuxGroupsField);
-      for (let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i];
-        if (token.length > 0) {
-          if (token.match(/^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/) === null) {
-            return false;
-          }
-        }
-      }
-      return true;
+      return MachineCreationValidationHelper.validateGroups(this.linuxGroupsField);
     },
     validatePPA() {
-      if (this.ppaField.length === 0) return null;
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.ppaField);
-      for (let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i];
-        if (token.length > 0) {
-          if (token.match(/^(ppa:([a-z-]+)\/[a-z-]+)$/) === null) {
-            return false;
-          }
-        }
-      }
-      return true;
+      return MachineCreationValidationHelper.validatePPA(this.ppaField);
     },
     validateAPT() {
-      if (this.aptField.length === 0) return null;
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.aptField);
-      for (let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i];
-        if (token.length > 0) {
-          if (token.match(/[0-9A-Za-z.+-]+/) === null) {
-            return false;
-          }
-        }
-      }
-      return true;
+      return MachineCreationValidationHelper.validateAPT(this.aptField);
     },
     validatePorts() {
-      if (this.portsField.length === 0) return null;
-      let cleanTokens = StringHelper.breakStringIntoTokenList(this.portsField);
-      for (let i = 0; i < cleanTokens.length; i++) {
-        let token = cleanTokens[i];
-        if (token.length > 0) {
-          if (!(token.match(/[0-9]{1,5}/) !== null && (parseInt(token) > 0 && parseInt(token) <= 65535)))
-            return false;
-        }
-      }
-      return true;
+      return MachineCreationValidationHelper.validatePorts(this.portsField);
     }
   }
 };
