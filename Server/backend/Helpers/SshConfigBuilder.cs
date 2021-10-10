@@ -25,13 +25,14 @@ namespace ScalableTeaching.Helpers
         /// <returns>Config string for specified machine</returns>
         public async Task<string> GetMachineCredentialStringAsync(Machine machine, string username, bool includeClassName = false)
         {
-            return await Task.Run<string>(() =>
+            
+            return await Task.Run(() =>
              {
                  var hostName = machine.HostName;
                  var course = machine.Course;
                  List<int> ports = machine.Ports;
 
-                 StringBuilder credentialBuilder = new();
+                 StringBuilder credentialBuilder = new("");
 
                  //Insert host name string
                  credentialBuilder.Append("Host ");
