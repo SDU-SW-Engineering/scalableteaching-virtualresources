@@ -64,7 +64,7 @@ namespace ScalableTeaching.Helpers
                 }
             }
             var connectionInfo = new ConnectionInfo(machine.MachineStatus.MachineIp, _defaultUsername, new PrivateKeyAuthenticationMethod("admin", new PrivateKeyFile($"{SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa")));
-            Console.WriteLine("Connection info, ip: {machine.MachineStatus.MachineIp}, Default username: {_defaultUsername}, ");
+            Console.WriteLine($"Connection info, ip: {machine.MachineStatus.MachineIp}, Default username: {_defaultUsername}, ");
             using (var client = new SshClient(connectionInfo))
             {
                 MemoryStream stdin = new();
@@ -289,10 +289,12 @@ namespace ScalableTeaching.Helpers
             p_ssh.StartInfo.RedirectStandardError = true;
             p_ssh.StartInfo.FileName = "ssh";
             p_ssh.StartInfo.Arguments = $"-o StrictHostKeyChecking=no -i {SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa admin@{machine.MachineStatus.MachineIp} \"sudo chmod 777 /home/admin/configfile.sh && sudo sh -c '/home/admin/configfile.sh'\"";
+            Console.WriteLine("Starting ssh process");
             p_ssh.Start();
+            Console.WriteLine("SSH process started, awaiting");
             await p_ssh.WaitForExitAsync();
-
-            Console.WriteLine($"Did ssh into {machine.HostName} {machine.MachineStatus.MachineIp}, status: Exit code: {p_ssh.ExitCode}\nout: {p_ssh.StandardOutput.ReadToEnd()} \n err{p_ssh.StandardError.ReadToEnd()}");
+            Console.WriteLine("ssh completed");
+            Console.WriteLine($"Did ssh into {machine.HostName} {machine.MachineStatus.MachineIp}, status: Exit code: {p_ssh.ExitCode}\nout: {p_ssh.StandardOutput.ReadToEnd()} \nerr: {p_ssh.StandardError.ReadToEnd()}");
 
             return true; //TODO: Implement error handeling for configuration 
         }
