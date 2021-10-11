@@ -20,7 +20,8 @@ namespace ScalableTeaching.Helpers
         /// <summary>
         /// Generates a configuration string for an ssh config
         /// </summary>
-        /// <param name="assignment">The credential object representing a credential pair for a user</param>
+        /// <param name="machine">The machine for which the credential string should be generated</param>
+        /// <param name="username">The username for which the credential string should be generated</param>
         /// <param name="includeClassName">True indicates that the host name will be prefixed with the short version of the course name</param>
         /// <returns>Config string for specified machine</returns>
         public async Task<string> GetMachineCredentialStringAsync(Machine machine, string username, bool includeClassName = false)
@@ -43,7 +44,7 @@ namespace ScalableTeaching.Helpers
                  credentialBuilder.Append(hostName).Append(Environment.NewLine);
 
                  //Insert HostName url string
-                 credentialBuilder.Append('\u0009').Append("HostName ").Append(machine.MachineStatus.MachineIp).Append(Environment.NewLine);
+                 credentialBuilder.Append('\u0009').Append("HostName ").Append(machine.HostName).Append(".uvm.sdu.dk").Append(Environment.NewLine);
 
                  //Insert Username for the machine
                  credentialBuilder.Append('\u0009').Append("User ").Append(username).Append(Environment.NewLine);

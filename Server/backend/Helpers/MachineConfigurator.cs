@@ -283,17 +283,20 @@ namespace ScalableTeaching.Helpers
 
             Console.WriteLine($"Did scp into {machine.HostName} {machine.MachineStatus.MachineIp}, status: Exit code: {p_scp.ExitCode}\nout: {p_scp.StandardOutput.ReadToEnd()} \n err{p_scp.StandardError.ReadToEnd()}");
 
-            var p_ssh = new Process();
-            p_ssh.StartInfo.UseShellExecute = false;
-            p_ssh.StartInfo.RedirectStandardOutput = true;
-            p_ssh.StartInfo.RedirectStandardError = true;
-            p_ssh.StartInfo.FileName = "ssh";
-            p_ssh.StartInfo.Arguments = $"-o StrictHostKeyChecking=no -i {SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa admin@{machine.MachineStatus.MachineIp} \"sudo chmod 777 /home/admin/configfile.sh && sudo sh -c '/home/admin/configfile.sh'\"";
-            Console.WriteLine("Starting ssh process");
-            p_ssh.Start();
-            Console.WriteLine("SSH process started, awaiting");
-            p_ssh.WaitForExit();
-            Console.WriteLine("ssh completed");
+            //Using task as a hack - this is an odd boy that sometimes does not return
+            //TODO: Better solution
+            Task.Run(() =>
+            {
+                var p_ssh = new Process();
+                p_ssh.StartInfo.UseShellExecute = false;
+                p_ssh.StartInfo.RedirectStandardOutput = true;
+                p_ssh.StartInfo.RedirectStandardError = true;
+                p_ssh.StartInfo.FileName = "ssh";
+                p_ssh.StartInfo.Arguments =
+                    $"-o StrictHostKeyChecking=no -i {SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa admin@{machine.MachineStatus.MachineIp} \"sudo chmod 777 /home/admin/configfile.sh && sudo sh -c '/home/admin/configfile.sh'; exit\"";
+                p_ssh.Start();
+            });
+
             
             //Console.WriteLine($"Did ssh into {machine.HostName} {machine.MachineStatus.MachineIp}, status: Exit code: {p_ssh.ExitCode}\nout: {p_ssh.StandardOutput.ReadToEnd()} \nerr: {p_ssh.StandardError.ReadToEnd()}");
 
