@@ -3,12 +3,18 @@ FROM alpine/git as download
 WORKDIR /download
 RUN git clone https://github.com/jakobhviid/ScalableTeachingInSTEM-VM-Deployment scalable
 
-#Final stage
-FROM node:14 as base
+#Build
+FROM node:14-alpine as build
 WORKDIR /usr/src/app
+COPY --from=download /download/scalable/Server/front-end/package*.json ./
+RUN npm install
+COPY --from=download /download/scalable/Server/front-end/ ./
+RUN ls 
 
-RUN git clone https://github.com/jakobhviid/ScalableTeachingInSTEM-VM-Deployment
-RUN npm install --production
+
+#Run
+FROM nginx:stable-alpine as prod
+COPY --from=build /usr/src/app/dist /usr/share/nginx/html
 EXPOSE 80
 
-CMD ["node", "main.js"]
+CMD ["nginx", "-g", "daemon off;"]

@@ -1,6 +1,6 @@
 const port = "8080";
 const protocol = "https";
-const base = process.env.URL_BASE;
+const base = "virtualresources.sdu.dk";
 const creation = "/api/creation";
 const management = "/api/management";
 const credentials = "/api/my_machines";
