@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ScalableTeaching.Helpers
@@ -288,20 +289,20 @@ namespace ScalableTeaching.Helpers
 
             //Using task as a hack - this is an odd boy that sometimes does not return
             //TODO: Better solution
-            Task.Run(() =>
+            Task.Run(async () =>
             {
+                Console.WriteLine($"Starting ssh: {machine.HostName}, {machine.MachineStatus.MachineIp}");
                 var p_ssh = new Process();
                 p_ssh.StartInfo.UseShellExecute = false;
                 p_ssh.StartInfo.RedirectStandardOutput = true;
                 p_ssh.StartInfo.RedirectStandardError = true;
                 p_ssh.StartInfo.FileName = "ssh";
                 p_ssh.StartInfo.Arguments =
-                    $"-o StrictHostKeyChecking=no -i {SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa admin@{machine.MachineStatus.MachineIp} \"sudo chmod 777 /home/admin/configfile.sh && sudo sh -c '/home/admin/configfile.sh'; exit\"";
+                    $"-o StrictHostKeyChecking=no -i {SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa admin@{machine.MachineStatus.MachineIp} \"sudo chmod 777 /home/admin/configfile.sh && sudo sh -c '/home/admin/configfile.sh'; sudo rm /home/admin/configfile.sh; touch /home/admin/ranConfig; exit\"";
                 p_ssh.Start();
+                await p_ssh.WaitForExitAsync();
+                Console.WriteLine($"Finished ssh: {machine.HostName}, {machine.MachineStatus.MachineIp}");
             });
-
-            
-            //Console.WriteLine($"Did ssh into {machine.HostName} {machine.MachineStatus.MachineIp}, status: Exit code: {p_ssh.ExitCode}\nout: {p_ssh.StandardOutput.ReadToEnd()} \nerr: {p_ssh.StandardError.ReadToEnd()}");
 
             return true; //TODO: Implement error handeling for configuration 
         }
