@@ -200,7 +200,10 @@ namespace ScalableTeaching.Helpers
             //var connectionInfo = new ConnectionInfo(machine.MachineStatus.MachineIp, _defaultUsername, new PrivateKeyAuthenticationMethod("admin", new PrivateKeyFile($"{SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa")));
             //Console.WriteLine("Connection info, ip: {machine.MachineStatus.MachineIp}, Default username: {_defaultUsername}, ");
             var builder = new StringBuilder();
-
+            
+            //Update Admin password to prevent lockout by ssh key mishap
+            builder.AppendLine($"echo \"admin:{Environment.GetEnvironmentVariable("ADMIN_PASSWD")}\" | chpasswd");
+            
             //Add groups
             foreach (var group in machine.LinuxGroups)
             {
@@ -208,7 +211,7 @@ namespace ScalableTeaching.Helpers
             }
             Console.WriteLine("Configuration users count {}");
             //Add users
-            foreach (MachineConfigurationUser user in configurationUsers)
+            foreach (var user in configurationUsers)
             {
                 Console.WriteLine($"Configuring user {user.Username}");
                 var p = new Process();
@@ -219,7 +222,7 @@ namespace ScalableTeaching.Helpers
                 p.Start();
                 await p.WaitForExitAsync(); //TODO: Its clipping the data when reading single line
 
-                string output = (await p.StandardOutput.ReadToEndAsync()).Trim();
+                var output = (await p.StandardOutput.ReadToEndAsync()).TrimEnd('\n', '\r', ' '); //Trim any trailing non hash chars
 
                 //Create User
                 builder.AppendLine($"useradd -s \"/usr/bin/bash\" -mp {output} {user.Username.ToLower()}");
