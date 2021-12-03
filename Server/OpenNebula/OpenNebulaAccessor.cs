@@ -70,7 +70,7 @@ namespace ScalableTeaching.OpenNebula
         /// <inheritdoc cref="IOpenNebulaAccessor.PerformVirtualMachineAction(string, int)"/>
         public bool PerformVirtualMachineAction(string Action, int VirtualMachineId)
         {
-            Object[] XmlRpcReturn = VmManagementProxy.VmInfo(_Session, VirtualMachineId);
+            Object[] XmlRpcReturn = VmManagementProxy.VmAction(_Session, Action, VirtualMachineId);
             return (bool)XmlRpcReturn[0];
         }
     }

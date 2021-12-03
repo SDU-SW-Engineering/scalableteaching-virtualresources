@@ -1,0 +1,34 @@
+name: Docker
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  docker-build-and-push-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Log into GitHub Container Registry
+        run: echo "${{ secrets.PACKAGE_KEY}}" | docker login https://ghcr.io -u hounsvad --password-stdin
+      
+      - name: Build image
+        run: |
+          docker buildx build --push -t ghcr.io/hounsvad/scalableteaching ./Server
+  docker-build-and-push-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Log into GitHub Container Registry
+        run: echo "${{ secrets.PACKAGE_KEY}}" | docker login https://ghcr.io -u hounsvad --password-stdin
+      
+      - name: Build image
+        run: |
+          docker buildx build --push -t ghcr.io/hounsvad/scalableteaching-frontend ./Server/front-end
+
