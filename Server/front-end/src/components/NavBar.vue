@@ -76,7 +76,7 @@ export default {
       window.location.reload();
     },
     login() {
-      return window.location.href = `https://sso.sdu.dk/login?service=${urlconfig.loginTokenReturnString}`;
+      return window.location.href = `https://sso.sdu.dk/login?service=${urlconfig.loginTokenReturnString()}`;
     }
   }
 };

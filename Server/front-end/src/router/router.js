@@ -82,7 +82,7 @@ router.beforeEach((to, from, next) => {
             console.log("Loop error");
         } else {
             StorageHelper.set(StorageHelper.names.attemptedLocation, to.name);
-            window.location.href = `https://sso.sdu.dk/login?service=${urlconfig.loginTokenReturnString}`;
+            window.location.href = `https://sso.sdu.dk/login?service=${urlconfig.loginTokenReturnString()}`;
         }
     }
 });
