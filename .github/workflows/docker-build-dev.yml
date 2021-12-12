@@ -1,4 +1,4 @@
-name: Docker
+name: Docker-Dev
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
       
       - name: Build image
         run: |
-          docker buildx build --push -t ghcr.io/hounsvad/scalableteaching-backend:dev-f Server/Dockerfile-Backend Server
+          docker buildx build --push -t ghcr.io/hounsvad/scalableteaching-backend:dev -f Server/Dockerfile-Backend Server
   docker-frontend:
     runs-on: ubuntu-latest
     steps:
