@@ -15,7 +15,7 @@ function login(SSOToken) {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }),
-        body: JSON.stringify({Token: SSOToken, ServiceEndpoint: urlConfig.loginTokenReturnString})
+        body: JSON.stringify({Token: SSOToken, ServiceEndpoint: urlConfig.loginTokenReturnString()})
 
     }).then(res => apiHelper.parseResponse(res));
 }

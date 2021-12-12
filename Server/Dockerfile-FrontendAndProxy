@@ -1,9 +1,9 @@
 #Build
 FROM node:14 as build
 WORKDIR /src
-COPY ./Server/front-end/package*.json ./
+COPY ./front-end/package*.json ./
 RUN npm install
-COPY ./Server/front-end/ ./
+COPY ./front-end/ ./
 RUN npm run build
 
 #Run
