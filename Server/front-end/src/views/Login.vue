@@ -24,7 +24,7 @@ export default {
         /*If no ticket is provided, attempt to acquire ticket
         * If ticket is available, attempts login*/
         if (this.ticket === undefined) {
-          window.location.href = `https://sso.sdu.dk/login?service=${urlconfig.loginTokenReturnString}`;
+          window.location.href = `https://sso.sdu.dk/login?service=${urlconfig.loginTokenReturnString()}`;
         } else {
           (async () => {
             if (await AuthService.login(loginComponent.ticket)) {
