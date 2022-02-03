@@ -2,7 +2,7 @@ import urlconfig from "@/config/urlconfig";
 import StorageHelper from "@/helpers/StorageHelper";
 
 async function getCourses() {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.course}`, {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -14,7 +14,7 @@ async function getCourses() {
 }
 
 async function getCourse(id) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}/${id}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.course}/${id}`, {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -35,7 +35,7 @@ async function getCourse(id) {
  * @param CourseID
  */
 async function putCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseID, CourseID) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}/${CourseID}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.course}/${CourseID}`, {
         method: "PUT",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -60,7 +60,7 @@ async function putCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseID
  * @param SDUCourseID
  */
 async function postCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseID) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.course}`, {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -81,7 +81,7 @@ async function postCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseI
  * @returns Status code
  */
 async function deleteCourse(id) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.course}/${id}`,
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.course}/${id}`,
         {
             method: 'DELETE',
             headers: new Headers({

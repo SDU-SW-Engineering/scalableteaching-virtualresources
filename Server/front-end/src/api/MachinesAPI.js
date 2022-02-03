@@ -3,7 +3,7 @@ import StorageHelper from "@/helpers/StorageHelper";
 import axios from "axios";
 
 async function getUsersMachines() {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.machine}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.machine}`, {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -15,7 +15,7 @@ async function getUsersMachines() {
 }
 
 async function postRebootMachine(machineId) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.machine}/control/reboot/${machineId}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.machine}/control/reboot/${machineId}`, {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -26,7 +26,7 @@ async function postRebootMachine(machineId) {
 
 function getZip() {
     return axios({
-        url: `${urlconfig.protocol}://${urlconfig.base}/api/machinecredential/file/zip`,
+        url: `${urlconfig.protocol}://${urlconfig.getBase()}/api/machinecredential/file/zip`,
         method: 'GET',
         responseType: 'blob',
         headers: {

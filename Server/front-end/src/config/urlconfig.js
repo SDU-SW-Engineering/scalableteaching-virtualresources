@@ -10,12 +10,18 @@ const educator = "/api/educator";
 const groupAssignment = "/api/groupassignment";
 const machine = "/api/machine";
 const login = "/api/login";
+
+function getBase (){
+    return window.location.host
+}
+
 function loginTokenReturnString (){
-    return encodeURIComponent(base + "/Login");
+    return encodeURIComponent(protocol + "://"+getBase() + "/Login");
 }
 
 
 export default {
+    getBase,
     port,
     protocol,
     base,

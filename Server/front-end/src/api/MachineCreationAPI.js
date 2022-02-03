@@ -4,7 +4,7 @@ import StorageHelper from "@/helpers/StorageHelper";
 
 async function createMachines(machines, isGroupBased) {
     if (!isGroupBased) {
-        return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.creation}/userbased`, {
+        return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.creation}/userbased`, {
             method: "POST",
             headers: new Headers({
                 'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -15,7 +15,7 @@ async function createMachines(machines, isGroupBased) {
             })
         }).then(async response => response.status);
     } else {
-        return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.creation}/groupbased`, {
+        return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.creation}/groupbased`, {
             method: "POST",
             headers: new Headers({
                 'Authorization': 'Bearer ' + StorageHelper.get("login-token"),

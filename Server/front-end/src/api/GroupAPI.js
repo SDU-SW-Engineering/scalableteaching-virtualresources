@@ -2,7 +2,7 @@ import urlconfig from "@/config/urlconfig";
 import StorageHelper from "@/helpers/StorageHelper";
 
 async function getGroups() {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.group}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.group}`, {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -14,7 +14,7 @@ async function getGroups() {
 }
 
 async function getGroupsByCourseID(id) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.group}/course/${id}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.group}/course/${id}`, {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -30,7 +30,7 @@ async function getGroupsByCourseID(id) {
 }
 
 async function getGroup(id) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.group}/${id}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.group}/${id}`, {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -49,7 +49,7 @@ async function getGroup(id) {
  * @param GroupID GUID
  */
 async function putGroup(GroupName, CourseID, GroupID) {
-    const response = await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.group}/${GroupID}`, {
+    const response = await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.group}/${GroupID}`, {
         method: "PUT",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -71,7 +71,7 @@ async function putGroup(GroupName, CourseID, GroupID) {
  * @param CourseID
  */
 async function postGroup(GroupName, CourseID) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.group}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.group}`, {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -90,7 +90,7 @@ async function postGroup(GroupName, CourseID) {
  * @returns Status code
  */
 async function deleteGroup(id) {
-    return await fetch(`${urlconfig.base}${urlconfig.group}/${id}`, {
+    return await fetch(`${urlconfig.getBase()}${urlconfig.group}/${id}`, {
         method: 'DELETE',
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -107,7 +107,7 @@ async function deleteGroup(id) {
  * @returns {Promise<void>}
  */
 async function postEntireGroup(GroupName, CourseID, Users) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.group}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.group}`, {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -123,7 +123,7 @@ async function postEntireGroup(GroupName, CourseID, Users) {
 
 async function getGroupMembers(GroupID) {
 
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.groupAssignment}/${GroupID}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.groupAssignment}/${GroupID}`, {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -135,7 +135,7 @@ async function getGroupMembers(GroupID) {
 }
 
 async function addMemberToGroup(UserUsername, GroupID) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.groupAssignment}/assign`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.groupAssignment}/assign`, {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -149,7 +149,7 @@ async function addMemberToGroup(UserUsername, GroupID) {
 }
 
 async function removeMemberFromGroup(UserUsername, GroupID) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.groupAssignment}/unassign`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.groupAssignment}/unassign`, {
         method: "DELETE",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -169,7 +169,7 @@ async function removeMemberFromGroup(UserUsername, GroupID) {
  * @returns {Promise<number>} status of request
  */
 async function putMembersInGroup(Usernames, GroupID) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.groupAssignment}/update`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.groupAssignment}/update`, {
         method: "PUT",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
