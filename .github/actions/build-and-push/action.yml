@@ -6,7 +6,7 @@ on:
       username:
         required: true
         type: string
-      token: 
+      token:
         required: true
         type: string
       dockerfile:
@@ -29,8 +29,8 @@ jobs:
       - uses: actions/checkout@v2
       
       - name: Log into GitHub Container Registry
-        run: echo "${{ secrets.PACKAGE_KEY}}" | docker login https://ghcr.io -u ${{ username }} --password-stdin
+        run: echo "${{ secrets.PACKAGE_KEY}}" | docker login https://ghcr.io -u ${{ inputs.username }} --password-stdin
       
       - name: Build image
         run: |
-          docker buildx build --push -t ${{ token }}:${{ version }} -t ${{ token }}:${{ github.sha }} -f ${{ dockerfile }} ${{ context }}
+          docker buildx build --push -t ${{ inputs.token }}:${{ inputs.version }} -t ${{ inputs.token }}:${{ github.sha }} -f ${{ inputs.dockerfile }} ${{ inputs.context }}
