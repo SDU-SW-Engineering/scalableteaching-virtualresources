@@ -1,0 +1,25 @@
+name: Build and push backend docker main
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Server/backend/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'Server/backend/**'
+
+jobs:
+  docker-backend:
+    runs-on: ubuntu-latest
+    steps:
+      uses: aslakjohansen/ScalableTeachingInSTEM-VM-Deployment/.github/actions/build-and-push.yml
+        - with:
+            username: 'Hounsvad'
+            token: 'ghcr.io/hounsvad/scalableteaching-backend'
+            version: 'latest'
+            dockerfile: 'Server/Dockerfile-Backend'
+            context: './Server'

@@ -1,0 +1,36 @@
+name: Build and push
+
+on:
+  workflow_call:
+    inputs:
+      username:
+        required: true
+        type: string
+      token: 
+        required: true
+        type: string
+      dockerfile:
+        required: true
+        type: string
+      context:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+    secrets:
+      PACKAGE_KEY:
+        required: true
+
+jobs:
+  docker-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Log into GitHub Container Registry
+        run: echo "${{ secrets.PACKAGE_KEY}}" | docker login https://ghcr.io -u ${{ username }} --password-stdin
+      
+      - name: Build image
+        run: |
+          docker buildx build --push -t ${{ token }}:${{ version }} -t ${{ token }}:${{ github.sha }} -f ${{ dockerfile }} ${{ context }}

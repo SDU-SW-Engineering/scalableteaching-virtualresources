@@ -1,0 +1,25 @@
+name: Build and push front-end docker main
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Server/front-end/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'Server/front-end/**'
+
+jobs:
+  docker-backend:
+    runs-on: ubuntu-latest
+    steps:
+      uses: aslakjohansen/ScalableTeachingInSTEM-VM-Deployment/.github/actions/build-and-push.yml
+        - with:
+            username: 'Hounsvad'
+            token: 'ghcr.io/hounsvad/scalableteaching-frontend'
+            version: 'latest'
+            dockerfile: 'Server/Dockerfile-FrontendAndProxy'
+            context: './Server'
