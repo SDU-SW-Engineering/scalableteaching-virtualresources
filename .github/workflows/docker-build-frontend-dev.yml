@@ -1,4 +1,4 @@
-name: Build and push front-end docker dev
+name: Dev-Frontend
 
 on:
   push:

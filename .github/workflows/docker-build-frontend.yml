@@ -1,4 +1,4 @@
-name: Build and push front-end docker main
+name: Main-Frontend
 
 on:
   push:
