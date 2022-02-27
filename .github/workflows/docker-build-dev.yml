@@ -33,14 +33,17 @@ jobs:
           while IFS= read -r file
           do
             echo $file
-            if [[ $file == DockerfileBaseImage ]]; then
+            if [[ $file == Server/front-end/* ]]; then
+              echo "Frontend has been modified"
+              echo "::set-output name=run_frontend::true"
+              runfront=true
+            elif [[ $file == Server/backend/* ]]; then
               echo "DockerfileBaseImage has been modified"
-              echo "::set-output name=run_job::true"
-              break
-            else
-              echo "::set-output name=run_job::false"
+              echo "::set-output name=run_backend::true"
+              runback=true
             fi
           done < files.txt
+
 
   docker-backend:
     runs-on: ubuntu-latest
