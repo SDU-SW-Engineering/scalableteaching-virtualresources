@@ -23,7 +23,7 @@ on:
         required: true
 
 jobs:
-  docker-backend:
+  build_and_push_job:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

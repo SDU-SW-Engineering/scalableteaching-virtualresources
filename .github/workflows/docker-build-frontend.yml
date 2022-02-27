@@ -18,10 +18,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build and push
-      uses: ./.github/actions/build-and-push/
+      uses: ./.github/actions/build-and-push
       with:
         username: 'Hounsvad'
         token: 'ghcr.io/hounsvad/scalableteaching-frontend'
         version: 'latest'
         dockerfile: 'Server/Dockerfile-FrontendAndProxy'
         context: './Server'
+      secrets:
+        PACKAGE_KEY: ${{ secrets.PACKAGE_KEY }}
