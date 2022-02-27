@@ -19,7 +19,7 @@ jobs:
       
       - name: Build image
         run: |
-          docker buildx build --push -t ghcr.io/hounsvad/scalableteaching-backend -f ./Server/Dockerfile-Backend ./Server
+          docker buildx build --push -t ghcr.io/hounsvad/scalableteaching-backend:latest -t ghcr.io/hounsvad/scalableteaching-backend:latest -f ./Server/Dockerfile-Backend ./Server
   docker-frontend:
     runs-on: ubuntu-latest
     steps:
@@ -30,5 +30,5 @@ jobs:
       
       - name: Build image
         run: |
-          docker buildx build --push -t ghcr.io/hounsvad/scalableteaching-frontend -f ./Server/Dockerfile-FrontendAndProxy ./Server
+          docker buildx build --push -t ghcr.io/hounsvad/scalableteaching-frontend:latest -t ghcr.io/hounsvad/scalableteaching-frontend:latest -f ./Server/Dockerfile-FrontendAndProxy ./Server
 
