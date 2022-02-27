@@ -18,7 +18,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build and push
-      uses: ./.github/actions/build-and-push.yml
+      uses: ./.github/actions/build-and-push/action.yml
       with:
         username: 'Hounsvad'
         token: 'ghcr.io/hounsvad/scalableteaching-frontend'
