@@ -16,8 +16,9 @@ jobs:
   docker-backend:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - name: Build and push
-      uses: aslakjohansen/ScalableTeachingInSTEM-VM-Deployment/.github/actions/build-and-push.yml
+      uses: ./.github/actions/build-and-push.yml
       with:
         username: 'Hounsvad'
         token: 'ghcr.io/hounsvad/scalableteaching-frontend'
