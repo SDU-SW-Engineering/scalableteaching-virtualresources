@@ -12,17 +12,17 @@ on:
     paths:
       - 'Server/front-end/**'
 
+env:
+  username: Hounsvad
+  token: ghcr.io/hounsvad/scalableteaching-frontend
+  version: latest
+  dockerfile: Server/Dockerfile-FrontendAndProxy
+  context: ./Server
+
 jobs:
   docker-backend:
     runs-on: ubuntu-latest
     steps:
-    - name: Set Environment Variables
-      env:
-        username: Hounsvad
-        token: ghcr.io/hounsvad/scalableteaching-frontend
-        version: latest
-        dockerfile: Server/Dockerfile-FrontendAndProxy
-        context: ./Server
     - uses: actions/checkout@v2
     
     - name: Log into GitHub Container Registry

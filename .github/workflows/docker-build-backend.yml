@@ -12,22 +12,22 @@ on:
     paths:
       - 'Server/backend/**'
 
+env:
+  username: Hounsvad
+  token: ghcr.io/hounsvad/scalableteaching-backend
+  version: latest
+  dockerfile: Server/Dockerfile-Backend
+  context: ./Server
+
 jobs:
   docker-backend:
     runs-on: ubuntu-latest
     steps:
-    - name: Set Environment Variables
-      env:
-        username: Hounsvad
-        token: ghcr.io/hounsvad/scalableteaching-backend
-        version: latest
-        dockerfile: Server/Dockerfile-Backend
-        context: ./Server
     - uses: actions/checkout@v2
     
     - name: Log into GitHub Container Registry
       run: echo "${{ secrets.PACKAGE_KEY}}" | docker login https://ghcr.io -u ${{ env.username }} --password-stdin
-    
+
     - name: Build image
       run: |
         docker buildx build --push -t ${{ env.token }}:${{ env.version }} -t ${{ env.token }}:${{ github.sha }} -f ${{ env.dockerfile }} ${{ env.context }}
