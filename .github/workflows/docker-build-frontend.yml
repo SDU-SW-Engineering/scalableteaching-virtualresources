@@ -6,11 +6,11 @@ on:
       - main
     paths:
       - 'Server/front-end/**'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'Server/front-end/**'
+  # pull_request:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'Server/front-end/**'
 
 env:
   username: Hounsvad
