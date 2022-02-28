@@ -1,0 +1,33 @@
+name: Main-Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Server/front-end/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'Server/front-end/**'
+
+env:
+  username: Hounsvad
+  token: ghcr.io/hounsvad/scalableteaching-frontend
+  version: latest
+  dockerfile: Server/Dockerfile-FrontendAndProxy
+  context: ./Server
+
+jobs:
+  docker-backend:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Log into GitHub Container Registry
+      run: echo "${{ secrets.PACKAGE_KEY}}" | docker login https://ghcr.io -u ${{ env.username }} --password-stdin
+    
+    - name: Build image
+      run: |
+        docker buildx build --push -t ${{ env.token }}:${{ env.version }} -t ${{ env.token }}:${{ github.sha }} -f ${{ env.dockerfile }} ${{ env.context }}
