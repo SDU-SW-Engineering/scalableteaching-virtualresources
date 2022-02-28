@@ -16,14 +16,18 @@ jobs:
   docker-backend:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Build and push
-      uses: ./.github/actions/build-and-push
-      with:
+    - name: Set Environment Variables
+      env:
         username: Hounsvad
         token: ghcr.io/hounsvad/scalableteaching-backend
-        version: latest
+        version: dev
         dockerfile: Server/Dockerfile-Backend
         context: ./Server
-      secrets:
-        PACKAGE_KEY: ${{ secrets.PACKAGE_KEY }}
+    - uses: actions/checkout@v2
+    
+    - name: Log into GitHub Container Registry
+      run: echo "${{ secrets.PACKAGE_KEY}}" | docker login https://ghcr.io -u ${{ env.username }} --password-stdin
+    
+    - name: Build image
+      run: |
+        docker buildx build --push -t ${{ env.token }}:${{ env.version }} -t ${{ env.token }}:${{ github.sha }} -f ${{ env.dockerfile }} ${{ env.context }}
