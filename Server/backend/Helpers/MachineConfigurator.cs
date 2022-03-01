@@ -226,7 +226,7 @@ namespace ScalableTeaching.Helpers
                 var output = (await p.StandardOutput.ReadToEndAsync()).TrimEnd('\n', '\r', ' '); //Trim any trailing non hash chars
 
                 //Create User
-                builder.AppendLine($"useradd -s \"/usr/bin/bash\" -mp {output} {user.Username.ToLower()}");
+                builder.AppendLine($"useradd -s \"/usr/bin/bash\" -m {user.Username.ToLower()}");
 
                 //Add user to linux groups
                 foreach (var group in user.Groups)
@@ -245,6 +245,9 @@ namespace ScalableTeaching.Helpers
 
                 //Remove password requirement from sudo
                 builder.AppendLine($"sudo sh -c 'echo \"{user.Username.ToLower()} ALL=(ALL) NOPASSWD:ALL\" > /etc/sudoers.d/{user.Username.ToLower()}'");
+
+                //Update to correct password 
+                builder.AppendLine($"sudo sh -c 'yes {user.UserPassword} | passwd {user.Username.ToLower()}'");
             }
 
             //Update

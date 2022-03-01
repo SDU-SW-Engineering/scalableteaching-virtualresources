@@ -19,7 +19,7 @@
             <em>{{ username }}</em>
           </template>
           <b-dropdown-item v-on:click="signOut">Sign Out</b-dropdown-item>
-          <b-dropdown-item :href="zip">Download<br/>Connection<br/>Data</b-dropdown-item>
+          <b-dropdown-item :href="generateConnectionData">Download<br/>Connection<br/>Data</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto" v-else>
@@ -38,12 +38,8 @@ import MachinesAPI from "@/api/MachinesAPI";
 export default {
   name: "NavBar",
   mounted() {
-    MachinesAPI.getZip().then((response) => {
-      var blob = new Blob([response.data], {type: 'application/zip'});
-      var blobURL = window.URL.createObjectURL(blob);
-      console.log(blobURL);
-      this.zip = blobURL;
-    });
+    if (store.state.isSignedIn)
+     this.zip = this.generateConnectionData();
   },
   data() {
     return {
@@ -77,6 +73,14 @@ export default {
     },
     login() {
       return window.location.href = `https://sso.sdu.dk/login?service=${urlconfig.loginTokenReturnString()}`;
+    },
+    generateConnectionData(){
+      MachinesAPI.getZip().then((response) => {
+        let blob = new Blob([response.data], {type: 'application/zip'});
+        let blobURL = window.URL.createObjectURL(blob);
+        console.log(blobURL);
+        return blobURL;
+      });
     }
   }
 };
