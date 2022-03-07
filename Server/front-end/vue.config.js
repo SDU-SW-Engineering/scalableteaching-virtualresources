@@ -1,7 +1,7 @@
 module.exports = {
     devServer: {
         disableHostCheck: true,
-        proxy: 'https://virtualresources.sdu.dk',
+        proxy: 'https://test.virtualresources.sdu.dk',
         port:8080,
         public: '0.0.0.0:8080'
     },
