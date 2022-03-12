@@ -20,7 +20,7 @@ env:
   context: ./Server
 
 jobs:
-  docker-backend:
+  docker-frontend:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
