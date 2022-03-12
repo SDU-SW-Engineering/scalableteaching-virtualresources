@@ -38,6 +38,7 @@ async function login(SSOToken) {
         store.commit('login', parsedUser);
         StorageHelper.set(names.jwtName, token);
     } catch (error) {
+        if(process.env.NODE_ENV === 'development') window.console.log("Login error: ", error)
         return false;
     }
     return true;

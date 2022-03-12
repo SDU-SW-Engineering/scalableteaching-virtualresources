@@ -7,11 +7,12 @@ import StorageHelper from "@/helpers/StorageHelper";
  * and status being the http response code
  */
 async function getEducators() {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.educator}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.educator}`, {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         })
     }).then(async response => {
         return {status: response.status, body: await response.json()};
@@ -24,11 +25,12 @@ async function getEducators() {
  * @returns {Promise<number>}
  */
 async function postEducator(email) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.educator}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.educator}`, {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         }),
         body: JSON.stringify({
             email: email,
@@ -42,11 +44,12 @@ async function postEducator(email) {
  * @returns {Promise<number>} Http request response
  */
 async function deleteEducator(email) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.base}${urlconfig.educator}/${email}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.educator}/${email}`, {
         method: "DELETE",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         })
     }).then(response => response.status);
 }
