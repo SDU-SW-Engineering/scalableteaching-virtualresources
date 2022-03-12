@@ -11,10 +11,11 @@ const machine = "/api/machine";
 const login = "/api/login";
 
 function getBase (){
-    if(process.env.NODE_ENV === 'development'){
-        return base;
-    }
-    return window.location.host;
+    // if(process.env.NODE_ENV === 'development'){
+    //     return base;
+    // }
+    // return window.location.host;
+    return base
 }
 
 function loginTokenReturnString (){
