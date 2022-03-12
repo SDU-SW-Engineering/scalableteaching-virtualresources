@@ -13,11 +13,12 @@ function login(SSOToken) {
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         }),
         body: JSON.stringify({Token: SSOToken, ServiceEndpoint: urlConfig.loginTokenReturnString()})
 
-    }).then(res => apiHelper.parseResponse(res));
+    }).then(res => {apiHelper.parseResponse(res);window.console.log("test",res)});
 }
 
 async function getPublicKey() {

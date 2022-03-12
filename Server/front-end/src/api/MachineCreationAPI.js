@@ -8,7 +8,8 @@ async function createMachines(machines, isGroupBased) {
             method: "POST",
             headers: new Headers({
                 'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
             }),
             body: JSON.stringify({
                 machines
@@ -19,7 +20,8 @@ async function createMachines(machines, isGroupBased) {
             method: "POST",
             headers: new Headers({
                 'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
             }),
             body: JSON.stringify({
                 machines

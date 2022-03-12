@@ -64,7 +64,8 @@ async function postCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseI
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         }),
         body: JSON.stringify({
             OwnerUsername: OwnerUsername,
@@ -86,7 +87,8 @@ async function deleteCourse(id) {
             method: 'DELETE',
             headers: new Headers({
                 'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
             })
         }).then(response => response.status);
 }

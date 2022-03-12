@@ -7,7 +7,8 @@ async function getUsersMachines() {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         })
     }).then(async response => {
         return {status: response.status, body: await response.json()};
@@ -19,7 +20,8 @@ async function postRebootMachine(machineId) {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         })
     }).then(async response => response.status);
 }
@@ -31,6 +33,7 @@ function getZip() {
         responseType: 'blob',
         headers: {
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         }
     });
 }

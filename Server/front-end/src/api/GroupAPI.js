@@ -6,7 +6,8 @@ async function getGroups() {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         })
     }).then(async response => {
         return {status: response.status, body: await response.json()};
@@ -18,7 +19,8 @@ async function getGroupsByCourseID(id) {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         })
     }).then(async response => {
         try {
@@ -34,7 +36,8 @@ async function getGroup(id) {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         })
     }).then(async response => {
         return {status: response.status, body: await response.json()};
@@ -53,7 +56,8 @@ async function putGroup(GroupName, CourseID, GroupID) {
         method: "PUT",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         }),
         body: JSON.stringify({
             GroupID: GroupID,
@@ -75,7 +79,8 @@ async function postGroup(GroupName, CourseID) {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         }),
         body: JSON.stringify({
             GroupName: GroupName,
@@ -94,7 +99,8 @@ async function deleteGroup(id) {
         method: 'DELETE',
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         })
     }).then(response => response.status);
 }
@@ -111,7 +117,8 @@ async function postEntireGroup(GroupName, CourseID, Users) {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         }),
         body: JSON.stringify({
             GroupName: GroupName,
@@ -127,7 +134,8 @@ async function getGroupMembers(GroupID) {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         })
     }).then(async response => {
         return {status: response.status, body: await response.json()};
@@ -139,7 +147,8 @@ async function addMemberToGroup(UserUsername, GroupID) {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         }),
         body: JSON.stringify({
             UserUsername: UserUsername,
@@ -153,7 +162,8 @@ async function removeMemberFromGroup(UserUsername, GroupID) {
         method: "DELETE",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         }),
         body: JSON.stringify({
             UserUsername: UserUsername,
@@ -173,7 +183,8 @@ async function putMembersInGroup(Usernames, GroupID) {
         method: "PUT",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         }),
         body: JSON.stringify({
             GroupID: GroupID,

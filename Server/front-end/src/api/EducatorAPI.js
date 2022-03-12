@@ -11,7 +11,8 @@ async function getEducators() {
         method: "GET",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         })
     }).then(async response => {
         return {status: response.status, body: await response.json()};
@@ -28,7 +29,8 @@ async function postEducator(email) {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         }),
         body: JSON.stringify({
             email: email,
@@ -46,7 +48,8 @@ async function deleteEducator(email) {
         method: "DELETE",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
         })
     }).then(response => response.status);
 }
