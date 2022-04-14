@@ -79,10 +79,14 @@ namespace ScalableTeaching.Services
 
                 (await _context.MachineDeletionRequests.ToListAsync()).ForEach(request =>
                 {
-                    if (request.DeletionDate < DateTime.UtcNow)
+                    Console.WriteLine($"Checking Deletion Request: {request.MachineID}");
+                    if (request.DeletionDate.ToUniversalTime() < DateTime.UtcNow)
                     {
+                        Console.WriteLine($"Deletion Request: {request.MachineID} has passed the deletion threshold");
                         if (_accessor.PerformVirtualMachineAction(MachineActions.TERMINATE_HARD, (int)request.Machine.OpenNebulaID))
                         {
+                            Console.WriteLine($"Deletion Request: {request.MachineID} has been deleted");
+                            _context.MachineDeletionRequests.Remove(request);
                             _context.Machines.Remove(request.Machine);
                             _context.SaveChangesAsync();
                         }
