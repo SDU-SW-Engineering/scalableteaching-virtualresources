@@ -77,13 +77,26 @@ namespace ScalableTeaching.Services
                 _DeletionIsGoing = true;
                 var _context = GetContext();
 
-                (await _context.MachineDeletionRequests.ToListAsync()).ForEach(request =>
+                (await _context.MachineDeletionRequests.ToListAsync()).ForEach(async request =>
                 {
                     Console.WriteLine($"Checking Deletion Request: {request.MachineID}");
                     if (request.DeletionDate.ToUniversalTime() < DateTime.UtcNow)
                     {
                         Console.WriteLine($"Deletion Request: {request.MachineID} has passed the deletion threshold");
-                        if (_accessor.PerformVirtualMachineAction(MachineActions.TERMINATE_HARD, (int)request.Machine.OpenNebulaID))
+                        var machine = await _context.Machines.FirstOrDefaultAsync(m => m.MachineID == request.MachineID);
+                        if (machine == null)
+                        {
+                            Console.WriteLine($"Deletion Request: {request.MachineID} has no machine associated with it");
+                        }
+                        else if (machine.OpenNebulaID == null)
+                        {
+                            Console.WriteLine( $"Deletion Request: {request.MachineID} has no OpenNebula ID associated with it");
+                        }
+                        else if (machine.OpenNebulaID == 0)
+                        {
+                            Console.WriteLine($"Deletion Request: {request.MachineID} has no OpenNebula ID associated with it ie 0");
+                        }
+                        if (_accessor.PerformVirtualMachineAction(MachineActions.TERMINATE_HARD, (int)machine.OpenNebulaID))
                         {
                             Console.WriteLine($"Deletion Request: {request.MachineID} has been deleted");
                             _context.MachineDeletionRequests.Remove(request);
