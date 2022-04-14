@@ -2,10 +2,13 @@ export default {
     parseResponse
 };
 
-function parseResponse(response) {
+async function parseResponse(response) {
+
     if (response.ok) {
-        return Promise.resolve(response.json())
-            .catch();
+        let json = await response.json();
+        if(process.env.NODE_ENV === 'development')
+            window.console.log("ResponseJson: ", json)
+        return json
     } else {
         return response.json().then(json => {
             if (json.errors) {
