@@ -7,8 +7,8 @@ export default {
     getPublicKey
 };
 
-function login(SSOToken) {
-    return fetch(urlConfig.login, {
+async function login(SSOToken) {
+    return await fetch(urlConfig.login, {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
@@ -18,7 +18,7 @@ function login(SSOToken) {
         }),
         body: JSON.stringify({Token: SSOToken, ServiceEndpoint: urlConfig.loginTokenReturnString()})
 
-    }).then(res => {apiHelper.parseResponse(res);window.console.log("test",res)});
+    }).then(res => {return apiHelper.parseResponse(res);});
 }
 
 async function getPublicKey() {

@@ -106,6 +106,11 @@
         </b-form-group>
       </b-col>
     </b-row>
+    <b-row>
+      <b-col>
+        <b-button variant="outline-secondary" @click="loadTableData" class="mb-1">Reload table</b-button>
+      </b-col>
+    </b-row>
 
     <!-- Main table element -->
     <b-table
@@ -118,11 +123,19 @@
         :sort-by.sync="sortBy"
         :sort-desc.sync="sortDesc"
         :sort-direction="sortDirection"
+        :busy="tableIsBusy"
         stacked="md"
         show-empty
         small
         @filtered="onFiltered"
     >
+      <template #table-busy>
+        <div class="text-center text-danger my-2">
+          <b-spinner class="align-middle"></b-spinner>
+          <strong> Loading...</strong>
+        </div>
+      </template>
+
       <template #cell(actions)="row">
         <!--<b-button size="sm" @click="info(row.item, row.index, $event.target)" class="mr-1">-->
         <!--  Reboot-->
@@ -192,7 +205,8 @@ export default {
         id: 'info-modal',
         title: '',
         content: ''
-      }
+      },
+      tableIsBusy: false,
     };
   },
   computed: {
@@ -211,6 +225,7 @@ export default {
       console.log(await MachinesAPI.postRebootMachine(machineId));
     },
     async loadTableData() {
+      this.tableIsBusy= true;
       let response = await MachinesAPI.getUsersMachines();
       console.log(response);
       if (response.status === 200) {
@@ -228,6 +243,7 @@ export default {
           };
         });
       }
+      this.tableIsBusy= false;
     },
     info(item, index, button) {
       this.infoModal.title = `Row index: ${index}`;
