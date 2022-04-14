@@ -79,11 +79,12 @@ namespace ScalableTeaching.Services
 
                 (await _context.MachineDeletionRequests.ToListAsync()).ForEach(async request =>
                 {
+                    var _subcontext = GetContext();
                     Console.WriteLine($"Checking Deletion Request: {request.MachineID}");
                     if (request.DeletionDate.ToUniversalTime() < DateTime.UtcNow)
                     {
                         Console.WriteLine($"Deletion Request: {request.MachineID} has passed the deletion threshold");
-                        var machine = await _context.Machines.FirstOrDefaultAsync(m => m.MachineID == request.MachineID);
+                        var machine = await _subcontext.Machines.FirstOrDefaultAsync(m => m.MachineID == request.MachineID);
                         if (machine == null)
                         {
                             Console.WriteLine($"Deletion Request: {request.MachineID} has no machine associated with it");
@@ -98,10 +99,11 @@ namespace ScalableTeaching.Services
                         }
                         if (_accessor.PerformVirtualMachineAction(MachineActions.TERMINATE_HARD, (int)machine.OpenNebulaID))
                         {
+                            
                             Console.WriteLine($"Deletion Request: {request.MachineID} has been deleted");
-                            _context.MachineDeletionRequests.Remove(request);
-                            _context.Machines.Remove(request.Machine);
-                            _context.SaveChangesAsync();
+                            _subcontext.MachineDeletionRequests.Remove(request);
+                            _subcontext.Machines.Remove(request.Machine);
+                            _subcontext.SaveChangesAsync();
                         }
                     }
                 });
