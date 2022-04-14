@@ -40,12 +40,13 @@ namespace ScalableTeaching.Controllers
         [HttpGet]
         public async Task<ActionResult<List<MachineManagementReturn>>> GetAvailableMachines()//TODO: Might suffer EF issues
         {
+            //TODO: Check if the machine is scheduled for deletion
             List<Machine> machines = await _context.Machines
                 .Where(machine => machine.UserUsername == GetUsername()).ToListAsync();
-            var UserMachineAsignments = await _context.MachineAssignments
+            var userMachineAssignments = await _context.MachineAssignments
                 .Where(assignment => assignment.UserUsername == GetUsername()).ToListAsync();
 
-            foreach (var assignment in UserMachineAsignments)
+            foreach (var assignment in userMachineAssignments)
             {
                 machines.Add(await _context.Machines.FindAsync(assignment.MachineID));
             }
@@ -67,15 +68,22 @@ namespace ScalableTeaching.Controllers
                         groupAssignments.ForEach(gassignment => usernames.Add(gassignment.UserUsername));
                     }
                 }
+
+                //Construct status return value
+                var returnStatus = machine.MachineStatus?.MachineState.ToString();
+                if (await _context.MachineDeletionRequests.AnyAsync(request => request.MachineID == machine.MachineID)) returnStatus = "Scheduled for deletion";
+                else if (returnStatus == null) returnStatus = "Unconfigured";
+                else if (returnStatus == "DONE") returnStatus = "Deleted";
+                
                 returnList.Add(new MachineManagementReturn()
                 {
                     Course = (CourseDTO)machine.Course,
                     Hostname = machine.HostName,
-                    IpAddress = machine.MachineStatus?.MachineIp ?? "Configuring",
-                    MacAddress = machine.MachineStatus?.MachineMac ?? "Configuring",
+                    IpAddress = machine.MachineStatus?.MachineIp ?? (returnStatus == "Unconfigured" ? "Configuring" : returnStatus),
+                    MacAddress = machine.MachineStatus?.MachineMac ?? (returnStatus == "Unconfigured" ? "Configuring" : returnStatus),
                     MachineID = machine.MachineID,
                     Ports = machine.Ports,
-                    Status = machine.MachineStatus?.MachineState.ToString() ?? "Unconfigured",
+                    Status = returnStatus,//machine.MachineStatus?.MachineState.ToString() ?? "Unconfigured",
                     Users = usernames
                 });
             }
@@ -123,9 +131,9 @@ namespace ScalableTeaching.Controllers
             else return StatusCode(StatusCodes.Status500InternalServerError);
         }
 
-        [Authorize(Policy = "UserLevel")]
+        [Authorize(Policy = "EducatorLevel")]
         [HttpDelete]
-        [Route("control/delete/id")]
+        [Route("control/delete/{id}")]
         public async Task<ActionResult> DeleteMachine(Guid id)
         {
             //Validate id
@@ -135,14 +143,24 @@ namespace ScalableTeaching.Controllers
             if (machine == null) return BadRequest("Machine Not Found");
             //Validate machine "ownership"
             if (machine.UserUsername != GetUsername()) return BadRequest("You do not own this machine");
+            
             //Validate machine not allready scheduled for deletion
-            if ((await _context.MachineDeletionRequests.FindAsync()) != null) return BadRequest("Machine allready scheduled for deletion");
+            {
+                var existingRequest = await _context.MachineDeletionRequests.FindAsync(machine.MachineID);
+            
+                if (existingRequest != null)
+                {
+                    return BadRequest(
+                        $"Machine already scheduled for deletion on {existingRequest.DeletionDate.ToUniversalTime()} UTC");
+                }
+            }
+
             //Schedule for deletion
-            DateTime deletiontime = DateTime.UtcNow.AddDays(30);
+            DateTime deletionTime = DateTime.UtcNow.AddDays(30);
             _context.MachineDeletionRequests.Add(new MachineDeletionRequest()
             {
                 MachineID = machine.MachineID,
-                DeletionDate = deletiontime,
+                DeletionDate = deletionTime,
                 UserUsername = GetUsername()
             });
             machine.MachineCreationStatus = CreationStatus.SHEDULED_FOR_DELETION;
@@ -150,7 +168,7 @@ namespace ScalableTeaching.Controllers
             await _context.SaveChangesAsync();
 
             //Return on successfull
-            return Ok($"Machine scheduled for deletion: {deletiontime.ToLocalTime()}");
+            return Ok($"Machine scheduled for deletion: {deletionTime.ToUniversalTime()} UTC");
         }
 
         // POST: api/machine/create/groupbased
