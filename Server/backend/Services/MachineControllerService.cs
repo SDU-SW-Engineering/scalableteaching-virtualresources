@@ -102,7 +102,7 @@ namespace ScalableTeaching.Services
                             
                             Console.WriteLine($"Deletion Request: {request.MachineID} has been deleted");
                             _subcontext.MachineDeletionRequests.Remove(request);
-                            _subcontext.Machines.Remove(request.Machine);
+                            _subcontext.Machines.Remove(machine);
                             _subcontext.SaveChangesAsync();
                         }
                     }
