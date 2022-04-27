@@ -24,9 +24,18 @@ namespace ScalableTeaching.Controllers
             _context = context;
         }
 
+        // GET: api/Course/Administrator
+        [HttpGet("/api/administrator/courses")]
+        [Authorize(Policy = "AdministratorLevel")]
+        public async Task<ActionResult<IEnumerable<CourseDTO>>> GetCoursesAdministrator()
+        {
+            var courses = await _context.Courses.Select(course => (CourseDTO)course).ToListAsync();
+
+            return courses.Any() ? Ok(courses) : NoContent();
+        }
         // GET: api/Course
         [HttpGet]
-        [Authorize(Policy = "EducatorLevel")]
+        [Authorize(Policy = "")]
         public async Task<ActionResult<IEnumerable<CourseDTO>>> GetCourses()
         {
             var courses = await _context.Courses.Where(course => course.UserUsername == GetUsername()).Cast<CourseDTO>().ToListAsync();
@@ -58,14 +67,18 @@ namespace ScalableTeaching.Controllers
             {
                 return BadRequest();
             }
+            
+            //If the user enters a username that is the entire email, then shorten the username
+            if (courseDTO.OwnerUsername.Contains('@')) courseDTO.OwnerUsername = courseDTO.OwnerUsername.Split('@')[0];
+            
             if (courseDTO.CourseName is null || courseDTO.ShortCourseName is null || courseDTO.SDUCourseID is null) return BadRequest("Field is null");
             if (await _context.Users.FindAsync(courseDTO.OwnerUsername) == null) return BadRequest("User Does not exist");
             if (!courseDTO.ShortCourseName.Any() || !courseDTO.CourseName.Any() || !courseDTO.SDUCourseID.Any()) return BadRequest("Field Empty");
 
-            var CourseValidationResponse = Course.Validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
-            if (CourseValidationResponse.Item1 != true)
+            var courseValidationResponse = Course.Validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
+            if (courseValidationResponse.Item1 != true)
             {
-                return BadRequest(CourseValidationResponse.Item2);
+                return BadRequest(courseValidationResponse.Item2);
             }
 
             //Perform Request
@@ -102,14 +115,17 @@ namespace ScalableTeaching.Controllers
         [HttpPost]
         public async Task<ActionResult<Course>> PostCourse(CourseCreationDTO courseDTO)
         {
+            //If the user enters a username that is the entire email, then shorten the username
+            if (courseDTO.OwnerUsername.Contains('@')) courseDTO.OwnerUsername = courseDTO.OwnerUsername.Split('@')[0];
+            
             if (courseDTO.CourseName is null || courseDTO.ShortCourseName is null || courseDTO.SDUCourseID is null) return BadRequest("Field is null");
             if (await _context.Users.FindAsync(courseDTO.OwnerUsername) == null) return BadRequest("User Does not exist");
             if (!courseDTO.ShortCourseName.Any() || !courseDTO.CourseName.Any() || !courseDTO.SDUCourseID.Any()) return BadRequest("Field Empty");
 
-            var CourseValidationResponse = Course.Validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
-            if (CourseValidationResponse.Item1 != true)
+            var courseValidationResponse = Course.Validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
+            if (courseValidationResponse.Item1 != true)
             {
-                return BadRequest(CourseValidationResponse.Item2);
+                return BadRequest(courseValidationResponse.Item2);
             }
             var course = new Course()
             {
@@ -122,7 +138,7 @@ namespace ScalableTeaching.Controllers
             await _context.Courses.AddAsync(course);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCourse", new { id = course.CourseID }, course);
+            return CreatedAtAction("GetCourse", new { id = course.CourseID }, (CourseDTO)course);
         }
 
         // DELETE: api/Course/5
@@ -147,7 +163,7 @@ namespace ScalableTeaching.Controllers
         }
         private string GetUsername()
         {
-            return HttpContext.User.Claims.Where(claim => claim.Type == "username").First().Value.ToLower();
+            return HttpContext.User.Claims.First(claim => claim.Type == "username").Value.ToLower();
         }
     }
 }

@@ -8,7 +8,7 @@ async function getUsersMachines() {
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
+            'Access-Control-Allow-Origin': 'https://virtualresources.sdu.dk',
         })
     }).then(async response => {
         return {status: response.status, body: await response.json()};
@@ -21,9 +21,33 @@ async function postRebootMachine(machineId) {
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
+            'Access-Control-Allow-Origin': 'https://virtualresources.sdu.dk',
         })
     }).then(async response => response.status);
+}
+
+async function postResetMachine(machineId) {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.machine}/control/reset/${machineId}`, {
+        method: "POST",
+        headers: new Headers({
+            'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': 'https://virtualresources.sdu.dk',
+        })
+    }).then(async response => response.status);
+}
+
+async function deleteMachine(machineId) {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}/api/Machine/control/delete/${machineId}`, {
+        method: "DELETE",
+        headers: new Headers({
+            'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': 'https://virtualresources.sdu.dk',
+        })
+    }).then(async response => {
+        return { status: response.status, body:await response.body };
+    });
 }
 
 function getZip() {
@@ -33,7 +57,7 @@ function getZip() {
         responseType: 'blob',
         headers: {
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
-            'Access-Control-Allow-Origin':'https://virtualresources.sdu.dk',
+            'Access-Control-Allow-Origin': 'https://virtualresources.sdu.dk',
         }
     });
 }
@@ -43,4 +67,6 @@ export default {
     getUsersMachines,
     postRebootMachine,
     getZip,
+    deleteMachine,
+    postResetMachine,
 };

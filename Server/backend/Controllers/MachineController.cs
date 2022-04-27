@@ -23,11 +23,11 @@ namespace ScalableTeaching.Controllers
         private readonly VmDeploymentContext _context;
         private readonly IOpenNebulaAccessor _accessor;
         private readonly SshConfigBuilder _sshConfigBuilder;
-        private readonly string ValidateAptRegex = @"^[0-9A-Za-z.+-]$";
-        private readonly string ValidatePpaRegex = @"^(ppa:([a-z-]+)\/[a-z-]+)$";
-        private readonly string ValidateLinuxGroup = @"^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$";
-        private readonly string ValidateHostname = @"^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$";
-        private readonly string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz1234567890.,-_!?";
+        private const string ValidateAptRegex = @"^[0-9A-Za-z.+-]$";
+        private const string ValidatePpaRegex = @"^(ppa:([a-z-]+)\/[a-z-]+)$";
+        private const string ValidateLinuxGroup = @"^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$";
+        private const string ValidateHostname = @"^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$";
+        private const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz1234567890.,-_!?";
 
         public MachineController(VmDeploymentContext context, IOpenNebulaAccessor accessor, SshConfigBuilder sshConfigBuilder)
         {
@@ -138,13 +138,13 @@ namespace ScalableTeaching.Controllers
         {
             //Validate id
             if (id == Guid.Empty) return BadRequest("Invalid ID");
-            //Validate machine existance
+            //Validate machine existence
             var machine = await _context.Machines.FindAsync(id);
             if (machine == null) return BadRequest("Machine Not Found");
             //Validate machine "ownership"
             if (machine.UserUsername != GetUsername()) return BadRequest("You do not own this machine");
             
-            //Validate machine not allready scheduled for deletion
+            //Validate machine not already scheduled for deletion
             {
                 var existingRequest = await _context.MachineDeletionRequests.FindAsync(machine.MachineID);
             
@@ -156,7 +156,7 @@ namespace ScalableTeaching.Controllers
             }
 
             //Schedule for deletion
-            DateTime deletionTime = DateTime.UtcNow.AddDays(30);
+            var deletionTime = DateTime.UtcNow.AddDays(7);
             _context.MachineDeletionRequests.Add(new MachineDeletionRequest()
             {
                 MachineID = machine.MachineID,
@@ -167,7 +167,7 @@ namespace ScalableTeaching.Controllers
             _context.Machines.Update(machine);
             await _context.SaveChangesAsync();
 
-            //Return on successfull
+            //Return on successfully
             return Ok($"Machine scheduled for deletion: {deletionTime.ToUniversalTime()} UTC");
         }
 

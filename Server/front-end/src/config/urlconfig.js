@@ -1,4 +1,5 @@
 const port = "8080";
+const protocol = process.env.VUE_APP_PROTOCOL;
 const base = "virtualresources.sdu.dk";
 const creation = "/api/creation";
 const management = "/api/management";
@@ -11,21 +12,25 @@ const machine = "/api/machine";
 const login = "/api/login";
 
 function getBase (){
-    // if(process.env.NODE_ENV === 'development'){
-    //     return base;
-    // }
-    // return window.location.host;
-    return base
+    if(process.env.NODE_ENV === 'development'){
+        return window.location.host
+    }else{
+        return base;
+    }
 }
 
 function loginTokenReturnString (){
-    return encodeURIComponent(process.env.VUE_APP_PROTOCOL + "://"+getBase() + "/Login");
+    let uriComponent = process.env.VUE_APP_PROTOCOL + "://" + getBase() + "/Login";
+    if(process.env.NODE_ENV === 'development')
+        window.console.log(process.env.NODE_ENV + " " + uriComponent);
+    return encodeURIComponent(uriComponent);
 }
 
 
 export default {
     getBase,
     port,
+    protocol,
     base,
     creation,
     management,

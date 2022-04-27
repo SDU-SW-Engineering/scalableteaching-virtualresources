@@ -24,7 +24,13 @@ function logout() {
  */
 async function login(SSOToken) {
     try {
+        if(process.env.NODE_ENV === 'development'){
+            window.console.log(`Loggin in - SSOToken: ${SSOToken}`)
+        }
         const response = await authAPI.login(SSOToken);
+        if(process.env.NODE_ENV === 'development'){
+            window.console.log(`Loggin in - Response: ${response}`)
+        }
         const token = response.jwt;
         const key = await getRemotePublicKey();
         StorageHelper.set(names.tokenPublicKey, key);
@@ -38,7 +44,8 @@ async function login(SSOToken) {
         store.commit('login', parsedUser);
         StorageHelper.set(names.jwtName, token);
     } catch (error) {
-        if(process.env.NODE_ENV === 'development') window.console.log("Login error: ", error)
+        if(process.env.NODE_ENV === 'development')
+            window.console.log("Login error: ", error)
         return false;
     }
     return true;
