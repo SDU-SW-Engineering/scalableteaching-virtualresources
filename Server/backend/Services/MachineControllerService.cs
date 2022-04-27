@@ -48,7 +48,7 @@ namespace ScalableTeaching.Services
             _CreationQueueingTimer = new(CreationQueueingTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromSeconds(23));
             _CreatedTimer = new(CreatedTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromSeconds(29));
             _StatusTimer = new(StatusTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromSeconds(11));
-            _DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(5));
+            _DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1)); //TODO: Set back to a day
 
             Console.WriteLine("Machine Controller Service Started");
             return Task.CompletedTask;
@@ -84,6 +84,7 @@ namespace ScalableTeaching.Services
                 {
                     var subcontext = GetContext();
                     Console.WriteLine($"Checking Deletion Request: {request.MachineID}");
+                    Console.WriteLine($"Now: {DateTime.UtcNow.ToUniversalTime()}, Deletion Time: {request.DeletionDate.ToUniversalTime()}, Now compareto delete: {DateTime.UtcNow.ToUniversalTime().CompareTo(request.DeletionDate.ToUniversalTime())}");
                     if (DateTime.UtcNow.ToUniversalTime().CompareTo(request.DeletionDate.ToUniversalTime()) <= 0) return;
                     Console.WriteLine($"Deletion Request: {request.MachineID} has passed the deletion threshold");
                     var machine = await subcontext.Machines.FirstOrDefaultAsync(m => m.MachineID == request.MachineID);
