@@ -24,9 +24,18 @@ namespace ScalableTeaching.Controllers
             _context = context;
         }
 
+        // GET: api/Course/Administrator
+        [HttpGet("/api/administrator/courses")]
+        [Authorize(Policy = "AdministratorLevel")]
+        public async Task<ActionResult<IEnumerable<CourseDTO>>> GetCoursesAdministrator()
+        {
+            var courses = (await _context.Courses.ToListAsync()).Cast<CourseDTO>();
+
+            return courses.Any() ? Ok(courses) : NoContent();
+        }
         // GET: api/Course
         [HttpGet]
-        [Authorize(Policy = "EducatorLevel")]
+        [Authorize(Policy = "")]
         public async Task<ActionResult<IEnumerable<CourseDTO>>> GetCourses()
         {
             var courses = await _context.Courses.Where(course => course.UserUsername == GetUsername()).Cast<CourseDTO>().ToListAsync();
