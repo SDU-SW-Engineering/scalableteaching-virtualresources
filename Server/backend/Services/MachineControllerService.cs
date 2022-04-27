@@ -50,6 +50,7 @@ namespace ScalableTeaching.Services
             _StatusTimer = new(StatusTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromSeconds(11));
             _DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromDays(1));
 
+            Console.WriteLine("Machine Controller Service Started");
             return Task.CompletedTask;
         }
 
@@ -71,42 +72,43 @@ namespace ScalableTeaching.Services
         /// <param name="state">unused parameter</param>
         private async void DeletionTimerCallback(object state)
         {
+            Console.WriteLine("Entering deletion debugging");
             if (_DeletionIsGoing) return;
+            Console.WriteLine("deletion debugging: Trying to go through workflow");
             try
             {
                 _DeletionIsGoing = true;
-                var _context = GetContext();
-
-                (await _context.MachineDeletionRequests.ToListAsync()).ForEach(async request =>
+                var context = GetContext();
+                
+                (await context.MachineDeletionRequests.ToListAsync()).ForEach(async request =>
                 {
-                    var _subcontext = GetContext();
+                    var subcontext = GetContext();
                     Console.WriteLine($"Checking Deletion Request: {request.MachineID}");
-                    if (request.DeletionDate.ToUniversalTime() < DateTime.UtcNow)
+                    if (request.DeletionDate.ToUniversalTime() >= DateTime.UtcNow) return;
+                    Console.WriteLine($"Deletion Request: {request.MachineID} has passed the deletion threshold");
+                    var machine = await subcontext.Machines.FirstOrDefaultAsync(m => m.MachineID == request.MachineID);
+                    if (machine == null)
                     {
-                        Console.WriteLine($"Deletion Request: {request.MachineID} has passed the deletion threshold");
-                        var machine = await _subcontext.Machines.FirstOrDefaultAsync(m => m.MachineID == request.MachineID);
-                        if (machine == null)
-                        {
-                            Console.WriteLine($"Deletion Request: {request.MachineID} has no machine associated with it");
-                        }
-                        else if (machine.OpenNebulaID == null)
-                        {
-                            Console.WriteLine( $"Deletion Request: {request.MachineID} has no OpenNebula ID associated with it");
-                        }
-                        else if (machine.OpenNebulaID == 0)
-                        {
-                            Console.WriteLine($"Deletion Request: {request.MachineID} has no OpenNebula ID associated with it ie 0");
-                        }
-                        if (_accessor.PerformVirtualMachineAction(MachineActions.TERMINATE_HARD, (int)machine.OpenNebulaID))
-                        {
-                            
-                            Console.WriteLine($"Deletion Request: {request.MachineID} has been deleted");
-                            _subcontext.MachineDeletionRequests.Remove(request);
-                            _subcontext.Machines.Remove(machine);
-                            _subcontext.SaveChangesAsync();
-                        }
+                        Console.WriteLine($"Deletion Request: {request.MachineID} has no machine associated with it");
                     }
+                    else switch (machine.OpenNebulaID)
+                    {
+                        case null:
+                            Console.WriteLine( $"Deletion Request: {request.MachineID} has no OpenNebula ID associated with it");
+                            break;
+                        case 0:
+                            Console.WriteLine($"Deletion Request: {request.MachineID} has no OpenNebula ID associated with it ie 0");
+                            break;
+                    }
+
+                    if (!_accessor.PerformVirtualMachineAction(MachineActions.TERMINATE_HARD,
+                            (int)machine.OpenNebulaID)) return;
+                    Console.WriteLine($"Deletion Request: {request.MachineID} has been deleted");
+                    subcontext.MachineDeletionRequests.Remove(request);
+                    subcontext.Machines.Remove(machine);
+                    await subcontext.SaveChangesAsync();
                 });
+                _DeletionIsGoing = false;
             }
             finally
             {
@@ -144,6 +146,7 @@ namespace ScalableTeaching.Services
                 });
                 _context.Machines.UpdateRange(RegisteredMachines);
                 await _context.SaveChangesAsync();
+                _CreationQueueingIsGoing = false;
             }
             finally
             {
@@ -191,6 +194,7 @@ namespace ScalableTeaching.Services
                         await _context.SaveChangesAsync();
                     }
                 }
+                _CreatedIsGoing = false;
             }
             finally
             {
@@ -230,6 +234,7 @@ namespace ScalableTeaching.Services
                     }
                     await _context.SaveChangesAsync();
                 }
+                _StatusIsGoing = false;
             }
             finally
             {
