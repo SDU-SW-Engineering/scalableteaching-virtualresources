@@ -58,14 +58,18 @@ namespace ScalableTeaching.Controllers
             {
                 return BadRequest();
             }
+            
+            //If the user enters a username that is the entire email, then shorten the username
+            if (courseDTO.OwnerUsername.Contains('@')) courseDTO.OwnerUsername = courseDTO.OwnerUsername.Split('@')[0];
+            
             if (courseDTO.CourseName is null || courseDTO.ShortCourseName is null || courseDTO.SDUCourseID is null) return BadRequest("Field is null");
             if (await _context.Users.FindAsync(courseDTO.OwnerUsername) == null) return BadRequest("User Does not exist");
             if (!courseDTO.ShortCourseName.Any() || !courseDTO.CourseName.Any() || !courseDTO.SDUCourseID.Any()) return BadRequest("Field Empty");
 
-            var CourseValidationResponse = Course.Validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
-            if (CourseValidationResponse.Item1 != true)
+            var courseValidationResponse = Course.Validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
+            if (courseValidationResponse.Item1 != true)
             {
-                return BadRequest(CourseValidationResponse.Item2);
+                return BadRequest(courseValidationResponse.Item2);
             }
 
             //Perform Request
@@ -102,14 +106,17 @@ namespace ScalableTeaching.Controllers
         [HttpPost]
         public async Task<ActionResult<Course>> PostCourse(CourseCreationDTO courseDTO)
         {
+            //If the user enters a username that is the entire email, then shorten the username
+            if (courseDTO.OwnerUsername.Contains('@')) courseDTO.OwnerUsername = courseDTO.OwnerUsername.Split('@')[0];
+            
             if (courseDTO.CourseName is null || courseDTO.ShortCourseName is null || courseDTO.SDUCourseID is null) return BadRequest("Field is null");
             if (await _context.Users.FindAsync(courseDTO.OwnerUsername) == null) return BadRequest("User Does not exist");
             if (!courseDTO.ShortCourseName.Any() || !courseDTO.CourseName.Any() || !courseDTO.SDUCourseID.Any()) return BadRequest("Field Empty");
 
-            var CourseValidationResponse = Course.Validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
-            if (CourseValidationResponse.Item1 != true)
+            var courseValidationResponse = Course.Validate(courseDTO.OwnerUsername, courseDTO.CourseName, courseDTO.ShortCourseName, courseDTO.SDUCourseID);
+            if (courseValidationResponse.Item1 != true)
             {
-                return BadRequest(CourseValidationResponse.Item2);
+                return BadRequest(courseValidationResponse.Item2);
             }
             var course = new Course()
             {
