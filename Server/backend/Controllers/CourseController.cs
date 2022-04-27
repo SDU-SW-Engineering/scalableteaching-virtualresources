@@ -138,7 +138,7 @@ namespace ScalableTeaching.Controllers
             await _context.Courses.AddAsync(course);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCourse", new { id = course.CourseID }, course);
+            return CreatedAtAction("GetCourse", new { id = course.CourseID }, (CourseDTO)course);
         }
 
         // DELETE: api/Course/5
@@ -163,7 +163,7 @@ namespace ScalableTeaching.Controllers
         }
         private string GetUsername()
         {
-            return HttpContext.User.Claims.Where(claim => claim.Type == "username").First().Value.ToLower();
+            return HttpContext.User.Claims.First(claim => claim.Type == "username").Value.ToLower();
         }
     }
 }
