@@ -13,6 +13,18 @@ async function getCourses() {
     });
 }
 
+async function getCoursesAdministrator() {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}/api/administrator/courses`, {
+        method: "GET",
+        headers: new Headers({
+            'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
+            'Content-Type': 'application/json'
+        })
+    }).then(async response => {
+        return {status: response.status, body: await response.json()};
+    });
+}
+
 async function getCourse(id) {
     return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.course}/${id}`, {
         method: "GET",
@@ -48,7 +60,7 @@ async function putCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseID
             SDUCourseID: SDUCourseID,
             CourseID: CourseID
         })
-    }).then(response => response.status);
+    }).then(async response => {return {response: response.status, body: await response.text()}} );
 }
 
 /**
@@ -73,7 +85,7 @@ async function postCourse(OwnerUsername, CourseName, ShortCourseName, SDUCourseI
             ShortCourseName: ShortCourseName,
             SDUCourseID: SDUCourseID
         })
-    }).then(response => response.status);
+    }).then(async response => {return {response: response.status, body: await response.text()}} );
 }
 
 /**
@@ -96,6 +108,7 @@ async function deleteCourse(id) {
 
 export default {
     getCourses,
+    getCoursesAdministrator,
     getCourse,
     putCourse,
     postCourse,

@@ -18,6 +18,7 @@
               :state="validateFormItem('courseName')"
               aria-describedby="coursename-live-feedback"
               required
+              class="mb-1"
           ></b-form-input>
           <b-form-invalid-feedback id="coursename-live-feedback">
             Must not be empty
@@ -32,6 +33,7 @@
               :state="validateFormItem('shortCourseName')"
               aria-describedby="shortCourseName-live-feedback"
               required
+              class="mb-1"
           ></b-form-input>
           <b-form-invalid-feedback id="shortCourseName-live-feedback">
             Must be no less than 3 and no more than 6 characters
@@ -47,6 +49,7 @@
               :state="validateFormItem('courseID')"
               aria-describedby="courseID-live-feedback"
               required
+              class="mb-1"
           ></b-form-input>
           <b-form-invalid-feedback id="courseID-live-feedback">
             Must not be empty
@@ -62,6 +65,7 @@
               :state="validateFormItem('ownerUsername')"
               aria-describedby="ownerUsername-live-feedback"
               required
+              class="mb-1"
           ></b-form-input>
           <b-form-invalid-feedback id="ownerUsername-live-feedback">
             Must not be empty
@@ -81,7 +85,7 @@
           <b-button pill variant="success" v-on:click="onSubmit">Submit</b-button>
           <b-button pill variant="secondary">Reset</b-button>
         </b-button-group>
-        <p style="color:#ff0000" v-if="formInvalidResponse">An error occurred</p>
+        <p style="color:#ff0000" v-if="formInvalidResponse">An error occurred: {{formInvalidResponseMessage}}</p>
       </b-form>
 
       <hr>
@@ -96,7 +100,7 @@
         </b-col>
       </b-row>
       <b-modal id="remove-course-modal" title="Confirm Removal" hide-footer>
-        <p>IF YOU REMOVE A COURSE <span style="color:red; font-weight: bold;">ALL MACHINES AND GROUPS</span> ASSOSIATED
+        <p>IF YOU REMOVE A COURSE <span style="color:red; font-weight: bold;">ALL MACHINES AND GROUPS</span> ASSOCIATED
           WITH THE
           COURSE WILL <span style="color:red; font-weight: bold;">IMMEDIATELY BE DELETED </span></p>
         <b-button style="margin: 0 5px 0 0" variant="secondary" @click="$bvModal.hide('remove-course-modal')">Cancel
@@ -138,6 +142,7 @@ export default {
         courseName: '',
         shortCourseName: ''
       },
+      formInvalidResponseMessage: "",
       formInvalidResponse: false,
       fields: [
         {
@@ -179,7 +184,7 @@ export default {
       this.resetFields();
       this.tableLoading(true);
       this.courses = [];
-      const result = await CourseAPI.getCourses();
+      const result = await CourseAPI.getCoursesAdministrator();
       if (result.status === 200) {
         for (let i = 0; i < result.body.length; i++) {
           this.courses.push(result.body[i]);
@@ -225,10 +230,12 @@ export default {
 
       if (this.selectedRow.length > 0) {
         let resp = await CourseAPI.putCourse(this.form.ownerUsername, this.form.courseName, this.form.shortCourseName, this.form.SDUCourseID, this.selectedRow[0].courseID);
-        respOk = resp === 204;
+        respOk = resp.response === 204;
+        this.formInvalidResponseMessage = resp.body;
       } else {
         let resp = await CourseAPI.postCourse(this.form.ownerUsername, this.form.courseName, this.form.shortCourseName, this.form.SDUCourseID);
-        respOk = resp === 201;
+        respOk = (resp.response === 201);
+        this.formInvalidResponseMessage = resp.body;
       }
 
       this.formInvalidResponse = !respOk;
