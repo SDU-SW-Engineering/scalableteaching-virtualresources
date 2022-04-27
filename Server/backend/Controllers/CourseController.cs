@@ -29,7 +29,7 @@ namespace ScalableTeaching.Controllers
         [Authorize(Policy = "AdministratorLevel")]
         public async Task<ActionResult<IEnumerable<CourseDTO>>> GetCoursesAdministrator()
         {
-            var courses = (await _context.Courses.ToListAsync()).Cast<CourseDTO>();
+            var courses = await _context.Courses.Select(course => (CourseDTO)course).ToListAsync();
 
             return courses.Any() ? Ok(courses) : NoContent();
         }
