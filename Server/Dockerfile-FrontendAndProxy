@@ -4,6 +4,7 @@ WORKDIR /src
 COPY ./front-end/package*.json ./
 RUN npm install
 COPY ./front-end/* ./
+RUN ls -la .
 RUN npm run build
 
 #Run
