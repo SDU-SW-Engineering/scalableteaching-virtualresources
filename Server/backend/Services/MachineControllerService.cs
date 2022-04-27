@@ -84,7 +84,7 @@ namespace ScalableTeaching.Services
                 {
                     var subcontext = GetContext();
                     Console.WriteLine($"Checking Deletion Request: {request.MachineID}");
-                    if (request.DeletionDate.ToUniversalTime() >= DateTime.UtcNow.ToUniversalTime()) return;
+                    if (DateTime.UtcNow.ToUniversalTime().CompareTo(request.DeletionDate.ToUniversalTime()) <= 0) return;
                     Console.WriteLine($"Deletion Request: {request.MachineID} has passed the deletion threshold");
                     var machine = await subcontext.Machines.FirstOrDefaultAsync(m => m.MachineID == request.MachineID);
                     if (machine == null)
