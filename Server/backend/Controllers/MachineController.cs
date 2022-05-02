@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ScalableTeaching.Data;
 using ScalableTeaching.DTO;
-using ScalableTeaching.Helpers;
 using ScalableTeaching.Models;
 using ScalableTeaching.OpenNebula;
 using System;
@@ -22,25 +21,23 @@ namespace ScalableTeaching.Controllers
     {
         private readonly VmDeploymentContext _context;
         private readonly IOpenNebulaAccessor _accessor;
-        private readonly SshConfigBuilder _sshConfigBuilder;
         private const string ValidateAptRegex = @"^[0-9A-Za-z.+-]$";
         private const string ValidatePpaRegex = @"^(ppa:([a-z-]+)\/[a-z-]+)$";
         private const string ValidateLinuxGroup = @"^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$";
         private const string ValidateHostname = @"^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$";
-        private const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz1234567890.,-_!?";
+        private const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz1234567890.,-_!?";
+        private const int MachineDeletionTiming = 7;
 
-        public MachineController(VmDeploymentContext context, IOpenNebulaAccessor accessor, SshConfigBuilder sshConfigBuilder)
+        public MachineController(VmDeploymentContext context, IOpenNebulaAccessor accessor)
         {
             _context = context;
             _accessor = accessor;
-            _sshConfigBuilder = sshConfigBuilder;
         }
 
         [Authorize(Policy = "UserLevel")]
         [HttpGet]
         public async Task<ActionResult<List<MachineManagementReturn>>> GetAvailableMachines()//TODO: Might suffer EF issues
         {
-            //TODO: Check if the machine is scheduled for deletion
             List<Machine> machines = await _context.Machines
                 .Where(machine => machine.UserUsername == GetUsername()).ToListAsync();
             var userMachineAssignments = await _context.MachineAssignments
@@ -55,23 +52,20 @@ namespace ScalableTeaching.Controllers
 
             foreach (Machine machine in machines)
             {
-                List<string> usernames = new();
-                usernames.Add(machine.UserUsername);
+                List<string> usernames = new() { machine.UserUsername };
                 var assignments = await _context.MachineAssignments
                     .Where(assignment => assignment.MachineID == machine.MachineID).ToListAsync();
-                foreach (var assignment in assignments)
+                foreach (var assignment in assignments.Where(assignment => assignment.UserUsername == null))
                 {
-                    if (assignment.UserUsername == null)
-                    {
-                        var groupAssignments = await _context.GroupAssignments
-                            .Where(assign => assign.GroupID == assignment.GroupID).ToListAsync();
-                        groupAssignments.ForEach(gassignment => usernames.Add(gassignment.UserUsername));
-                    }
+                    var groupAssignments = await _context.GroupAssignments
+                        .Where(assign => assign.GroupID == assignment.GroupID).ToListAsync();
+                    groupAssignments.ForEach(groupAssignment => usernames.Add(groupAssignment.UserUsername));
                 }
 
                 //Construct status return value
                 var returnStatus = machine.MachineStatus?.MachineState.ToString();
-                if (await _context.MachineDeletionRequests.AnyAsync(request => request.MachineID == machine.MachineID)) returnStatus = "Scheduled for deletion";
+                if (await _context.MachineDeletionRequests.AnyAsync(request => request.MachineID == machine.MachineID)) 
+                    returnStatus = "Scheduled for deletion";
                 else if (returnStatus == null) returnStatus = "Unconfigured";
                 else if (returnStatus == "DONE") returnStatus = "Deleted";
                 
@@ -79,8 +73,10 @@ namespace ScalableTeaching.Controllers
                 {
                     Course = (CourseDTO)machine.Course,
                     Hostname = machine.HostName,
-                    IpAddress = machine.MachineStatus?.MachineIp ?? (returnStatus == "Unconfigured" ? "Configuring" : returnStatus),
-                    MacAddress = machine.MachineStatus?.MachineMac ?? (returnStatus == "Unconfigured" ? "Configuring" : returnStatus),
+                    IpAddress = machine.MachineStatus?.MachineIp 
+                                ?? (returnStatus == "Unconfigured" ? "Configuring" : returnStatus),
+                    MacAddress = machine.MachineStatus?.MachineMac 
+                                 ?? (returnStatus == "Unconfigured" ? "Configuring" : returnStatus),
                     MachineID = machine.MachineID,
                     Ports = machine.Ports,
                     Status = returnStatus,//machine.MachineStatus?.MachineState.ToString() ?? "Unconfigured",
@@ -96,20 +92,48 @@ namespace ScalableTeaching.Controllers
         {
             //Validate id
             if (id == Guid.Empty) return BadRequest("Invalid ID");
-            //Validate machine existance
+            //Validate machine existence
             var machine = await _context.Machines.FindAsync(id);
             if (machine == null) return BadRequest("Machine Not Found");
             //Validate machine "ownership"
-            if (!machine.MachineAssignments.Where(assignment => assignment.UserUsername == GetUsername()).Any()
+            if (machine.MachineAssignments.All(assignment => assignment.UserUsername != GetUsername()) 
                 && machine.UserUsername != GetUsername())
             {
                 return BadRequest("You are note assigned to this machine");
             }
             //Reboot Machine
-            if (_accessor.PerformVirtualMachineAction(MachineActions.REBOOT, (int)machine.OpenNebulaID)) return Ok();
-            else return StatusCode(StatusCodes.Status500InternalServerError);
+            // ReSharper disable once PossibleInvalidOperationException
+            return _accessor.PerformVirtualMachineAction(MachineActions.REBOOT, (int)machine.OpenNebulaID) ? 
+                Ok() : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
+        /// <summary>
+        /// Do a forced "power cycle" on the machine to reboot a machine that is not willingly shutting down.
+        /// </summary>
+        /// <param name="id">The machine to be restarted</param>
+        /// <returns>
+        /// <list type="bullet">
+        ///     <listheader>
+        ///         <term>Status Codes</term>
+        ///     </listheader>
+        ///     <item>
+        ///         <term>200 -</term>
+        ///         <description> Machine reboot initialised</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>400 -</term>
+        ///         <description> Invalid ID</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>403 -</term>
+        ///         <description> You are not assigned to this machine</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>404 -</term>
+        ///         <description> Machine Not Found</description>
+        ///     </item>
+        /// </list>
+        /// </returns>
         [Authorize(Policy = "UserLevel")]
         [HttpPost]
         [Route("control/reboot-hard/{id}")]
@@ -117,30 +141,38 @@ namespace ScalableTeaching.Controllers
         {
             //Validate id
             if (id == Guid.Empty) return BadRequest("Invalid ID");
-            //Validate machine existance
+            //Validate machine existence
             var machine = await _context.Machines.FindAsync(id);
-            if (machine == null) return BadRequest("Machine Not Found");
+            if (machine == null) return NotFound("Machine Not Found");
             //Validate machine "ownership"
-            if (!machine.MachineAssignments.Where(assignment => assignment.UserUsername == GetUsername()).Any()
+            if (machine.MachineAssignments.All(assignment => assignment.UserUsername != GetUsername()) 
                 && machine.UserUsername != GetUsername())
             {
-                return BadRequest("You are note assigned to this machine");
+                return Forbid("You are not assigned to this machine");
             }
             //Reboot Machine
-            if (_accessor.PerformVirtualMachineAction(MachineActions.REBOOT_HARD, (int)machine.OpenNebulaID)) return Ok();
-            else return StatusCode(StatusCodes.Status500InternalServerError);
+            // ReSharper disable once PossibleInvalidOperationException
+            return _accessor.PerformVirtualMachineAction(MachineActions.REBOOT_HARD, (int)machine.OpenNebulaID) ? 
+                Ok("Machine reboot initialised") : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
+        /// <summary>
+        /// Schedules a machine for deletion. This deletion will happen in the number of days specified by <see cref="MachineDeletionTiming">MachineDeletionTiming</see>
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [Authorize(Policy = "EducatorLevel")]
         [HttpDelete]
         [Route("control/delete/{id}")]
         public async Task<ActionResult> DeleteMachine(Guid id)
         {
-            //Validate id
+            //Validate id is not en empty id
             if (id == Guid.Empty) return BadRequest("Invalid ID");
+            
             //Validate machine existence
             var machine = await _context.Machines.FindAsync(id);
             if (machine == null) return BadRequest("Machine Not Found");
+            
             //Validate machine "ownership"
             if (machine.UserUsername != GetUsername()) return BadRequest("You do not own this machine");
             
@@ -156,7 +188,7 @@ namespace ScalableTeaching.Controllers
             }
 
             //Schedule for deletion
-            var deletionTime = DateTime.UtcNow.AddDays(7);
+            var deletionTime = DateTime.UtcNow.AddDays(MachineDeletionTiming);
             _context.MachineDeletionRequests.Add(new MachineDeletionRequest()
             {
                 MachineID = machine.MachineID,
@@ -171,34 +203,61 @@ namespace ScalableTeaching.Controllers
             return Ok($"Machine scheduled for deletion: {deletionTime.ToUniversalTime()} UTC");
         }
 
+        /// <summary>
+        /// Removes a machine deletion request, resulting in a machine no longer being scheduled for deletion
+        /// </summary>
+        /// <param name="id">The id of the machine being deleted</param>
+        /// <returns>200 - Machine(id) is no longer scheduled for deletion</returns>
+        [Authorize(Policy = "EducatorLevel")]
+        [HttpPatch]
+        [Route("control/undo_delete/{id}")]
+        public async Task<ActionResult> PatchDeleteMachine(Guid id)
+        {
+            //Validate id
+            if (id == Guid.Empty) return BadRequest("Invalid ID");
+            //Validate machine existence
+            var machine = await _context.Machines.FindAsync(id);
+            if (machine == null) return NotFound("Machine Not Found");
+            //Validate machine "ownership"
+            if (machine.UserUsername != GetUsername()) return Unauthorized("You do not own this machine");
+            //Validate that a deletion request exists
+            if (!await _context.MachineDeletionRequests.AnyAsync(request => request.MachineID == id))
+                return NotFound("The requested machine is not scheduled for deletion");
+
+            var deletionRequest = await _context.MachineDeletionRequests.FirstAsync(request => request.MachineID == id);
+            _context.MachineDeletionRequests.Remove(deletionRequest);
+            await _context.SaveChangesAsync();
+            return Ok($"Machine({id}) no longer scheduled for deletion");
+        }
+
         // POST: api/machine/create/groupbased
         [Authorize(Policy = "EducatorLevel")]
         [HttpPost("create/groupbased")]
         public async Task<ActionResult<Machine>> PostMachineGroupBased(CreateMachineGroupBased machines)
         {
 
-            var Randomizer = new Random();
+            var randomizer = new Random();
             //Validate input
             foreach (var machine in machines.Machines)
             {
                 //Validate ownership
                 var group = await _context.Groups.FindAsync(machine.Group);
                 if (group == null) return BadRequest($"Invalid Group id");
-                if (group.CourseID != machine.CourseID) return BadRequest($"GroupID: {machine.Group} is not assiciated with the course {machine.CourseID}");
+                if (group.CourseID != machine.CourseID) return BadRequest($"GroupID: {machine.Group} is not associated with the course {machine.CourseID}");
                 if (group.Course.UserUsername != GetUsername()) return Unauthorized($"You do not have ownership over the course: {machine.CourseID}, and therefor not over the group id requested");
 
                 //Validate Content
                 if (!Regex.IsMatch(machine.Hostname, ValidateHostname)) return BadRequest($"Invalid Hostname: {machine.Hostname}");
-                if (!machine.Apt.AsParallel().All(apt => Regex.IsMatch(apt, ValidateAptRegex))) return BadRequest($"Invalid apt package in list: {String.Join(", ", machine.Apt.ToArray())}");
-                if (!machine.Ppa.AsParallel().All(ppa => Regex.IsMatch(ppa, ValidatePpaRegex))) return BadRequest($"Invalid ppa in list: {String.Join(", ", machine.Ppa.ToArray())}");
-                if (!machine.LinuxGroups.AsParallel().All(group => Regex.IsMatch(group, ValidateLinuxGroup))) return BadRequest($"Invalid linux group in list: {String.Join(", ", machine.LinuxGroups)}");
-                if (!machine.Ports.AsParallel().All(port => port > 0 && port <= 65535)) return BadRequest($"Port Out of bound in list: {String.Join(", ", machine.Ports)}");
-                var NewMachineID = Guid.NewGuid();
+                if (!machine.Apt.AsParallel().All(apt => Regex.IsMatch(apt, ValidateAptRegex))) return BadRequest($"Invalid apt package in list: {string.Join(", ", machine.Apt.ToArray())}");
+                if (!machine.Ppa.AsParallel().All(ppa => Regex.IsMatch(ppa, ValidatePpaRegex))) return BadRequest($"Invalid ppa in list: {string.Join(", ", machine.Ppa.ToArray())}");
+                if (!machine.LinuxGroups.AsParallel().All(linuxGroup => Regex.IsMatch(linuxGroup, ValidateLinuxGroup))) return BadRequest($"Invalid linux group in list: {string.Join(", ", machine.LinuxGroups)}");
+                if (!machine.Ports.AsParallel().All(port => port is > 0 and <= 65535)) return BadRequest($"Port Out of bound in list: {string.Join(", ", machine.Ports)}");
+                var newMachineId = Guid.NewGuid();
                 _context.Machines.Add(new Machine
                 {
                     CourseID = machine.CourseID,
                     HostName = machine.Hostname,
-                    MachineID = NewMachineID,
+                    MachineID = newMachineId,
                     UserUsername = GetUsername(),
                     MachineCreationStatus = CreationStatus.REGISTERED,
                     Apt = machine.Apt,
@@ -206,12 +265,12 @@ namespace ScalableTeaching.Controllers
                     Ports = machine.Ports,
                     Ppa = machine.Ppa
                 });
-                _context.MachineAssignments.Add(new()
+                _context.MachineAssignments.Add(new MachineAssignment
                 {
                     MachineAssignmentID = Guid.NewGuid(),
                     GroupID = machine.Group,
-                    MachineID = NewMachineID,
-                    OneTimePassword = new string(Enumerable.Repeat(chars, 12).Select(s => s[Randomizer.Next(s.Length)]).ToArray()),
+                    MachineID = newMachineId,
+                    OneTimePassword = new string(Enumerable.Repeat(Chars, 12).Select(s => s[randomizer.Next(s.Length)]).ToArray()),
                     UserUsername = null
                 });
             }
@@ -227,7 +286,7 @@ namespace ScalableTeaching.Controllers
         public async Task<ActionResult<Machine>> PostMachineUserBased(CreateMachineUsersBased machines)
         {
 
-            var Randomizer = new Random();
+            var randomizer = new Random();
             //Validate input
             foreach (var machine in machines.Machines)
             {
@@ -238,25 +297,25 @@ namespace ScalableTeaching.Controllers
 
                 //Validate Content
                 if (!Regex.IsMatch(machine.Hostname, ValidateHostname)) return BadRequest($"Invalid Hostname: {machine.Hostname}");
-                if (!machine.Apt.AsParallel().All(apt => Regex.IsMatch(apt, ValidateAptRegex))) return BadRequest($"Invalid apt package in list: {String.Join(", ", machine.Apt.ToArray())}");
-                if (!machine.Ppa.AsParallel().All(ppa => Regex.IsMatch(ppa, ValidatePpaRegex))) return BadRequest($"Invalid ppa in list: {String.Join(", ", machine.Ppa.ToArray())}");
-                if (!machine.LinuxGroups.AsParallel().All(group => Regex.IsMatch(group, ValidateLinuxGroup))) return BadRequest($"Invalid linux group in list: {String.Join(", ", machine.LinuxGroups)}");
-                if (!machine.Ports.AsParallel().All(port => port > 0 && port <= 65535)) return BadRequest($"Port Out of bound in list: {String.Join(", ", machine.Ports)}");
-                var NewMachineID = Guid.NewGuid();
+                if (!machine.Apt.AsParallel().All(apt => Regex.IsMatch(apt, ValidateAptRegex))) return BadRequest($"Invalid apt package in list: {string.Join(", ", machine.Apt.ToArray())}");
+                if (!machine.Ppa.AsParallel().All(ppa => Regex.IsMatch(ppa, ValidatePpaRegex))) return BadRequest($"Invalid ppa in list: {string.Join(", ", machine.Ppa.ToArray())}");
+                if (!machine.LinuxGroups.AsParallel().All(group => Regex.IsMatch(group, ValidateLinuxGroup))) return BadRequest($"Invalid linux group in list: {string.Join(", ", machine.LinuxGroups)}");
+                if (!machine.Ports.AsParallel().All(port => port is > 0 and <= 65535)) return BadRequest($"Port Out of bound in list: {string.Join(", ", machine.Ports)}");
+                var newMachineId = Guid.NewGuid();
                 _context.Machines.Add(new Machine
                 {
                     CourseID = machine.CourseID,
                     HostName = machine.Hostname,
-                    MachineID = NewMachineID,
+                    MachineID = newMachineId,
                     UserUsername = GetUsername(),
                     MachineCreationStatus = CreationStatus.REGISTERED
                 });
-                _context.MachineAssignments.Add(new()
+                _context.MachineAssignments.Add(new MachineAssignment
                 {
                     MachineAssignmentID = Guid.NewGuid(),
                     GroupID = null,
-                    MachineID = NewMachineID,
-                    OneTimePassword = new string(Enumerable.Repeat(chars, 12).Select(s => s[Randomizer.Next(s.Length)]).ToArray()),
+                    MachineID = newMachineId,
+                    OneTimePassword = new string(Enumerable.Repeat(Chars, 12).Select(s => s[randomizer.Next(s.Length)]).ToArray()),
                     UserUsername = null
                 });
             }
