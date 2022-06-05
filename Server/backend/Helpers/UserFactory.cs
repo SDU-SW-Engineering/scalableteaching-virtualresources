@@ -23,7 +23,7 @@ namespace ScalableTeaching.Helpers
             };
         }
 
-        private async static Task<(string, string)> GetUserKeys(string Username)
+        private static async Task<(string, string)> GetUserKeys(string Username)
         {
             //Generate keys
             var userTempDirectory = $"/tmp/{Username}";
