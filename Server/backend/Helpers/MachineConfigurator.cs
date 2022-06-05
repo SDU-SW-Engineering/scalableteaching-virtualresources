@@ -87,7 +87,7 @@ namespace ScalableTeaching.Helpers
                     p.StartInfo.UseShellExecute = false;
                     p.StartInfo.RedirectStandardOutput = true;
                     p.StartInfo.FileName = "openssl";
-                    p.StartInfo.Arguments = $"passwd -6 -salt {RandomString(10)} {user.UserPassword}";
+                    p.StartInfo.Arguments = $"passwd -6 -salt {StringHelper.RandomString(10)} {user.UserPassword}";
                     p.Start();
                     await p.WaitForExitAsync();
 
@@ -219,7 +219,7 @@ namespace ScalableTeaching.Helpers
                 p.StartInfo.UseShellExecute = false;
                 p.StartInfo.RedirectStandardOutput = true;
                 p.StartInfo.FileName = "openssl";
-                p.StartInfo.Arguments = $"passwd -6 -salt {RandomString(10)} {user.UserPassword}";
+                p.StartInfo.Arguments = $"passwd -6 -salt {StringHelper.RandomString(10)} {user.UserPassword}";
                 p.Start();
                 await p.WaitForExitAsync(); //TODO: Its clipping the data when reading single line
 
@@ -284,30 +284,45 @@ namespace ScalableTeaching.Helpers
             p_scp.StartInfo.RedirectStandardOutput = true;
             p_scp.StartInfo.RedirectStandardError = true;
             p_scp.StartInfo.FileName = "scp";
-            p_scp.StartInfo.Arguments = $"-i {SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa -o StrictHostKeyChecking=no -B {SERVER_SCALABLE_TEACHING_PATH}/configfile/{machine.HostName}.sh admin@{machine.MachineStatus.MachineIp}:/home/admin/configfile.sh";
+            p_scp.StartInfo.Arguments = $"-i {SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa -o StrictHostKeyChecking=no " +
+                                        $"-B {SERVER_SCALABLE_TEACHING_PATH}/configfile/{machine.HostName}.sh " +
+                                        $"admin@{machine.MachineStatus.MachineIp}:/home/admin/configfile.sh";
             p_scp.Start();
             await p_scp.WaitForExitAsync();
 
-            Console.WriteLine($"Did scp into {machine.HostName} {machine.MachineStatus.MachineIp}, status: Exit code: {p_scp.ExitCode}\nout: {p_scp.StandardOutput.ReadToEnd()} \n err{p_scp.StandardError.ReadToEnd()}");
+            Console.WriteLine($"Did scp into {machine.HostName} {machine.MachineStatus.MachineIp}, status: Exit code:" +
+                              $" {p_scp.ExitCode}\nout: {p_scp.StandardOutput.ReadToEnd()} \n" +
+                              $" err{p_scp.StandardError.ReadToEnd()}");
 
             //Using task as a hack - this is an odd boy that sometimes does not return
             //TODO: Better solution
             Task.Run(async () =>
             {
                 Console.WriteLine($"Starting ssh: {machine.HostName}, {machine.MachineStatus.MachineIp}");
+                string randomDetectionString = StringHelper.RandomString(10);
                 var p_ssh = new Process();
                 p_ssh.StartInfo.UseShellExecute = false;
                 p_ssh.StartInfo.RedirectStandardOutput = true;
                 p_ssh.StartInfo.RedirectStandardError = true;
                 p_ssh.StartInfo.FileName = "ssh";
                 p_ssh.StartInfo.Arguments =
-                    $"-o StrictHostKeyChecking=no -i {SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa admin@{machine.MachineStatus.MachineIp} \"sudo chmod 777 /home/admin/configfile.sh && sudo sh -c '/home/admin/configfile.sh'; sudo rm /home/admin/configfile.sh; touch /home/admin/ranConfig; exit\"";
+                    $"-o StrictHostKeyChecking=no -i {SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa" +
+                    $" admin@{machine.MachineStatus.MachineIp} \"sudo chmod 777 /home/admin/configfile.sh;" +
+                    $" sudo sh -c '/home/admin/configfile.sh';" +
+                    $" sudo rm /home/admin/configfile.sh;" +
+                    $" touch /home/admin/ranConfig; echo {randomDetectionString}; exit\"";
                 p_ssh.Start();
-                await p_ssh.WaitForExitAsync();
+                while (true)
+                {
+                    var output = await p_ssh.StandardOutput.ReadLineAsync();
+                    if(output != null && output.Contains(randomDetectionString))
+                        break;
+                }
+                p_ssh.Kill();
                 Console.WriteLine($"Finished ssh: {machine.HostName}, {machine.MachineStatus.MachineIp}");
             });
 
-            return true; //TODO: Implement error handeling for configuration 
+            return true; //TODO: Implement error handling for configuration 
         }
 
         private static async Task<SshCommand> PerformSSHCommand(SshClient client, string command)
@@ -329,15 +344,7 @@ namespace ScalableTeaching.Helpers
             public string UserPublicKey { get; set; }
             public List<string> Groups { get; set; }
         }
-        private static Random random = new Random();
-        public static string RandomString(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, length)
-              .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
     }
-
 }
 
 
