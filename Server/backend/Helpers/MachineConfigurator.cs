@@ -17,7 +17,7 @@ namespace ScalableTeaching.Helpers
 {
     public class MachineConfigurator
     {
-        private string _defaultUsername;
+        private readonly string _defaultUsername;
         private readonly IServiceScopeFactory _factory;
         private const string VM_SCALABLE_TEACHING_PATH = "/home/admin/ScalableTeaching";
         private const string SERVER_SCALABLE_TEACHING_PATH = "/ScalableTeaching";
@@ -26,7 +26,7 @@ namespace ScalableTeaching.Helpers
             _factory = factory;
             _defaultUsername = Environment.GetEnvironmentVariable("VM_DEFAULT_USERNAME");
         }
-        public async Task<bool> ConfigureMachine(Machine machine)//TODO: Unifinished due to unknown elements related to lack of access to images on open nebula
+        public async Task<bool> ConfigureMachine(Machine machine)//TODO: Unfinished due to unknown elements related to lack of access to images on open nebula
         {
             //Construct configuration string
             List<MachineConfigurationUser> configurationUsers = new();
@@ -159,7 +159,7 @@ namespace ScalableTeaching.Helpers
             return true; //TODO: Implement error handeling for configuration 
         }
 
-        public async Task<bool> ConfigureMachineWithFile(Machine machine)//TODO: Unifinished due to unknown elements related to lack of access to images on open nebula
+        public async Task<bool> ConfigureMachineWithFile(Machine machine)//TODO: Unfinished due to unknown elements related to lack of access to images on open nebula
         {
             //Construct configuration string
             List<MachineConfigurationUser> configurationUsers = new();
