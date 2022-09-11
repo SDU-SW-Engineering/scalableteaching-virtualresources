@@ -29,7 +29,7 @@ namespace ScalableTeaching.Controllers
         [Authorize(Policy = "AdministratorLevel")]
         public async Task<ActionResult<IEnumerable<CourseDTO>>> GetCoursesAdministrator()
         {
-            var courses = await _context.Courses.Select(course => (CourseDTO)course).ToListAsync();
+            var courses = await _context.Courses.Where(c=> c.Active).Select(course => (CourseDTO)course).ToListAsync();
 
             return courses.Any() ? Ok(courses) : NoContent();
         }
@@ -38,7 +38,7 @@ namespace ScalableTeaching.Controllers
         [Authorize(Policy = "")]
         public async Task<ActionResult<IEnumerable<CourseDTO>>> GetCourses()
         {
-            var courses = await _context.Courses.Where(course => course.UserUsername == GetUsername()).Cast<CourseDTO>().ToListAsync();
+            var courses = await _context.Courses.Where(course => course.UserUsername == GetUsername() && course.Active).Cast<CourseDTO>().ToListAsync();
 
             return courses.Count > 0 ? Ok(courses) : NoContent();
         }
@@ -150,8 +150,8 @@ namespace ScalableTeaching.Controllers
         /// <returns>
         ///     <list type="table">
         ///         <item><term>204</term><description>On successful scheduling for deletion</description></item>
-        ///          <item><term>400</term><description>If the course is already scheduled for deletion</description></item>
-        ///          <item><term>404</term><description>If the course does not exist</description></item>
+        ///         <item><term>400</term><description>If the course is already scheduled for deletion</description></item>
+        ///         <item><term>404</term><description>If the course does not exist</description></item>
         ///     </list>
         /// </returns>
         [HttpDelete("{id}")]

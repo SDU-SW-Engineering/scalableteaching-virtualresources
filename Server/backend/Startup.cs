@@ -60,19 +60,25 @@ namespace ScalableTeaching
                 });
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("AdministratorLevel", policy => policy.RequireClaim("account_type", nameof(Administrator)));
-                options.AddPolicy("EducatorLevel", policy => policy.RequireClaim("account_type", nameof(Educator), nameof(Administrator)));
-                options.AddPolicy("UserLevel", policy => policy.RequireClaim("account_type", nameof(User), nameof(Educator), nameof(Administrator)));
+                options.AddPolicy("AdministratorLevel", policy => policy.RequireClaim("account_type",
+                    nameof(Administrator)));
+                options.AddPolicy("EducatorLevel", policy => policy.RequireClaim("account_type",
+                    nameof(Educator), nameof(Administrator)));
+                options.AddPolicy("UserLevel", policy => policy.RequireClaim("account_type",
+                    nameof(User), nameof(Educator), nameof(Administrator)));
             });
 
 
             services.AddSingleton<IConfiguration>(Configuration);
-            services.AddSingleton<IOpenNebulaAccessor>(new OpenNebulaAccessor(Environment.GetEnvironmentVariable("OpenNebulaLocation"), Environment.GetEnvironmentVariable("OpenNebulaSession")));
+            services.AddSingleton<IOpenNebulaAccessor>(
+                new OpenNebulaAccessor(Environment.GetEnvironmentVariable("OpenNebulaLocation"),
+                    Environment.GetEnvironmentVariable("OpenNebulaSession")));
             services.AddSingleton<MachineConfigurator>();
             services.AddScoped<SshConfigBuilder>();
             services.AddHostedService<MachineControllerService>();
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.File($"{Environment.GetEnvironmentVariable("ScalableTeachingBaseLocation")}/logs/log-.txt", rollingInterval: RollingInterval.Day)
+                .WriteTo.File($"{Environment.GetEnvironmentVariable("ScalableTeachingBaseLocation")}/logs/log-.txt",
+                    rollingInterval: RollingInterval.Day)
                 .CreateLogger();
         }
 
@@ -83,7 +89,8 @@ namespace ScalableTeaching
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "backend v1"));
+                app.UseSwaggerUI(c =>
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "backend v1"));
             }
 
             app.UseHttpsRedirection();
