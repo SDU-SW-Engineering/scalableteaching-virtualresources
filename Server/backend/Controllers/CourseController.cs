@@ -142,18 +142,65 @@ namespace ScalableTeaching.Controllers
         }
 
         // DELETE: api/Course/5
+        /// <summary>
+        /// Schedule deletion of a course and all of its associated machines.
+        /// The course is not deleted until all of its associated machines are gone.
+        /// </summary>
+        /// <param name="id">The id for the course to be deleted</param>
+        /// <returns>
+        ///     <list type="table">
+        ///         <item><term>204</term><description>On successful scheduling for deletion</description></item>
+        ///          <item><term>400</term><description>If the course is already scheduled for deletion</description></item>
+        ///          <item><term>404</term><description>If the course does not exist</description></item>
+        ///     </list>
+        /// </returns>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourse(Guid id)
         {
+            //Getting course
             var course = await _context.Courses.FindAsync(id);
-            if (course == null)
+            
+            //Validating course ( Existence, Active )
+            if (course == null) return NotFound();
+            if (!course.Active) return BadRequest("Course scheduled for deletion");
+            
+            //Disabling course
+            course.Active = false;
+            
+            //Scheduling all machines for deletion
+            var machines = await _context.Machines.Where(machine => machine.CourseID == id).ToListAsync();
+            var mdr = new List<MachineDeletionRequest>(); //New MachineDeletionRequests to be added to the context in one fell swoop.
+            
+            //Iterating machines associated with a course to create deletion request associated with each machine
+            foreach (var machine in machines)
             {
-                return NotFound();
+                //Don't create a request if one already exists
+                if (await _context.MachineDeletionRequests.AnyAsync(
+                        r => r.MachineID == machine.MachineID)) continue;
+                //Create a request and add it to a list.
+                mdr.Add(new MachineDeletionRequest()
+                    {
+                        MachineID = machine.MachineID, //To specify the machine
+                        DeletionDate = DateTime.UtcNow, //To ensure swift deletion
+                        UserUsername = GetUsername() //For future ability to detect deleter
+                    }
+                );
+                //Setting machine creation status
+                machine.MachineCreationStatus = CreationStatus.SHEDULED_FOR_DELETION;
+                
             }
-
-            _context.Courses.Remove(course);
+            
+            //Add all request to the context
+            _context.MachineDeletionRequests.AddRange(mdr);
+            //Add all machine changes to the context
+            _context.Machines.UpdateRange(machines);
+            //Add course changes to the context
+            _context.Courses.Update(course);
+            
+            //Saving changes
             await _context.SaveChangesAsync();
 
+            //Returning 204
             return NoContent();
         }
 
