@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection.Emit;
 
 namespace ScalableTeaching.Models
 {
@@ -26,7 +27,12 @@ namespace ScalableTeaching.Models
         public string ShortCourseName { get; set; }
 
         [Required]
+        // Dissabling this mark, due to use of acronyms
+        // ReSharper disable once InconsistentNaming
         public string SDUCourseID { get; set; }
+
+        [Required] 
+        public bool Active { get; set; } = true;
         public virtual User User { get; set; }
 
         public static (bool, string) Validate(string UserUsername, string CourseName, string ShortCourseName, string SDUCourseID)
