@@ -18,6 +18,7 @@ namespace ScalableTeaching.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<GroupAssignment>().HasKey(c => new { c.GroupID, c.UserUsername });
+            modelBuilder.Entity<Course>().Property(c => c.Active).HasDefaultValue(false);
         }
     }
 }

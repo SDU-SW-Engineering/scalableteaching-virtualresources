@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿#nullable enable
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ScalableTeaching.Data;
@@ -11,6 +12,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Serilog;
+
 namespace ScalableTeaching.Services
 {
     public class MachineControllerService : IHostedService, IDisposable
@@ -23,11 +27,15 @@ namespace ScalableTeaching.Services
         private Timer _CreatedTimer;
         private Timer _DeletionTimer;
         private Timer _StatusTimer;
+        private Timer _CourseDeletionTimer;
 
+        
+        //I am aware that i should use locks or semaphores. However i had issues and as such settled on this.
         private bool _StatusIsGoing = false;
         private bool _CreationQueueingIsGoing = false;
         private bool _CreatedIsGoing = false;
         private bool _DeletionIsGoing = false;
+        private bool _CourseDeletionIsGoing = false;
 
         public MachineControllerService(IOpenNebulaAccessor accessor, MachineConfigurator machineConfigurator, IServiceScopeFactory factory)
         {
@@ -42,13 +50,13 @@ namespace ScalableTeaching.Services
             //_CreationQueueingTimer = new(CreationQueueingTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(3));
             //_CreatedTimer = new(CreatedTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(5));
             //_StatusTimer = new(StatusTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(2));
-            //_DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromDays(7));
 
             //Quick times
-            _CreationQueueingTimer = new(CreationQueueingTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromSeconds(23));
-            _CreatedTimer = new(CreatedTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromSeconds(29));
-            _StatusTimer = new(StatusTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromSeconds(11));
+            _CreationQueueingTimer = new(CreationQueueingTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
+            _CreatedTimer = new(CreatedTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
+            _StatusTimer = new(StatusTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
             _DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromDays(1));
+            _CourseDeletionTimer = new(CourseDeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromHours(12));
 
             Console.WriteLine("Machine Controller Service Started");
             return Task.CompletedTask;
@@ -64,48 +72,69 @@ namespace ScalableTeaching.Services
             _CreatedTimer?.Dispose();
             _DeletionTimer?.Dispose();
             _StatusTimer?.Dispose();
+            _CourseDeletionTimer?.Dispose();
         }
 
         /// <summary>
         /// Deletes machines scheduled for deletion if they have passed the deletion threshold
         /// </summary>
         /// <param name="state">unused parameter</param>
-        private async void DeletionTimerCallback(object state)
+        private async void DeletionTimerCallback(object? state)
         {
             if (_DeletionIsGoing) return;
             try
             {
                 _DeletionIsGoing = true;
                 var context = GetContext();
+
                 
-                (await context.MachineDeletionRequests.ToListAsync()).ForEach(async request =>
+                var requests = await context.MachineDeletionRequests.ToListAsync();
+                foreach(var request in requests)
                 {
                     var subcontext = GetContext();
                     Console.WriteLine($"Checking Deletion Request: {request.MachineID}");
-                    if (DateTime.UtcNow.ToUniversalTime().CompareTo(request.DeletionDate.ToUniversalTime()) <= 0) return;
+                    Log.Information("Checking Deletion Request: {id}", request.MachineID);
+                    if (DateTime.UtcNow.ToUniversalTime().CompareTo(request.DeletionDate.ToUniversalTime()) <= 0)
+                        return;
                     Console.WriteLine($"Deletion Request: {request.MachineID} has passed the deletion threshold");
-                    var machine = await subcontext.Machines.FirstOrDefaultAsync(m => m.MachineID == request.MachineID);
+                    Log.Information("Deletion Request: {id} has passed the deletion threshold. Deletion will progress", request.MachineID);
+                    var machine = 
+                        await subcontext.Machines.FirstOrDefaultAsync(m => m.MachineID == request.MachineID);
                     if (machine == null)
                     {
                         Console.WriteLine($"Deletion Request: {request.MachineID} has no machine associated with it");
+                        Log.Error("Deletion Request: {id} has no machine associated with it", request.MachineID);
                     }
                     else switch (machine.OpenNebulaID)
                     {
                         case null:
-                            Console.WriteLine( $"Deletion Request: {request.MachineID} has no OpenNebula ID associated with it");
+                            Console.WriteLine($"Deletion Requests machine: {request.MachineID} " +
+                                              $"has no OpenNebula ID associated with it");
+                            Log.Error("Deletion Request: {machineid}" +
+                                      "has no OpenNebula ID associated with it i.e. 0", request.MachineID);
                             break;
                         case 0:
-                            Console.WriteLine($"Deletion Request: {request.MachineID} has no OpenNebula ID associated with it ie 0");
+                            Console.WriteLine($"Deletion Requests machine: {request.MachineID} " +
+                                              $"has no OpenNebula ID associated with it ie 0");
+                            Log.Error("Deletion Request: {machineid}" +
+                                      "has no OpenNebula ID associated with it i.e. 0", request.MachineID);
                             break;
                     }
 
                     if (!_accessor.PerformVirtualMachineAction(MachineActions.TERMINATE_HARD,
-                            (int)machine.OpenNebulaID)) return;
-                    Console.WriteLine($"Deletion Request: {request.MachineID} has been deleted");
+                            (int)machine.OpenNebulaID))
+                    {
+                        Log.Error("MachineControllerService - Error while deleting machine machine_id:{machineid} OpenNebula_id:{opennebula_id} ", machine.MachineID.ToString(), machine.OpenNebulaID.ToString());
+                        Console.Error.WriteLineAsync("There was an error in terminating a machine. See log for more information.");
+                    }
+                    
+                    Console.WriteLine($"Machine id: {request.MachineID}, and associated request has been deleted");
+                    Log.Information("Machine id: {id}, and associated request has been deleted", request.MachineID);
                     subcontext.MachineDeletionRequests.Remove(request);
                     subcontext.Machines.Remove(machine);
                     await subcontext.SaveChangesAsync();
-                });
+                };
+                CourseDeletionTimerCallback(null);
                 _DeletionIsGoing = false;
             }
             finally
@@ -114,11 +143,42 @@ namespace ScalableTeaching.Services
             }
         }
 
+        private async void CourseDeletionTimerCallback(object? state)
+        {
+            if (_CourseDeletionIsGoing) return;
+            try
+            {
+                Log.Information("Testing for courses scheduled for deletion");
+                _CourseDeletionIsGoing = true;
+                var context = GetContext();
+                var courses = await context.Courses.Where(c => c.Active == false).ToListAsync();
+                Log.Information("Found {count} courses scheduled for deletion.", courses.Count);
+                foreach (var course in courses)
+                {
+                    //If any machines are still associated with the course then skip this course.
+                    if (await context.Machines.AnyAsync(m => m.CourseID == course.CourseID))
+                    {
+                        Log.Information($"Not all machines associated machines have been deleted. Skipping deletion for course: {course.CourseID}.");
+                        Console.Out.WriteLineAsync($"Not all machines associated machines have been deleted. Skipping deletion for course: {course.CourseID}.");
+                        return;
+                    }
+                    //Delete the course
+                    context.Courses.Remove(course);
+                }
+                await context.SaveChangesAsync();
+                _CourseDeletionIsGoing = false;
+            }
+            finally
+            {
+                _CourseDeletionIsGoing = false;
+            }
+        }
+
         /// <summary>
-        /// Takes newly created machines from the database and schedules them for creation with the open nebula internal scheduler.
+        /// Takes newly created machines from the database and schedules
+        /// them for creation with the open nebula internal scheduler.
         /// </summary>
-        /// <param name="state"></param>
-        private async void CreationQueueingTimerCallback(object state)
+        private async void CreationQueueingTimerCallback(object? state)
         {
             if (_CreationQueueingIsGoing) return;
             try
@@ -127,14 +187,19 @@ namespace ScalableTeaching.Services
                 var context = GetContext();
                 var registeredMachines = await context.Machines
                     .Where(machine => machine.MachineCreationStatus == CreationStatus.REGISTERED).ToListAsync();
-                if(registeredMachines.Count != 0) 
+                if (registeredMachines.Count != 0)
+                {
                     Console.WriteLine($"MachineControllerService.CreationQueueingTimerCallback:Machines to be" +
-                        $" Scheduled for creation: {String.Join(",\n", registeredMachines)}");
+                                      $" Scheduled for creation: {String.Join(",\n", registeredMachines)}");
+                    Log.Information("MachineControllerService.CreationQueueingTimerCallback:Machines to be" +
+                    " Scheduled for creation: {machines}", String.Join(",\n", registeredMachines));
+                }
+
                 registeredMachines.ForEach(machine =>
                 {
                     machine.MachineCreationStatus = CreationStatus.QUEUED_FOR_CREATION;
                     var creationResult = _accessor.CreateVirtualMachine(
-                        int.Parse(Environment.GetEnvironmentVariable("OpenNebulaDefaultTemplate")),
+                        int.Parse(Environment.GetEnvironmentVariable("OpenNebulaDefaultTemplate") ?? "/ScalableTeaching"),
                         machine.HostName,
                         machine.Memory,
                         machine.VCPU,
@@ -157,7 +222,7 @@ namespace ScalableTeaching.Services
         /// Takes machines that have the creation status of <see cref="CreationStatus.QUEUED_FOR_CREATION"/> and status of active and configures them and sets them to configured
         /// </summary>
         /// <param name="state"></param>
-        private async void CreatedTimerCallback(object state)
+        private async void CreatedTimerCallback(object? state)
         {
             if (_CreatedIsGoing) return;
             try
@@ -170,11 +235,13 @@ namespace ScalableTeaching.Services
                     if (machine.MachineStatus?.MachineState == MachineStates.ACTIVE)
                     {
                         Console.WriteLine($"MachineControllerService.CreatedTimerCallback: Machine Booted after creation: { machine.MachineID}");
+                        Log.Information("MachineControllerService.CreatedTimerCallback: Machine Booted after creation: {id}", machine.MachineID);
                         try
                         {
                             if (machine.MachineStatus?.MachineIp == null)
                             {
                                 Console.WriteLine($"Error configuring machine: no ip");
+                                Log.Warning("Error configuring machine: {mid}. No ip assigned", machine.MachineID);
                                 continue;
                             }
                             await _machineConfigurator.ConfigureMachineWithFile(machine);//TODO: Return to using ssh based configuration
@@ -199,7 +266,7 @@ namespace ScalableTeaching.Services
             }
         }
 
-        private async void StatusTimerCallback(object state)
+        private async void StatusTimerCallback(object? state)
         {
             if (_StatusIsGoing) return;
             try

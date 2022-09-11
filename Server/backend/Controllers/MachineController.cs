@@ -191,9 +191,9 @@ namespace ScalableTeaching.Controllers
             var deletionTime = DateTime.UtcNow.AddDays(MachineDeletionTiming);
             _context.MachineDeletionRequests.Add(new MachineDeletionRequest()
             {
-                MachineID = machine.MachineID,
-                DeletionDate = deletionTime,
-                UserUsername = GetUsername()
+                MachineID = machine.MachineID, //To specify machine
+                DeletionDate = deletionTime, //To make deletion cancellable  
+                UserUsername = GetUsername() //To identify deleter
             });
             machine.MachineCreationStatus = CreationStatus.SHEDULED_FOR_DELETION;
             _context.Machines.Update(machine);
