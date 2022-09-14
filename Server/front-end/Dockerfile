@@ -1,5 +1,5 @@
 #Build
-FROM node:14 as build
+FROM node:16 as build
 WORKDIR /src
 COPY ./Server/front-end/package*.json ./
 RUN npm install

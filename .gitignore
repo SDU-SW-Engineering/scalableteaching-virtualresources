@@ -11,3 +11,5 @@ Server/backend/proxy/logs/
 **obj/
 **bin/
 /Server/XmlRpcRequestResults
+
+Server/front-end/yarn.lock

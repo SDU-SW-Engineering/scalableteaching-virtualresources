@@ -3,9 +3,9 @@ import StringHelper from "./StringHelper"
 
 function validateUsers(userString: string){
     if (userString.length === 0) return false;
-    let cleanTokens:string[] = StringHelper.breakStringIntoTokenList(userString);
+   const cleanTokens:string[] = StringHelper.breakStringIntoTokenList(userString);
     for (let i:number = 0; i < cleanTokens.length; i++) {
-        let token:string = cleanTokens[i];
+       const token:string = cleanTokens[i];
         if (token.length > 0) {
             if (token.match(/[a-zA-Z0-9]+/) === null) {
                 return false;
@@ -17,9 +17,9 @@ function validateUsers(userString: string){
 
 function validateGroups(groupsString: string){
     if (groupsString.length === 0) return null;
-    let cleanTokens: string[] = StringHelper.breakStringIntoTokenList(groupsString);
+   const cleanTokens: string[] = StringHelper.breakStringIntoTokenList(groupsString);
     for (let i: number = 0; i < cleanTokens.length; i++) {
-        let token: string = cleanTokens[i];
+       const token: string = cleanTokens[i];
         if (token.length > 0) {
             if (token.match(/^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/) === null) {
                 return false;
@@ -31,9 +31,9 @@ function validateGroups(groupsString: string){
 
 function validatePPA(ppaString: string){
     if (ppaString.length === 0) return null;
-    let cleanTokens: string[] = StringHelper.breakStringIntoTokenList(ppaString);
+   const cleanTokens: string[] = StringHelper.breakStringIntoTokenList(ppaString);
     for (let i: number = 0; i < cleanTokens.length; i++) {
-        let token: string = cleanTokens[i];
+       const token: string = cleanTokens[i];
         if (token.length > 0) {
             if (token.match(/^(ppa:([a-z-]+)\/[a-z-]+)$/) === null) {
                 return false;
@@ -45,9 +45,9 @@ function validatePPA(ppaString: string){
 
 function validateAPT(aptString: string){
     if (aptString.length === 0) return null;
-    let cleanTokens: string[] = StringHelper.breakStringIntoTokenList(aptString);
+   const cleanTokens: string[] = StringHelper.breakStringIntoTokenList(aptString);
     for (let i: number = 0; i < cleanTokens.length; i++) {
-        let token: string = cleanTokens[i];
+       const token: string = cleanTokens[i];
         if (token.length > 0) {
             if (token.match(/[0-9A-Za-z.+-]+/) === null) {
                 return false;
@@ -59,9 +59,9 @@ function validateAPT(aptString: string){
 
 function validatePorts(portsString: string){
     if (portsString.length === 0) return null;
-    let cleanTokens: string[] = StringHelper.breakStringIntoTokenList(portsString);
+   const cleanTokens: string[] = StringHelper.breakStringIntoTokenList(portsString);
     for (let i: number = 0; i < cleanTokens.length; i++) {
-        let token: string = cleanTokens[i];
+       const token: string = cleanTokens[i];
         if (token.length > 0) {
             if (!(token.match(/[0-9]{1,5}/) !== null && (parseInt(token) > 0 && parseInt(token) <= 65535)))
                 return false;
@@ -79,10 +79,10 @@ function isValidAndComplete(MachineNameValidity: boolean,
     let rv = true;
     rv = rv && MachineNameValidity;
     rv = rv && UsersOrGroupsValidity;
-    let portsValidity = validatePorts(PortsString);
-    let groupsValidity = validateGroups(GroupsString);
-    let aptValidity = validateAPT(AptString);
-    let ppaValidity = validatePPA(PpaString);
+    const portsValidity = validatePorts(PortsString);
+    const groupsValidity = validateGroups(GroupsString);
+    const aptValidity = validateAPT(AptString);
+    const ppaValidity = validatePPA(PpaString);
     rv = rv && (portsValidity === null || portsValidity === true);
     rv = rv && (groupsValidity === null || groupsValidity === true);
     rv = rv && (aptValidity === null || aptValidity === true);
