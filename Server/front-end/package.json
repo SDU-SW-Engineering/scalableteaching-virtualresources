@@ -11,12 +11,13 @@
     "3": "^2.1.0",
     "-": "0.0.1",
     "axios": "^0.21.4",
-    "bootstrap": "5",
+    "bootstrap": "^4.6.1",
     "bootstrap-vue": "^2.22.0",
     "core-js": "^3.6.5",
     "glob-parent": "^6.0.1",
     "jquery": "^3.6.0",
     "node-polyfill-webpack-plugin": "^2.0.1",
+    "popper.js": "^1.16.1",
     "register-service-worker": "^1.7.1",
     "vue": "^2.6.12",
     "vue-class-component": "^7.2.3",
@@ -25,7 +26,6 @@
     "vuex": "^3.4.0"
   },
   "devDependencies": {
-    "webpack": "5",
     "@babel/core": "^7.0.0",
     "@popperjs/core": "^2.11.6",
     "@typescript-eslint/eslint-plugin": "^5",
@@ -39,6 +39,7 @@
     "@vue/cli-service": "^5.0.8",
     "@vue/eslint-config-typescript": "^11.0.0",
     "babel-eslint": "^10.1.0",
+    "deepmerge": "^4.2.2",
     "eslint": "8.22.0",
     "eslint-plugin-vue": "^9.0.0",
     "jsonwebtoken": "^8.5.1",
@@ -46,7 +47,7 @@
     "sass-loader": "^13.0.2",
     "typescript": "~4.5.5",
     "vue-template-compiler": "^2.6.11",
-    "deepmerge": "^4.2.2"
+    "webpack": "5"
   },
   "eslintConfig": {
     "root": true,
