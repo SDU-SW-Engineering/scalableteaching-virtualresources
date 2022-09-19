@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ScalableTeaching.Controllers.Extensions;
 
 namespace ScalableTeaching.Controllers
 {
@@ -29,7 +30,7 @@ namespace ScalableTeaching.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<GroupOutDTO>>> GetGroups()
         {
-            var returnList = await _context.Groups.Where(group => group.Course.UserUsername == GetUsername()).Cast<GroupOutDTO>().ToListAsync();
+            var returnList = await _context.Groups.Where(group => group.Course.UserUsername == this.GetUsername()).Cast<GroupOutDTO>().ToListAsync();
             return returnList.Count > 0 ? Ok(returnList) : NoContent();
         }
 
@@ -37,7 +38,7 @@ namespace ScalableTeaching.Controllers
         [HttpGet("course/{id}")]
         public async Task<ActionResult<IEnumerable<GroupOutDTO>>> GetGroups(Guid id)
         {
-            var returnList = await _context.Groups.Where(group => group.Course.UserUsername == GetUsername() && group.CourseID == id).Cast<GroupOutDTO>().ToListAsync();
+            var returnList = await _context.Groups.Where(group => group.Course.UserUsername == this.GetUsername() && group.CourseID == id).Cast<GroupOutDTO>().ToListAsync();
             return returnList.Count > 0 ? Ok(returnList) : NoContent();
         }
 
@@ -45,7 +46,7 @@ namespace ScalableTeaching.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Group>> GetGroup(Guid id)
         {
-            var foundGroup = await _context.Groups.Where(group => group.GroupID == id && group.Course.User.Username == GetUsername()).FirstAsync();
+            var foundGroup = await _context.Groups.Where(group => group.GroupID == id && group.Course.User.Username == this.GetUsername()).FirstAsync();
 
 #pragma warning disable IDE0029 // Use coalesce expression - Suppressed due to ignoronius prompt. Line is incompatible with the operator.
             return foundGroup == null ? NotFound() : foundGroup;
@@ -60,7 +61,7 @@ namespace ScalableTeaching.Controllers
             //Validate the request
             if (id != dto.GroupID) return BadRequest();
             //Validate course
-            if (!_context.Courses.Any(course => course.User.Username == GetUsername() && course.CourseID == dto.CourseID)) return BadRequest();
+            if (!_context.Courses.Any(course => course.User.Username == this.GetUsername() && course.CourseID == dto.CourseID)) return BadRequest();
 
             try
             {
@@ -93,7 +94,7 @@ namespace ScalableTeaching.Controllers
         public async Task<ActionResult<GroupOutDTO>> PostGroup(GroupDTO dto)
         {
             //Validate the course
-            if (!_context.Courses.Any(course => course.User.Username == GetUsername() && course.CourseID == dto.CourseID)) return BadRequest();
+            if (!_context.Courses.Any(course => course.User.Username == this.GetUsername() && course.CourseID == dto.CourseID)) return BadRequest();
             //Validate the group
             if (_context.Groups.Any(group => group.GroupName == dto.GroupName))
             {
@@ -123,7 +124,7 @@ namespace ScalableTeaching.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGroup(Guid id)
         {
-            var foundGroup = await _context.Groups.FirstAsync(group => group.Course.User.Username == GetUsername() && group.GroupID == id);
+            var foundGroup = await _context.Groups.FirstAsync(group => group.Course.User.Username == this.GetUsername() && group.GroupID == id);
             if (foundGroup == null)
             {
                 return NotFound();
@@ -142,7 +143,7 @@ namespace ScalableTeaching.Controllers
             if (_context.Groups.Any(g => g.CourseID == dto.CourseID && g.GroupName == dto.GroupName)) return Conflict();
             var course = await _context.Courses.FindAsync(dto.CourseID);
             //Ensure that course is valid and assigned to requesting user
-            if (course is null || course.User.Username != GetUsername()) return BadRequest();
+            if (course is null || course.User.Username != this.GetUsername()) return BadRequest();
             //Create Group
             var group = new Group() { CourseID = dto.CourseID, GroupID = Guid.NewGuid(), GroupName = dto.GroupName };
             //Create task for adding group to optimise code
@@ -196,12 +197,6 @@ namespace ScalableTeaching.Controllers
         private bool GroupExists(Guid id)
         {
             return _context.Groups.Any(e => e.GroupID == id);
-        }
-
-        private string GetUsername()
-        {
-            //Claim from the jwt token
-            return HttpContext.User.Claims.First(claim => claim.Type == "username").Value.ToLower();
         }
     }
 }

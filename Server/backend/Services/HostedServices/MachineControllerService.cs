@@ -15,7 +15,7 @@ namespace ScalableTeaching.Services.HostedServices
     {
         private readonly IOpenNebulaAccessor _accessor;
         private readonly MachineConfigurator _machineConfigurator;
-        private readonly IServiceScopeFactory _factory;
+        private readonly IDbContextFactory _factory;
 
         private Timer _CreationQueueingTimer;
         private Timer _CreatedTimer;
@@ -31,7 +31,7 @@ namespace ScalableTeaching.Services.HostedServices
         private bool _DeletionIsGoing = false;
         private bool _CourseDeletionIsGoing = false;
 
-        public MachineControllerService(IOpenNebulaAccessor accessor, MachineConfigurator machineConfigurator, IServiceScopeFactory factory)
+        public MachineControllerService(IOpenNebulaAccessor accessor, MachineConfigurator machineConfigurator, IDbContextFactory factory)
         {
             _factory = factory;
             _accessor = accessor;
@@ -79,13 +79,13 @@ namespace ScalableTeaching.Services.HostedServices
             try
             {
                 _DeletionIsGoing = true;
-                var context = GetContext();
+                var context = _factory.GetContext();
 
                 
                 var requests = await context.MachineDeletionRequests.ToListAsync();
                 foreach(var request in requests)
                 {
-                    var subcontext = GetContext();
+                    var subcontext = _factory.GetContext();
                     Console.WriteLine($"Checking Deletion Request: {request.MachineID}");
                     Log.Information("Checking Deletion Request: {id}", request.MachineID);
                     if (DateTime.UtcNow.ToUniversalTime().CompareTo(request.DeletionDate.ToUniversalTime()) <= 0)
@@ -144,7 +144,7 @@ namespace ScalableTeaching.Services.HostedServices
             {
                 Log.Information("Testing for courses scheduled for deletion");
                 _CourseDeletionIsGoing = true;
-                var context = GetContext();
+                var context = _factory.GetContext();
                 var courses = await context.Courses.Where(c => c.Active == false).ToListAsync();
                 Log.Information("Found {count} courses scheduled for deletion.", courses.Count);
                 foreach (var course in courses)
@@ -178,7 +178,7 @@ namespace ScalableTeaching.Services.HostedServices
             try
             {
                 _CreationQueueingIsGoing = true;
-                var context = GetContext();
+                var context = _factory.GetContext();
                 var registeredMachines = await context.Machines
                     .Where(machine => machine.MachineCreationStatus == CreationStatus.REGISTERED).ToListAsync();
                 if (registeredMachines.Count != 0)
@@ -222,7 +222,7 @@ namespace ScalableTeaching.Services.HostedServices
             try
             {
                 _CreatedIsGoing = true;
-                VmDeploymentContext context = GetContext();
+                VmDeploymentContext context = _factory.GetContext();
                 var machines = await context.Machines.Where(machine => machine.MachineCreationStatus == CreationStatus.QUEUED_FOR_CREATION).ToListAsync();
                 foreach (Machine machine in machines)
                 {
@@ -267,7 +267,7 @@ namespace ScalableTeaching.Services.HostedServices
             {
                 _StatusIsGoing = true;
                 //Console.WriteLine($"MachineControllerService.StatusTimerCallback: Callback Time: {DateTimeOffset.Now}");
-                var context = GetContext();
+                var context = _factory.GetContext();
                 var pollTime = DateTimeOffset.UtcNow;
                 List<VmModel> vmModels = _accessor.GetAllVirtualMachineInfo(false, -3);
                 var validMachineIDs = vmModels.AsEnumerable().Select(model => model.MachineId);
@@ -298,10 +298,6 @@ namespace ScalableTeaching.Services.HostedServices
             {
                 _StatusIsGoing = false;
             }
-        }
-        private VmDeploymentContext GetContext()
-        {
-            return _factory.CreateScope().ServiceProvider.GetRequiredService<VmDeploymentContext>();
         }
     }
 }

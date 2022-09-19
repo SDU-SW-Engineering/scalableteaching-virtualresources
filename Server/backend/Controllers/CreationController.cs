@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ScalableTeaching.Data;
 using ScalableTeaching.DTO;
 using ScalableTeaching.Helpers;
 using ScalableTeaching.Models;
-using System;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using static ScalableTeaching.Controllers.Extensions.HttpContextExtensions;
 
 namespace ScalableTeaching.Controllers
 {
@@ -44,7 +41,7 @@ namespace ScalableTeaching.Controllers
                 var group = await _context.Groups.FindAsync(machine.Group);
                 if (group == null) return BadRequest($"Invalid Group id");
                 if (group.CourseID != machine.CourseID) return BadRequest($"GroupID: {machine.Group} is not assiciated with the course {machine.CourseID}");
-                if (group.Course.UserUsername != GetUsername()) return Unauthorized($"You do not have ownership over the course: {machine.CourseID}, and therefor not over the group id requested");
+                if (group.Course.UserUsername != this.GetUsername()) return Unauthorized($"You do not have ownership over the course: {machine.CourseID}, and therefor not over the group id requested");
 
                 //Validate Content
                 if (!Regex.IsMatch(machine.Hostname, ValidateHostname)) return BadRequest($"Invalid Hostname: {machine.Hostname}");
@@ -67,7 +64,7 @@ namespace ScalableTeaching.Controllers
                     CourseID = machine.CourseID,
                     HostName = machine.Hostname,
                     MachineID = NewMachineID,
-                    UserUsername = GetUsername(),
+                    UserUsername = this.GetUsername(),
                     MachineCreationStatus = CreationStatus.REGISTERED,
                     Apt = machine.Apt,
                     LinuxGroups = machine.LinuxGroups,
@@ -104,7 +101,7 @@ namespace ScalableTeaching.Controllers
                 //Validate ownership
                 var course = await _context.Courses.FindAsync(machine.CourseID);
                 if (course == null) return BadRequest($"The requested course id:({machine.CourseID}) does not exists");
-                if (course.UserUsername != GetUsername()) return Unauthorized($"You do not own the course({course.CourseID})");
+                if (course.UserUsername != this.GetUsername()) return Unauthorized($"You do not own the course({course.CourseID})");
 
                 //Validate Content
                 if (!Regex.IsMatch(machine.Hostname, ValidateHostname)) return BadRequest($"Invalid Hostname: {machine.Hostname}");
@@ -128,7 +125,7 @@ namespace ScalableTeaching.Controllers
                     CourseID = machine.CourseID,
                     HostName = machine.Hostname,
                     MachineID = NewMachineID,
-                    UserUsername = GetUsername(),
+                    UserUsername = this.GetUsername(),
                     MachineCreationStatus = CreationStatus.REGISTERED,
                     Apt = machine.Apt,
                     LinuxGroups = machine.LinuxGroups,
@@ -156,15 +153,6 @@ namespace ScalableTeaching.Controllers
             await _context.SaveChangesAsync();
 
             return Ok("Machines Registered for creation, creation will start soon.");
-        }
-
-        /// <summary>
-        /// Gives the value of the username claim for the current httpcontext
-        /// </summary>
-        /// <returns>Username of logged in user</returns>
-        private string GetUsername()
-        {
-            return HttpContext.User.Claims.First(claim => claim.Type == "username").Value.ToLower();
         }
     }
 }

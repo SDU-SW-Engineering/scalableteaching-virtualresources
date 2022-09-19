@@ -1,20 +1,19 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ScalableTeaching.Data;
 using ScalableTeaching.DTO;
 using ScalableTeaching.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
+using static ScalableTeaching.Controllers.Extensions.HttpContextExtensions;
+
 
 namespace ScalableTeaching.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Policy = "AdministratorLevel")]
+    
     public class CourseController : ControllerBase
     {
         private readonly VmDeploymentContext _context;
@@ -38,7 +37,7 @@ namespace ScalableTeaching.Controllers
         [Authorize(Policy = "")]
         public async Task<ActionResult<IEnumerable<CourseDTO>>> GetCourses()
         {
-            var courses = await _context.Courses.Where(course => course.UserUsername == GetUsername() && course.Active).Cast<CourseDTO>().ToListAsync();
+            var courses = await _context.Courses.Where(course => course.UserUsername == this.GetUsername() && course.Active).Cast<CourseDTO>().ToListAsync();
 
             return courses.Count > 0 ? Ok(courses) : NoContent();
         }
@@ -182,7 +181,7 @@ namespace ScalableTeaching.Controllers
                     {
                         MachineID = machine.MachineID, //To specify the machine
                         DeletionDate = DateTime.UtcNow, //To ensure swift deletion
-                        UserUsername = GetUsername() //For future ability to detect deleter
+                        UserUsername = this.GetUsername() //For future ability to detect deleter
                     }
                 );
                 //Setting machine creation status
@@ -207,10 +206,6 @@ namespace ScalableTeaching.Controllers
         private bool CourseExists(Guid id)
         {
             return _context.Courses.Any(e => e.CourseID == id);
-        }
-        private string GetUsername()
-        {
-            return HttpContext.User.Claims.First(claim => claim.Type == "username").Value.ToLower();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -6,11 +6,8 @@ using ScalableTeaching.Data;
 using ScalableTeaching.DTO;
 using ScalableTeaching.Models;
 using ScalableTeaching.OpenNebula;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using static ScalableTeaching.Controllers.Extensions.HttpContextExtensions;
 
 namespace ScalableTeaching.Controllers
 {
@@ -39,9 +36,9 @@ namespace ScalableTeaching.Controllers
         public async Task<ActionResult<List<MachineManagementReturn>>> GetAvailableMachines()//TODO: Might suffer EF issues
         {
             List<Machine> machines = await _context.Machines
-                .Where(machine => machine.UserUsername == GetUsername()).ToListAsync();
+                .Where(machine => machine.UserUsername == this.GetUsername()).ToListAsync();
             var userMachineAssignments = await _context.MachineAssignments
-                .Where(assignment => assignment.UserUsername == GetUsername()).ToListAsync();
+                .Where(assignment => assignment.UserUsername == this.GetUsername()).ToListAsync();
 
             foreach (var assignment in userMachineAssignments)
             {
@@ -96,8 +93,8 @@ namespace ScalableTeaching.Controllers
             var machine = await _context.Machines.FindAsync(id);
             if (machine == null) return BadRequest("Machine Not Found");
             //Validate machine "ownership"
-            if (machine.MachineAssignments.All(assignment => assignment.UserUsername != GetUsername()) 
-                && machine.UserUsername != GetUsername())
+            if (machine.MachineAssignments.All(assignment => assignment.UserUsername != this.GetUsername()) 
+                && machine.UserUsername != this.GetUsername())
             {
                 return BadRequest("You are note assigned to this machine");
             }
@@ -145,8 +142,8 @@ namespace ScalableTeaching.Controllers
             var machine = await _context.Machines.FindAsync(id);
             if (machine == null) return NotFound("Machine Not Found");
             //Validate machine "ownership"
-            if (machine.MachineAssignments.All(assignment => assignment.UserUsername != GetUsername()) 
-                && machine.UserUsername != GetUsername())
+            if (machine.MachineAssignments.All(assignment => assignment.UserUsername != this.GetUsername()) 
+                && machine.UserUsername != this.GetUsername())
             {
                 return Forbid("You are not assigned to this machine");
             }
@@ -174,7 +171,7 @@ namespace ScalableTeaching.Controllers
             if (machine == null) return BadRequest("Machine Not Found");
             
             //Validate machine "ownership"
-            if (machine.UserUsername != GetUsername()) return BadRequest("You do not own this machine");
+            if (machine.UserUsername != this.GetUsername()) return BadRequest("You do not own this machine");
             
             //Validate machine not already scheduled for deletion
             {
@@ -193,7 +190,7 @@ namespace ScalableTeaching.Controllers
             {
                 MachineID = machine.MachineID, //To specify machine
                 DeletionDate = deletionTime, //To make deletion cancellable  
-                UserUsername = GetUsername() //To identify deleter
+                UserUsername = this.GetUsername() //To identify deleter
             });
             machine.MachineCreationStatus = CreationStatus.SHEDULED_FOR_DELETION;
             _context.Machines.Update(machine);
@@ -219,7 +216,7 @@ namespace ScalableTeaching.Controllers
             var machine = await _context.Machines.FindAsync(id);
             if (machine == null) return NotFound("Machine Not Found");
             //Validate machine "ownership"
-            if (machine.UserUsername != GetUsername()) return Unauthorized("You do not own this machine");
+            if (machine.UserUsername != this.GetUsername()) return Unauthorized("You do not own this machine");
             //Validate that a deletion request exists
             if (!await _context.MachineDeletionRequests.AnyAsync(request => request.MachineID == id))
                 return NotFound("The requested machine is not scheduled for deletion");
@@ -244,7 +241,7 @@ namespace ScalableTeaching.Controllers
                 var group = await _context.Groups.FindAsync(machine.Group);
                 if (group == null) return BadRequest($"Invalid Group id");
                 if (group.CourseID != machine.CourseID) return BadRequest($"GroupID: {machine.Group} is not associated with the course {machine.CourseID}");
-                if (group.Course.UserUsername != GetUsername()) return Unauthorized($"You do not have ownership over the course: {machine.CourseID}, and therefor not over the group id requested");
+                if (group.Course.UserUsername != this.GetUsername()) return Unauthorized($"You do not have ownership over the course: {machine.CourseID}, and therefor not over the group id requested");
 
                 //Validate Content
                 if (!Regex.IsMatch(machine.Hostname, ValidateHostname)) return BadRequest($"Invalid Hostname: {machine.Hostname}");
@@ -258,7 +255,7 @@ namespace ScalableTeaching.Controllers
                     CourseID = machine.CourseID,
                     HostName = machine.Hostname,
                     MachineID = newMachineId,
-                    UserUsername = GetUsername(),
+                    UserUsername = this.GetUsername(),
                     MachineCreationStatus = CreationStatus.REGISTERED,
                     Apt = machine.Apt,
                     LinuxGroups = machine.LinuxGroups,
@@ -293,7 +290,7 @@ namespace ScalableTeaching.Controllers
                 //Validate ownership
                 var course = await _context.Courses.FindAsync(machine.CourseID);
                 if (course == null) return BadRequest($"The requested course id:({machine.CourseID}) does not exists");
-                if (course.UserUsername != GetUsername()) return Unauthorized($"You do not own the course({course.CourseID})");
+                if (course.UserUsername != this.GetUsername()) return Unauthorized($"You do not own the course({course.CourseID})");
 
                 //Validate Content
                 if (!Regex.IsMatch(machine.Hostname, ValidateHostname)) return BadRequest($"Invalid Hostname: {machine.Hostname}");
@@ -307,7 +304,7 @@ namespace ScalableTeaching.Controllers
                     CourseID = machine.CourseID,
                     HostName = machine.Hostname,
                     MachineID = newMachineId,
-                    UserUsername = GetUsername(),
+                    UserUsername = this.GetUsername(),
                     MachineCreationStatus = CreationStatus.REGISTERED
                 });
                 _context.MachineAssignments.Add(new MachineAssignment
@@ -323,15 +320,6 @@ namespace ScalableTeaching.Controllers
             await _context.SaveChangesAsync();
 
             return Ok("Machines Registered for creation, creation will start soon.");
-        }
-
-        /// <summary>
-        /// Gives the value of the username claim for the current httpcontext
-        /// </summary>
-        /// <returns>Username of logged in user</returns>
-        private string GetUsername()
-        {
-            return HttpContext.User.Claims.First(claim => claim.Type == "username").Value.ToLower();
         }
     }
 }
