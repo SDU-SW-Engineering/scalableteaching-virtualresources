@@ -76,7 +76,7 @@ namespace ScalableTeaching
             services.AddSingleton<MachineConfigurator>();
             services.AddScoped<SshConfigBuilder>();
             services.AddHostedService<MachineControllerService>();
-            services.AddTransient<IDbContextFactory>();
+            services.AddSingleton<IDbContextFactory, VmDeploymentContextFactory>();
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.File($"{Environment.GetEnvironmentVariable("ScalableTeachingBaseLocation")}/logs/log-.txt",
                     rollingInterval: RollingInterval.Day)
