@@ -219,9 +219,8 @@ export default { //TODO: Getting errors when using page
     async submit(event) {
       let respOk = false;
       event.preventDefault();
-
+      let newUserList = StringHelper.breakStringIntoTokenList(this.form.groupUsers).sort();
       if (this.selectedRow.length > 0) {
-        let newUserList = StringHelper.breakStringIntoTokenList(this.form.groupUsers).sort();
         //Update member list
         if (newUserList.join() !== this.selectedRow[0].members.sort().join) {
           await GroupAPI.putMembersInGroup(newUserList, this.selectedRow[0].groupID);
@@ -232,8 +231,8 @@ export default { //TODO: Getting errors when using page
         respOk = resp === 204;
       } else {
         //Create Group
-        let resp = await GroupAPI.postGroup(this.form.groupname, this.form.selectedCourse);
-        respOk = resp === 200;
+        let resp = await GroupAPI.postEntireGroup(this.form.groupname, this.form.selectedCourse, newUserList);
+        respOk = resp === 201;
       }
       this.formInvalidResponse = !respOk;
       if (respOk) {
