@@ -246,6 +246,7 @@ namespace ScalableTeaching.Controllers
         ///         <term>400 -</term>
         ///         <description>
         ///             1. The id was 0 or empty, and as such invalid
+        ///             2. The machine was not in the configured state
         ///         </description> 
         ///     </item>
         ///     <item>
