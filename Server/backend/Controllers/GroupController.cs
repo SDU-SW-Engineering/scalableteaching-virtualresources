@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ScalableTeaching.Controllers.Extensions;
+using Serilog;
 
 namespace ScalableTeaching.Controllers
 {
@@ -149,7 +150,8 @@ namespace ScalableTeaching.Controllers
             //Create task for adding group to optimise code
             var groupAddingTask = _context.Groups.AddAsync(group);
 
-
+            Log.Debug("Filled group dto {asd}", dto);
+            
             //Create list for the assignment of users
             var groupAssignments = new List<GroupAssignment>();
             //Users allready existing in system
