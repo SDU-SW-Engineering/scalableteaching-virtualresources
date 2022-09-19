@@ -84,7 +84,7 @@
           GROUP WILL <span style="color:red; font-weight: bold;">IMMEDIATELY BE DELETED </span></p>
         <b-button style="margin: 0 5px 0 0" variant="secondary" @click="$bvModal.hide('remove-group-modal')">Cancel
         </b-button>
-        <b-button variant="outline-danger" v-on:click="removeSelectedCourse">Yes Remove Course</b-button>
+        <b-button variant="outline-danger" v-on:click="removeSelectedCourse">Yes Remove Group</b-button>
       </b-modal>
 
       <hr>
