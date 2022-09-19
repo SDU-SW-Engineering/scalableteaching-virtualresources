@@ -84,7 +84,7 @@
           GROUP WILL <span style="color:red; font-weight: bold;">IMMEDIATELY BE DELETED </span></p>
         <b-button style="margin: 0 5px 0 0" variant="secondary" @click="$bvModal.hide('remove-group-modal')">Cancel
         </b-button>
-        <b-button variant="outline-danger" v-on:click="removeSelectedCourse">Yes Remove Group</b-button>
+        <b-button variant="outline-danger" v-on:click="removeSelectedGroup">Yes Remove Group</b-button>
       </b-modal>
 
       <hr>
@@ -200,8 +200,9 @@ export default { //TODO: Getting errors when using page
         this.resetFields();
       }
     },
-    async removeSelectedCourse() {
+    async removeSelectedGroup() {
       await GroupAPI.deleteGroup(this.selectedRow[0].groupID);
+      this.$bvModal.hide('remove-group-modal')
       await this.loadTableData();
     },
     validateUsersInput() {
