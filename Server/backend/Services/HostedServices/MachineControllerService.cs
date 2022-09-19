@@ -49,8 +49,8 @@ namespace ScalableTeaching.Services.HostedServices
             _CreationQueueingTimer = new(CreationQueueingTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
             _CreatedTimer = new(CreatedTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
             _StatusTimer = new(StatusTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
-            _DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromDays(1));
-            _CourseDeletionTimer = new(CourseDeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromHours(12));
+            _DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromHours(1));
+            _CourseDeletionTimer = new(CourseDeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromHours(1));
 
             Console.WriteLine("Machine Controller Service Started");
             return Task.CompletedTask;
