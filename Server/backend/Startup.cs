@@ -13,6 +13,7 @@ using ScalableTeaching.OpenNebula;
 using ScalableTeaching.Services;
 using Serilog;
 using System;
+using ScalableTeaching.Services.HostedServices;
 using static ScalableTeaching.Models.User.UserType;
 
 namespace ScalableTeaching
