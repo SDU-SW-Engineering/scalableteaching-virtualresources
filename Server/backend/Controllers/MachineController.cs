@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +7,7 @@ using ScalableTeaching.DTO;
 using ScalableTeaching.Models;
 using ScalableTeaching.OpenNebula;
 using System.Text.RegularExpressions;
+using Serilog;
 using static ScalableTeaching.Controllers.Extensions.HttpContextExtensions;
 
 namespace ScalableTeaching.Controllers
@@ -225,6 +226,75 @@ namespace ScalableTeaching.Controllers
             _context.MachineDeletionRequests.Remove(deletionRequest);
             await _context.SaveChangesAsync();
             return Ok($"Machine({id}) no longer scheduled for deletion");
+        }
+
+        /// <summary>
+        /// Resets a machine. Im practice this means that the machine is deleted immediately, and a new machine is created according to the same specifications as the original machine.
+        /// Resetting the machine can take a fair bit of time depending upon how busy the system is.
+        /// </summary>
+        /// <param name="id">The id of the machine being reset</param>
+        /// <returns>
+        /// <list type="bullet">
+        ///     <listheader>
+        ///         <term>Status Codes</term>
+        ///     </listheader>
+        ///     <item>
+        ///         <term>200 -</term>
+        ///         <description> Machine reset initialized</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>400 -</term>
+        ///         <description>
+        ///             1. The id was 0 or empty, and as such invalid
+        ///         </description> 
+        ///     </item>
+        ///     <item>
+        ///         <term>401 -</term>
+        ///         <description> The requesting user does not have the right to reset this machine</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>404 -</term>
+        ///         <description> The id did not correspond to an existing machine</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>500 -</term>
+        ///         <description> There was an error while trying to terminate the original machine</description>
+        ///     </item>
+        /// </list>
+        /// </returns>
+        [Authorize(Policy = "EducatorLevel")]
+        [HttpPost]
+        [Route("control/reset/{id}")]
+        public async Task<ActionResult> PostResetMachine(Guid id)
+        {
+            //Validate id
+            if (id == Guid.Empty) return BadRequest("Invalid ID");
+            //Validate machine existence
+            var machine = await _context.Machines.FindAsync(id);
+            if (machine == null) return NotFound("Machine Not Found");
+            //Validate machine "ownership"
+            var username = this.GetUsername();
+            if (machine.UserUsername != username || ! await _context.Users.Where(u => u.Username == username 
+                    && u.AccountType==Models.User.UserType.Administrator).AnyAsync()) 
+                return Unauthorized("You do not own this machine");
+            //Validate machine is created and configured
+            if (machine.MachineCreationStatus is not CreationStatus.CONFIGURED) 
+                return BadRequest("Cannot reset a machine that is not created and configured");
+            
+            //Delete existing machine
+            if (!_accessor.PerformVirtualMachineAction(MachineActions.TERMINATE_HARD,
+                    (int)machine.OpenNebulaID))
+            {
+                Log.Error("Error while deleting machine before recreation machine_id:{machineid} OpenNebula_id:{opennebula_id} ", machine.MachineID.ToString(), machine.OpenNebulaID.ToString());
+                Console.Error.WriteLineAsync("There was an error in terminating a machine during a reset. See log for more information.");
+                return StatusCode(StatusCodes.Status500InternalServerError, "There was an error while trying to delete the machine. Contact a Virtualresources administrator for help.");
+            }
+            //Schedule machine for creation            
+            machine.MachineCreationStatus = CreationStatus.REGISTERED;
+            _context.Machines.Update(machine);
+            
+            await _context.SaveChangesAsync();
+            return Ok($"Machine({id}) has been reset");
         }
 
         // POST: api/machine/create/groupbased
