@@ -185,10 +185,7 @@ namespace ScalableTeaching.Controllers
             await _context.SaveChangesAsync();
 
             //Create group assignments for newly created users
-            foreach (string username in dtoUsers)
-            {
-                groupAssignments.Add(new GroupAssignment() { GroupID = group.GroupID, UserUsername = username });
-            }
+            groupAssignments.AddRange(dtoUsers.Select(username => new GroupAssignment() {GroupID = group.GroupID, UserUsername = username}));
 
             //Add all assignments to the database
             _context.GroupAssignments.AddRange(groupAssignments);
