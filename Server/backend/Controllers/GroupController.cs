@@ -148,50 +148,51 @@ namespace ScalableTeaching.Controllers
             //Create Group
             var group = new Group() { CourseID = dto.CourseID, GroupID = Guid.NewGuid(), GroupName = dto.GroupName };
             //Create task for adding group to optimise code
-            var groupAddingTask = _context.Groups.AddAsync(group);
+            _context.Groups.Add(group);
 
-            Log.Debug("Filled group dto {asd}", dto);
+            Log.Debug("Filled group dto {Dto}", dto);
+            
+            //Ensure that all incoming usernames are in lowercase
+            
+            var dtoUsers = dto.Users.AsParallel().Select(u => u.ToLower()).ToList();
             
             //Create list for the assignment of users
             var groupAssignments = new List<GroupAssignment>();
-            //Users allready existing in system
-            var existingUsers = await _context.Users.Where(user => dto.Users.Contains(user.Username)).ToListAsync();
-
-            //Create group assignment objects for already existing users and remove them from the input dto to use for sorting for non existant users
+            
+            //Users already existing in system
+            var existingUsers = 
+                await _context.Users.Where(user => dtoUsers.Contains(user.Username)).ToListAsync();
+            Log.Debug("Existing users: {{{Users}}}",
+            string.Join(",", existingUsers.Select(eu => eu.Username)));
+            
+            //Create group assignment objects for already existing users
+            //and remove them from the input dto to use for sorting for non existent users
             foreach (var user in existingUsers)
             {
                 groupAssignments.Add(new GroupAssignment() { GroupID = group.GroupID, UserUsername = user.Username });
-                dto.Users.Remove(user.Username);
+                dtoUsers.Remove(user.Username);
             }
 
-            //create users that did not allready exist in the system
+            //create users that did not already exist in the system
             var usersToBeCreated = new List<User>();
-            foreach (string username in dto.Users)
+            foreach (var username in dtoUsers)
             {
-
                 usersToBeCreated.Add(await UserFactory.Create(username));
             }
 
             //Await group creation and the adding of users, and save these data points
-            await groupAddingTask;
-            await _context.Users.AddRangeAsync(usersToBeCreated);
+            _context.Users.AddRange(usersToBeCreated);
             await _context.SaveChangesAsync();
 
             //Create group assignments for newly created users
-            foreach (string username in dto.Users)
+            foreach (string username in dtoUsers)
             {
                 groupAssignments.Add(new GroupAssignment() { GroupID = group.GroupID, UserUsername = username });
             }
 
             //Add all assignments to the database
-            await _context.GroupAssignments.AddRangeAsync(groupAssignments);
+            _context.GroupAssignments.AddRange(groupAssignments);
             await _context.SaveChangesAsync();
-
-            var returnedAssignments = new List<GroupAssignmentDTO>();
-            foreach (var assignment in groupAssignments)
-            {
-                returnedAssignments.Add(assignment);
-            }
 
             return CreatedAtAction(nameof(GetGroup), new { id = group.GroupID }, (GroupOutDTO)group);
         }
