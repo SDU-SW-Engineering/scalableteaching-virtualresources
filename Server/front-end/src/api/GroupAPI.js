@@ -113,7 +113,7 @@ async function deleteGroup(id) {
  * @returns {Promise<void>}
  */
 async function postEntireGroup(GroupName, CourseID, Users) {
-    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.group}`, {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.group}/member/group`, {
         method: "POST",
         headers: new Headers({
             'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
