@@ -303,7 +303,6 @@ namespace ScalableTeaching.Controllers
                     (int)machine.OpenNebulaID))
             {
                 Log.Error("Error while deleting machine before recreation machine_id:{machineid} OpenNebula_id:{opennebula_id} ", machine.MachineID.ToString(), machine.OpenNebulaID.ToString());
-                Console.Error.WriteLineAsync("There was an error in terminating a machine during a reset. See log for more information.");
                 return StatusCode(StatusCodes.Status500InternalServerError, "There was an error while trying to delete the machine. Contact a Virtualresources administrator for help.");
             }
             //Schedule machine for creation            

@@ -8,6 +8,7 @@ using ScalableTeaching.Models;
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace ScalableTeaching.Controllers
 {
@@ -26,7 +27,7 @@ namespace ScalableTeaching.Controllers
         [HttpPost]
         public async Task<ActionResult> PostToken(SSOTokenDTO tokendata)
         {
-            Console.WriteLine(tokendata);
+            Log.Information("AuthController - Person logged in - Tokendata - ",tokendata);
             try
             {
                 UserDTO user = await SSOHelper.GetSSOData(tokendata);

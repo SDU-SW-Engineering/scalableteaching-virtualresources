@@ -326,7 +326,7 @@ public class MachineConfigurator
         Task.Run(async () =>
         {
             //Run the command
-            Console.WriteLine($"Starting ssh: {machine.HostName}, {machine.MachineStatus.MachineIp}");
+            Log.Information("Configure Machine:{{{MachineId}}} - Starting ssh: {MachineHostName}, {MachineStatusMachineIp}",machine.MachineID, machine.HostName, machine.MachineStatus.MachineIp);
             var randomDetectionString = StringHelper.RandomString(10);
             var p_ssh = new Process();
             p_ssh.StartInfo.UseShellExecute = false;
@@ -349,7 +349,11 @@ public class MachineConfigurator
             }
 
             p_ssh.Kill();
-            Console.WriteLine($"Finished ssh: {machine.HostName}, {machine.MachineStatus.MachineIp}");
+            Log.Information(
+                "Configure Machine:{{{MachineId}}} - Finished ssh: {MachineHostName}, {MachineStatusMachineIp}",
+                machine.MachineID,
+                machine.HostName,
+                machine.MachineStatus.MachineIp);
         });
 
         return true; //TODO: Implement error handling for configuration 
