@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "backend", "backend.csproj",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenNebula", "..\OpenNebula\OpenNebula.csproj", "{80079072-59AF-4E0A-917F-CF1A6824603D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenNebulaTest", "..\OpenNebulaTest\OpenNebulaTest.csproj", "{FE74DD01-D4DF-4473-9C26-BC884B9BFB20}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{80079072-59AF-4E0A-917F-CF1A6824603D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{80079072-59AF-4E0A-917F-CF1A6824603D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{80079072-59AF-4E0A-917F-CF1A6824603D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FE74DD01-D4DF-4473-9C26-BC884B9BFB20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE74DD01-D4DF-4473-9C26-BC884B9BFB20}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FE74DD01-D4DF-4473-9C26-BC884B9BFB20}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FE74DD01-D4DF-4473-9C26-BC884B9BFB20}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

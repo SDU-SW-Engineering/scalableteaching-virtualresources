@@ -21,8 +21,10 @@ namespace ScalableTeaching.Controllers
         private readonly IOpenNebulaAccessor _accessor;
         private const string ValidateAptRegex = @"^[0-9A-Za-z.+-]$";
         private const string ValidatePpaRegex = @"^(ppa:([a-z-]+)\/[a-z-]+)$";
-        private const string ValidateLinuxGroup = @"^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$";
-        private const string ValidateHostname = @"^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$";
+        private const string ValidateLinuxGroup = 
+            @"^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$";
+        private const string ValidateHostname = 
+            @"^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$";
         private const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvxyz1234567890.,-_!?";
         private const int MachineDeletionTiming = 7;
 
@@ -32,32 +34,46 @@ namespace ScalableTeaching.Controllers
             _accessor = accessor;
         }
 
+        /// <summary>
+        /// Gets available machines.
+        /// This refers to the machines that the user has created or the machines that the user has been assigned to.
+        /// </summary>
+        /// <returns>All available machines</returns>
         [Authorize(Policy = "UserLevel")]
         [HttpGet]
-        public async Task<ActionResult<List<MachineManagementReturn>>> GetAvailableMachines()//TODO: Might suffer EF issues
+        public async Task<ActionResult<List<MachineManagementReturn>>> GetAvailableMachines()
         {
+            //Get machines created by the user
             List<Machine> machines = await _context.Machines
                 .Where(machine => machine.UserUsername == this.GetUsername()).ToListAsync();
-            var userMachineAssignments = await _context.MachineAssignments
-                .Where(assignment => assignment.UserUsername == this.GetUsername()).ToListAsync();
+            
+            //Get machines the user has been assigned to
+            machines.AddRange(await _context.MachineAssignments
+                .Where(assignment => assignment.UserUsername == this.GetUsername())
+                .Select(assignment => assignment.Machine)
+                .ToListAsync());
+            
+            //Get all machines assigned through the groups the user is a part of
+            machines.AddRange(await _context.GroupAssignments
+                .Where(g => g.UserUsername == this.GetUsername())
+                .SelectMany(g => g.Group.MachineAssignments)
+                .Select(ma => ma.Machine).ToListAsync());
 
-            foreach (var assignment in userMachineAssignments)
-            {
-                machines.Add(await _context.Machines.FindAsync(assignment.MachineID));
-            }
-
+            
             List<MachineManagementReturn> returnList = new();
-
-            foreach (Machine machine in machines)
+            foreach (var machine in machines)
             {
+                //Create list for all the usernames that have been assigned to a machine
                 List<string> usernames = new() { machine.UserUsername };
+                
+                //Get all the assignments 
                 var assignments = await _context.MachineAssignments
                     .Where(assignment => assignment.MachineID == machine.MachineID).ToListAsync();
                 foreach (var assignment in assignments.Where(assignment => assignment.UserUsername == null))
                 {
-                    var groupAssignments = await _context.GroupAssignments
-                        .Where(assign => assign.GroupID == assignment.GroupID).ToListAsync();
-                    groupAssignments.ForEach(groupAssignment => usernames.Add(groupAssignment.UserUsername));
+                    usernames.AddRange(await _context.GroupAssignments
+                        .Where(assign => assign.GroupID == assignment.GroupID)
+                        .Select(ass => ass.UserUsername).ToListAsync());
                 }
 
                 //Construct status return value
