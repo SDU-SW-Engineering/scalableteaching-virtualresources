@@ -212,31 +212,37 @@ namespace ScalableTeaching.Services.HostedServices
             {
                 _CreatedIsGoing = true;
                 VmDeploymentContext context = _factory.GetContext();
+                
                 var machines = await context.Machines.Where(machine => machine.MachineCreationStatus == CreationStatus.QUEUED_FOR_CREATION).ToListAsync();
-                foreach (Machine machine in machines)
-                {
-                    if (machine.MachineStatus?.MachineState == MachineStates.ACTIVE)
+                
+                var machineConfigurationTasks = machines.Select(machine => Task.Run(async () =>
                     {
-                        Log.Information("MachineControllerService - Machine Creation Configuration - {MachineId}: Machine Booted after creation", machine.MachineID);
-                        try
+                        var subcontext = _factory.GetContext();
+                        if (machine.MachineStatus?.MachineState == MachineStates.ACTIVE)
                         {
-                            if (machine.MachineStatus?.MachineIp == null)
+                            Log.Information("MachineControllerService - Machine Creation Configuration - {MachineId}: Machine Booted after creation", machine.MachineID);
+                            try
                             {
-                                Log.Warning("MachineControllerService - Machine Creation Configuration - {MachineId}: No ip assigned", machine.MachineID);
-                                continue;
+                                if (machine.MachineStatus?.MachineIp == null)
+                                {
+                                    Log.Warning("MachineControllerService - Machine Creation Configuration - {MachineId}: No ip assigned", machine.MachineID);
+                                }
+
+                                await _machineConfigurator.ConfigureMachineWithFile(machine); //TODO: Return to using ssh based configuration
                             }
-                            await _machineConfigurator.ConfigureMachineWithFile(machine);//TODO: Return to using ssh based configuration
+                            catch (Exception e)
+                            {
+                                Log.Error(e, "MachineControllerService - Machine Creation Configuration - {MachineId}: Error occurred configuring machine", machine.MachineID);
+                            }
+
+                            machine.MachineCreationStatus = CreationStatus.CONFIGURED;
+                            subcontext.Machines.Update(machine);
+                            await subcontext.SaveChangesAsync();
                         }
-                        catch (Exception e)
-                        {
-                            Log.Error(e,"MachineControllerService - Machine Creation Configuration - {MachineId}: Error occurred configuring machine", machine.MachineID);
-                            continue;
-                        }
-                        machine.MachineCreationStatus = CreationStatus.CONFIGURED;
-                        context.Machines.Update(machine);
-                        await context.SaveChangesAsync();
-                    }
-                }
+                    })).ToList();
+                
+                //Await the configuration of all machines
+                await Task.WhenAll(machineConfigurationTasks);
                 _CreatedIsGoing = false;
             }
             finally
