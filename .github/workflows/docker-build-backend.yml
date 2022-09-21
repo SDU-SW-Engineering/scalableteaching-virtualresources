@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'Server/backend/**'
+      - 'Server/Dockerfile-Backend'
   workflow_dispatch:
   # pull_request:
   #   branches:

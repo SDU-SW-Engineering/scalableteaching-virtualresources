@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'Server/front-end/**'
+      - 'Server/Dockerfile-FrontendAndProxy'
   workflow_dispatch:
   # pull_request:
   #   branches:
