@@ -233,8 +233,8 @@ public class MachineConfigurator
             var userPasswordHashFile = $"/tmp/{StringHelper.RandomString(16)}";
             var p = new Process();
             p.StartInfo.UseShellExecute = false;
-            p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.RedirectStandardError = true;
+            p.StartInfo.RedirectStandardOutput = false;
+            p.StartInfo.RedirectStandardError = false;
             p.StartInfo.FileName = "openssl";
             p.StartInfo.Arguments = 
                 $"passwd -6 -salt '{StringHelper.RandomString(16)}' '{user.UserPassword}' > {userPasswordHashFile}";
