@@ -239,7 +239,7 @@ public class MachineConfigurator
                 $"passwd -6 -salt '{StringHelper.RandomString(16)}' '{user.UserPassword}'";
             p.Start();
             await p.WaitForExitAsync();
-            var userPasswordHash = p.StandardOutput.ReadToEndAsync();
+            var userPasswordHash = await p.StandardOutput.ReadToEndAsync();
             
             Log.Verbose("Configure Machine:{{{MachineId}}} - Generated hash is {GeneratedHash}", machine.MachineID, userPasswordHash);
             
@@ -314,49 +314,50 @@ public class MachineConfigurator
         p_scp.Start();
         await p_scp.WaitForExitAsync();
 
-        Log.Information("Did scp into {MachineHostName} {MachineStatusMachineIp}, status:\n" +
-                        " Exit code: {ExitCode}\n" +
-                        "out: {Stdout} \n" +
-                        "err{Stderr}", 
+        Log.Verbose("Configure Machine:{{{MachineId}}} - Starting ssh: Did scp into {MachineHostName} {MachineStatusMachineIp}, status:\n" +
+                        "Exit code: {ExitCode} \n" +
+                        "stdout: {Stdout} \n" +
+                        "stderr: {Stderr}", 
             machine.HostName, 
             machine.MachineStatus.MachineIp, 
             p_scp.ExitCode, 
             p_scp.StandardOutput.ReadToEnd(), 
             p_scp.StandardError.ReadToEnd());
-
-        Task.Run(async () =>
+        
+        //Run the command
+        Log.Verbose("Configure Machine:{{{MachineId}}} - Starting ssh: {MachineHostName}, {MachineStatusMachineIp}",machine.MachineID, machine.HostName, machine.MachineStatus.MachineIp);
+        var randomDetectionString = StringHelper.RandomString(10);
+        
+        var p_ssh = new Process();
+        p_ssh.StartInfo.UseShellExecute = false;
+        p_ssh.StartInfo.RedirectStandardOutput = true;
+        p_ssh.StartInfo.RedirectStandardError = true;
+        p_ssh.StartInfo.FileName = "ssh";
+        p_ssh.StartInfo.Arguments =
+            $"-o StrictHostKeyChecking=no -i {SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa" +
+            $" admin@{machine.MachineStatus.MachineIp} \"sudo chmod 777 /home/admin/configfile.sh;" +
+            " sudo sh -c '/home/admin/configfile.sh';" +
+            " sudo rm /home/admin/configfile.sh;" +
+            $" touch /home/admin/ranConfig; echo {randomDetectionString}; exit\"";
+        p_ssh.Start();
+        
+        while (true)
         {
-            //Run the command
-            Log.Information("Configure Machine:{{{MachineId}}} - Starting ssh: {MachineHostName}, {MachineStatusMachineIp}",machine.MachineID, machine.HostName, machine.MachineStatus.MachineIp);
-            var randomDetectionString = StringHelper.RandomString(10);
-            var p_ssh = new Process();
-            p_ssh.StartInfo.UseShellExecute = false;
-            p_ssh.StartInfo.RedirectStandardOutput = true;
-            p_ssh.StartInfo.RedirectStandardError = true;
-            p_ssh.StartInfo.FileName = "ssh";
-            p_ssh.StartInfo.Arguments =
-                $"-o StrictHostKeyChecking=no -i {SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa" +
-                $" admin@{machine.MachineStatus.MachineIp} \"sudo chmod 777 /home/admin/configfile.sh;" +
-                " sudo sh -c '/home/admin/configfile.sh';" +
-                " sudo rm /home/admin/configfile.sh;" +
-                $" touch /home/admin/ranConfig; echo {randomDetectionString}; exit\"";
-            p_ssh.Start();
-            
-            while (true)
-            {
-                var output = await p_ssh.StandardOutput.ReadLineAsync();
-                if (output != null && output.Contains(randomDetectionString))
-                    break;
-            }
+            var output = await p_ssh.StandardOutput.ReadLineAsync();
+            if (output == null) continue;
+            Log.Verbose("Configure Machine:{{{MachineId}}} - RunSSHProcessOutput - {output}", machine.MachineID,
+                output);
+            if (output.Contains(randomDetectionString))
+                break;
+        }
 
-            p_ssh.Kill();
-            Log.Information(
-                "Configure Machine:{{{MachineId}}} - Finished ssh: {MachineHostName}, {MachineStatusMachineIp}",
-                machine.MachineID,
-                machine.HostName,
-                machine.MachineStatus.MachineIp);
-        });
-
+        p_ssh.Kill();
+        Log.Information(
+            "Configure Machine:{{{MachineId}}} - Finished ssh: {MachineHostName}, {MachineStatusMachineIp}",
+            machine.MachineID,
+            machine.HostName,
+            machine.MachineStatus.MachineIp);
+        
         return true; //TODO: Implement error handling for configuration 
     }
 
