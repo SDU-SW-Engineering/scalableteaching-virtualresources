@@ -346,11 +346,20 @@ public class MachineConfigurator
         while (true)
         {
             var output = await p_ssh.StandardOutput.ReadLineAsync();
-            if (output == null) continue;
-            Log.Verbose("Configure Machine:{{{MachineId}}} - RunSSHProcessOutput - {output}", machine.MachineID,
-                output);
-            if (output.Contains(randomDetectionString))
-                break;
+            var err = await p_ssh.StandardError.ReadLineAsync();
+            if (output != null)
+            {
+                Log.Verbose("Configure Machine:{{{MachineId}}} - RunSSHProcessOutput - {output}", machine.MachineID,
+                    output);
+                if (output.Contains(randomDetectionString))
+                    break;
+            }
+
+            if (err != null)
+            {
+                Log.Verbose("Configure Machine:{{{MachineId}}} - RunSSHProcessError - {err}", machine.MachineID,
+                    err);
+            }
         }
 
         p_ssh.Kill();
