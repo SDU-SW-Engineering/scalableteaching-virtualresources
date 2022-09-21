@@ -239,14 +239,15 @@ public class MachineConfigurator
                 $"passwd -6 -salt {StringHelper.RandomString(16)} '{user.UserPassword}'";
             p.Start();
             await p.WaitForExitAsync();
-            var userPasswordHash = await p.StandardOutput.ReadToEndAsync();
+            var userPasswordHashUntrimmed = await p.StandardOutput.ReadToEndAsync();
+            var userPasswordHash = userPasswordHashUntrimmed.TrimEnd();
             
-            Log.Verbose("Configure Machine:{{{MachineId}}} - Generated hash is {GeneratedHash}", machine.MachineID, userPasswordHash);
+            Log.Verbose("Configure Machine:{{{MachineId}}} - Generated hash is {GeneratedHash} (untrimmed: {untrimmed})", machine.MachineID, userPasswordHash, userPasswordHashUntrimmed);
             
             
             
             //Create User with password set
-            builder.AppendLine($"useradd -s \"/usr/bin/bash\" -m {user.Username.ToLower()} -p '{userPasswordHash}'");
+            builder.AppendLine($"useradd -s \"/usr/bin/bash\" -m -p '{userPasswordHash}' {user.Username.ToLower()}");
 
             //Add user to linux groups
             builder.AppendLine($"usermod -aG {string.Join(",", user.Groups)} {user.Username.ToLower()}");
