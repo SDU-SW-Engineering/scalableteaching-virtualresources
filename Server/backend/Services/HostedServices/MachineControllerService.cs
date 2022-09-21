@@ -226,18 +226,22 @@ namespace ScalableTeaching.Services.HostedServices
                                 if (machine.MachineStatus?.MachineIp == null)
                                 {
                                     Log.Warning("MachineControllerService - Machine Creation Configuration - {MachineId}: No ip assigned", machine.MachineID);
+                                    return;
                                 }
 
-                                await _machineConfigurator.ConfigureMachineWithFile(machine); //TODO: Return to using ssh based configuration
+                                if (await _machineConfigurator.ConfigureMachineWithFile(machine))
+                                {
+                                    throw new Exception("Something went wrong while configuring machine");
+                                }
+                                   
+                                machine.MachineCreationStatus = CreationStatus.CONFIGURED;
+                                subcontext.Machines.Update(machine);
+                                await subcontext.SaveChangesAsync();
                             }
                             catch (Exception e)
                             {
                                 Log.Error(e, "MachineControllerService - Machine Creation Configuration - {MachineId}: Error occurred configuring machine", machine.MachineID);
                             }
-
-                            machine.MachineCreationStatus = CreationStatus.CONFIGURED;
-                            subcontext.Machines.Update(machine);
-                            await subcontext.SaveChangesAsync();
                         }
                     })).ToList();
                 

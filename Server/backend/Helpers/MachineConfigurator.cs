@@ -342,34 +342,41 @@ public class MachineConfigurator
 //            " sudo rm /home/admin/configfile.sh;" +
             $" touch /home/admin/ranConfig; echo {randomDetectionString}; exit\"";
         p_ssh.Start();
-        
-        while (true)
+
+        var time = DateTime.Now;
+        while (time + TimeSpan.FromMinutes(5) >= DateTime.Now)
         {
             var output = await p_ssh.StandardOutput.ReadLineAsync();
             var err = await p_ssh.StandardError.ReadLineAsync();
+
+            if (err != null) Log.Verbose("Configure Machine:{{{MachineId}}} - RunSSHProcessError - {err}",
+                machine.MachineID,err);
+
+            if (p_scp.HasExited)
+            {
+                Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess - Process terminated unexpectedly", machine.MachineID);
+            }
+            
             if (output != null)
             {
                 Log.Verbose("Configure Machine:{{{MachineId}}} - RunSSHProcessOutput - {output}", machine.MachineID,
                     output);
                 if (output.Contains(randomDetectionString))
-                    break;
-            }
-
-            if (err != null)
-            {
-                Log.Verbose("Configure Machine:{{{MachineId}}} - RunSSHProcessError - {err}", machine.MachineID,
-                    err);
+                {
+                    p_ssh.Kill();
+                    Log.Information(
+                        "Configure Machine:{{{MachineId}}} - Finished ssh: {MachineHostName}, {MachineStatusMachineIp}",
+                        machine.MachineID,
+                        machine.HostName,
+                        machine.MachineStatus.MachineIp);
+                    return true;
+                }
+                    
             }
         }
-
-        p_ssh.Kill();
-        Log.Information(
-            "Configure Machine:{{{MachineId}}} - Finished ssh: {MachineHostName}, {MachineStatusMachineIp}",
-            machine.MachineID,
-            machine.HostName,
-            machine.MachineStatus.MachineIp);
-        
-        return true; //TODO: Implement error handling for configuration 
+        Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess - Process timed out and was terminated",
+            machine.MachineID);
+        return false;
     }
 
     //Commented out due to issues with ssh libraries
