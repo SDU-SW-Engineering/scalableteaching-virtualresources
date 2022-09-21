@@ -13,6 +13,7 @@ using ScalableTeaching.OpenNebula;
 using ScalableTeaching.Services;
 using Serilog;
 using ScalableTeaching.Services.HostedServices;
+using Serilog.Events;
 using static ScalableTeaching.Models.User.UserType;
 
 namespace ScalableTeaching
@@ -77,12 +78,24 @@ namespace ScalableTeaching
             services.AddScoped<SshConfigBuilder>();
             services.AddHostedService<MachineControllerService>();
             services.AddSingleton<IDbContextFactory, VmDeploymentContextFactory>();
-            Log.Logger = new LoggerConfiguration()
+            var loggerConfiguration = new LoggerConfiguration()
                 .ReadFrom.Configuration(Configuration)
                 .WriteTo.Console()
                 .WriteTo.File($"{Environment.GetEnvironmentVariable("ScalableTeachingBaseLocation")}/logs/log-.txt",
-                    rollingInterval: RollingInterval.Day)
-                .CreateLogger();
+                    rollingInterval: RollingInterval.Day);
+            var ENVSerilogLoggingLevel = Environment.GetEnvironmentVariable("SERILOG_LOGGING_LEVEL");
+            if ( ENVSerilogLoggingLevel is not null)
+            {
+                try
+                {
+                    loggerConfiguration = loggerConfiguration.MinimumLevel.Is(ToLogLevel(ENVSerilogLoggingLevel));
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine($"There was an exception setting the log level in serilog - Message {e.Message}, \nStacktrace: {e.StackTrace}");
+                }
+            }
+            Log.Logger = loggerConfiguration.CreateLogger();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -118,5 +131,16 @@ namespace ScalableTeaching
         {
             Log.CloseAndFlush();
         }
+
+        private static LogEventLevel ToLogLevel(string level) => level switch
+        {
+            "verbose" => LogEventLevel.Verbose,
+            "debug" => LogEventLevel.Debug,
+            "information" => LogEventLevel.Information,
+            "warning" => LogEventLevel.Warning,
+            "error" => LogEventLevel.Error,
+            "fatal" => LogEventLevel.Fatal,            
+            _ => throw new ArgumentOutOfRangeException($"Level {level} is not a valid serilog level")
+        };
     }
 }
