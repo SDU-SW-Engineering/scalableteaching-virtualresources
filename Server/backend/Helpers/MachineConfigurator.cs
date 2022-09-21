@@ -236,7 +236,7 @@ public class MachineConfigurator
             p.StartInfo.RedirectStandardError = true;
             p.StartInfo.FileName = "openssl";
             p.StartInfo.Arguments = 
-                $"passwd -6 -salt '{StringHelper.RandomString(16)}' '{user.UserPassword}'";
+                $"passwd -6 -salt {StringHelper.RandomString(16)} '{user.UserPassword}'";
             p.Start();
             await p.WaitForExitAsync();
             var userPasswordHash = await p.StandardOutput.ReadToEndAsync();
@@ -317,7 +317,8 @@ public class MachineConfigurator
         Log.Verbose("Configure Machine:{{{MachineId}}} - Starting ssh: Did scp into {MachineHostName} {MachineStatusMachineIp}, status:\n" +
                         "Exit code: {ExitCode} \n" +
                         "stdout: {Stdout} \n" +
-                        "stderr: {Stderr}", 
+                        "stderr: {Stderr}",
+            machine.MachineID,
             machine.HostName, 
             machine.MachineStatus.MachineIp, 
             p_scp.ExitCode, 

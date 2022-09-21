@@ -49,8 +49,8 @@ namespace ScalableTeaching.Services.HostedServices
             _CreationQueueingTimer = new(CreationQueueingTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
             _CreatedTimer = new(CreatedTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
             _StatusTimer = new(StatusTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
-            _DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromHours(1));
-            _CourseDeletionTimer = new(CourseDeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromHours(1));
+            _DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(2));
+            _CourseDeletionTimer = new(CourseDeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
 
             Log.Information("MachineControllerService - Machine Controller Service Started");
             return Task.CompletedTask;
@@ -86,7 +86,7 @@ namespace ScalableTeaching.Services.HostedServices
                 foreach(var request in requests)
                 {
                     var subcontext = _factory.GetContext();
-                    Log.Information("MachineControllerService - Machine Deletion - {RequestMachineId}: Checking Deletion Request: {RequestMachineId}", request.MachineID);
+                    Log.Verbose("MachineControllerService - Machine Deletion - {RequestMachineId}: Checking Deletion Request", request.MachineID);
                     if (DateTime.UtcNow.ToUniversalTime().CompareTo(request.DeletionDate.ToUniversalTime()) <= 0)
                         return;
                     Log.Information("MachineControllerService - Machine Deletion - {RequestMachineId}: Machine has passed the deletion threshold", request.MachineID);
