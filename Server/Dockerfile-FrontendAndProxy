@@ -9,8 +9,9 @@ RUN npm run build
 
 #Run
 FROM nginx:stable-alpine as prod
-COPY --from=build /src/dist /app
+COPY --chown=101:101 --from=build /src/dist /app
 EXPOSE 80
 EXPOSE 443
+USER 101:101
 
 CMD ["nginx", "-g", "daemon off;"]
