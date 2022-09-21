@@ -230,27 +230,19 @@ public class MachineConfigurator
             
             //User password hash save file
             Log.Verbose("Configure Machine:{{{MachineId}}} - Generating password hash for user: {UserUsername}", machine.MachineID, user.Username);
-            var userPasswordHashFile = $"/tmp/{StringHelper.RandomString(16)}";
             var p = new Process();
             p.StartInfo.UseShellExecute = false;
-            p.StartInfo.RedirectStandardOutput = false;
-            p.StartInfo.RedirectStandardError = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.RedirectStandardError = true;
             p.StartInfo.FileName = "openssl";
             p.StartInfo.Arguments = 
-                $"passwd -6 -salt '{StringHelper.RandomString(16)}' '{user.UserPassword}' > {userPasswordHashFile}";
+                $"passwd -6 -salt '{StringHelper.RandomString(16)}' '{user.UserPassword}'";
             p.Start();
             await p.WaitForExitAsync();
+            var userPasswordHash = p.StandardOutput.ReadToEndAsync();
             
-            Log.Verbose("Configure Machine:{{{MachineId}}} - Generated password hash to file {PasswordHashFile}", machine.MachineID, userPasswordHashFile);
-
-            //Get user password hash from file
-            var userPasswordHash = (await File.ReadAllTextAsync(userPasswordHashFile)).TrimEnd();
-            Log.Verbose("Configure Machine:{{{MachineId}}} - Generated hash is userPasswordHash", machine.MachineID);
+            Log.Verbose("Configure Machine:{{{MachineId}}} - Generated hash is {GeneratedHash}", machine.MachineID, userPasswordHash);
             
-            //Cleanup User password hash file
-            Log.Verbose("Configure Machine:{{{MachineId}}} - Removing file for storing password hash", machine.MachineID);
-            File.Delete(userPasswordHashFile);
-            Log.Verbose("Configure Machine:{{{MachineId}}} - Removed file for storing password hash", machine.MachineID);
             
             
             //Create User with password set
