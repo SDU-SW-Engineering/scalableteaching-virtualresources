@@ -219,15 +219,17 @@ public class MachineConfigurator
 
         //Add groups
         foreach (var group in machine.LinuxGroups) builder.AppendLine($"sudo groupadd {group}");
-        Log.Information("Configure Machine:{{{MachineId}}} - Configuration users count {}");
+        
+        Log.Verbose("Configure Machine:{{{MachineId}}} - Configuration users count {ConfigurationUsersCount}", machine.MachineID, configurationUsers.Count);
         
         //Add users
         foreach (var user in configurationUsers)
         {
-            Log.Information("Configure Machine:{{{MachineId}}} -" +
+            Log.Verbose("Configure Machine:{{{MachineId}}} -" +
                             " Configuring user {UserUsername}",machine.MachineID, user.Username);
             
             //User password hash save file
+            Log.Verbose("Configure Machine:{{{MachineId}}} - Generating password hash for user: {UserUsername}", machine.MachineID, user.Username);
             var userPasswordHashFile = $"/tmp/{StringHelper.RandomString(16)}";
             var p = new Process();
             p.StartInfo.UseShellExecute = false;
@@ -243,7 +245,7 @@ public class MachineConfigurator
 
             //Get user password hash from file
             var userPasswordHash = (await File.ReadAllTextAsync(userPasswordHashFile)).TrimEnd();
-            Log.Verbose("Configure Machine:{{{MachineId}}} - Generated hash is userPasswordHash");
+            Log.Verbose("Configure Machine:{{{MachineId}}} - Generated hash is userPasswordHash", machine.MachineID);
             
             //Cleanup User password hash file
             Log.Verbose("Configure Machine:{{{MachineId}}} - Removing file for storing password hash", machine.MachineID);
