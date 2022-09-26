@@ -89,7 +89,7 @@ namespace ScalableTeaching.Services.HostedServices
                     Log.Verbose("MachineControllerService - Machine Deletion - {RequestMachineId}: Checking Deletion Request", request.MachineID);
                     if (DateTime.UtcNow.ToUniversalTime().CompareTo(request.DeletionDate.ToUniversalTime()) <= 0)
                         return;
-                    Log.Information("MachineControllerService - Machine Deletion - {RequestMachineId}: Machine has passed the deletion threshold", request.MachineID);
+                    Log.Verbose("MachineControllerService - Machine Deletion - {RequestMachineId}: Machine has passed the deletion threshold", request.MachineID);
                     var machine = 
                         await subcontext.Machines.FirstOrDefaultAsync(m => m.MachineID == request.MachineID);
                     if (machine == null)
@@ -133,17 +133,17 @@ namespace ScalableTeaching.Services.HostedServices
             if (_CourseDeletionIsGoing) return;
             try
             {
-                Log.Information("MachineControllerService - Course Deletion: Testing for courses scheduled for deletion");
+                Log.Verbose("MachineControllerService - Course Deletion: Testing for courses scheduled for deletion");
                 _CourseDeletionIsGoing = true;
                 var context = _factory.GetContext();
                 var courses = await context.Courses.Where(c => c.Active == false).ToListAsync();
-                Log.Information("MachineControllerService - Course Deletion: Found {Count} courses scheduled for deletion", courses.Count);
+                Log.Verbose("MachineControllerService - Course Deletion: Found {Count} courses scheduled for deletion", courses.Count);
                 foreach (var course in courses)
                 {
                     //If any machines are still associated with the course then skip this course.
                     if (await context.Machines.AnyAsync(m => m.CourseID == course.CourseID))
                     {
-                        Log.Information("MachineControllerService - Course Deletion - {CourseId}: Not all machines associated machines have been deleted. Skipping deletion for course: {CourseLongName}", course.CourseID, course.CourseName);
+                        Log.Verbose("MachineControllerService - Course Deletion - {CourseId}: Not all machines associated machines have been deleted. Skipping deletion for course: {CourseLongName}", course.CourseID, course.CourseName);
                         return;
                     }
                     //Delete the course
