@@ -81,6 +81,9 @@ public class MachineConfigurator
         //Make the script output every command before they are run
         builder.AppendLine("set -x #echo on");
 
+        //Possible bugfix for debconf: unable to initialize frontend: Dialog
+        builder.AppendLine("echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections");
+
         //Update Admin password to prevent lockout by ssh key mishap
         builder.AppendLine($"echo \"admin:{Environment.GetEnvironmentVariable("ADMIN_PASSWD")}\" | sudo chpasswd");
 
