@@ -107,9 +107,9 @@ public class MachineConfigurator
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.RedirectStandardOutput = true;
             p.StartInfo.RedirectStandardError = true;
-            p.StartInfo.FileName = "openssl";
+            p.StartInfo.FileName = "sh";
             p.StartInfo.Arguments =
-                $"passwd -6 -salt {passwordSalt} '{user.UserPassword}'";
+                $"-c \"openssl passwd -6 -salt {passwordSalt} '{user.UserPassword}'\"";
             p.Start();
             await p.WaitForExitAsync();
             var userPasswordHash = (await p.StandardOutput.ReadToEndAsync()).TrimEnd();
