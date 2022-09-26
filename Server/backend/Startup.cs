@@ -31,10 +31,7 @@ namespace ScalableTeaching
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "backend", Version = "v1" });
-            });
+            services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "backend", Version = "v1"}); });
             services.AddDbContext<VmDeploymentContext>(options =>
                 //Build database connection string from environment
                 options.UseLazyLoadingProxies().UseNpgsql(
@@ -42,23 +39,23 @@ namespace ScalableTeaching
                     ";Database=" + Environment.GetEnvironmentVariable("db") +
                     ";Username=" + Environment.GetEnvironmentVariable("dbuser") +
                     ";Password=" + Environment.GetEnvironmentVariable("dbpass")
-                    )
+                )
             );
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false; //TODO: Set to true for production
+                x.TokenValidationParameters = new TokenValidationParameters
                 {
-                    x.RequireHttpsMetadata = false; //TODO: Set to true for production
-                    x.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new RsaSecurityKey(CryptoHelper.Instance.Rsa),
-                        ValidateIssuer = false,
-                        ValidateAudience = false
-                    };
-                });
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new RsaSecurityKey(CryptoHelper.Instance.Rsa),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("AdministratorLevel", policy => policy.RequireClaim("account_type",
@@ -82,9 +79,9 @@ namespace ScalableTeaching
                 .ReadFrom.Configuration(Configuration)
                 .WriteTo.Console()
                 .WriteTo.File($"{Environment.GetEnvironmentVariable("ScalableTeachingBaseLocation")}/logs/log-.txt",
-                    rollingInterval: RollingInterval.Day);
+                    rollingInterval: RollingInterval.Day, flushToDiskInterval: TimeSpan.FromMinutes(1));
             var ENVSerilogLoggingLevel = Environment.GetEnvironmentVariable("SERILOG_LOGGING_LEVEL");
-            if ( ENVSerilogLoggingLevel is not null)
+            if (ENVSerilogLoggingLevel is not null)
             {
                 try
                 {
@@ -92,9 +89,11 @@ namespace ScalableTeaching
                 }
                 catch (Exception e)
                 {
-                    Console.Error.WriteLine($"There was an exception setting the log level in serilog - Message {e.Message}, \nStacktrace: {e.StackTrace}");
+                    Console.Error.WriteLine(
+                        $"There was an exception setting the log level in serilog - Message {e.Message}, \nStacktrace: {e.StackTrace}");
                 }
             }
+
             Log.Logger = loggerConfiguration.CreateLogger();
         }
 
@@ -118,11 +117,7 @@ namespace ScalableTeaching
             app.UseAuthorization();
 
 
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
             lifetime.ApplicationStopped.Register(OnShutdown);
         }
@@ -139,7 +134,7 @@ namespace ScalableTeaching
             "information" => LogEventLevel.Information,
             "warning" => LogEventLevel.Warning,
             "error" => LogEventLevel.Error,
-            "fatal" => LogEventLevel.Fatal,            
+            "fatal" => LogEventLevel.Fatal,
             _ => throw new ArgumentOutOfRangeException($"Level {level} is not a valid serilog level")
         };
     }
