@@ -114,10 +114,11 @@ public class MachineConfigurator
             await p.WaitForExitAsync();
             var userPasswordHash = (await p.StandardOutput.ReadToEndAsync()).TrimEnd();
 
-            Log.Verbose(
-                "Configure Machine:{{{MachineId}}} - Generated hash is {GeneratedHash} Generated from openssl passwd -6 -salt {passwdSalt} '{password}'",
-                machine.MachineID,
-                userPasswordHash, passwordSalt, user.UserPassword);
+            //This is to debug password generation - I have tested that password generation works, so this might not be necessary any more
+            // Log.Verbose(
+            //     "Configure Machine:{{{MachineId}}} - Generated hash is {GeneratedHash} Generated from openssl passwd -6 -salt {passwdSalt} '{password}'",
+            //     machine.MachineID,
+            //     userPasswordHash, passwordSalt, user.UserPassword);
 
             //Create User with password set
             builder.AppendLine($"useradd -s \"/usr/bin/bash\" -m -p '{userPasswordHash}' " +
@@ -139,9 +140,6 @@ public class MachineConfigurator
             builder.AppendLine(
                 $"sudo sh -c 'echo \"{user.Username.ToLower()} " +
                 $"ALL=(ALL) NOPASSWD:ALL\" > /etc/sudoers.d/{user.Username.ToLower()}'");
-
-            // //Update to correct password 
-            // builder.AppendLine($"sudo sh -c 'yes {user.UserPassword} | passwd {user.Username.ToLower()}'");
         }
 
         //Update
