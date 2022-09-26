@@ -62,6 +62,8 @@ namespace ScalableTeaching.Controllers
                 .SelectMany(g => g.Group.MachineAssignments)
                 .Select(ma => ma.Machine).ToListAsync());
 
+            //Remove Any duplicates
+            machines = machines.DistinctBy(m => m.MachineID).ToList();
 
             List<MachineManagementReturn> returnList = new();
             foreach (var machine in machines)
