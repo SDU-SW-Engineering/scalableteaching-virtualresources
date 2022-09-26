@@ -27,19 +27,21 @@ namespace ScalableTeaching.Controllers
         [HttpPost]
         public async Task<ActionResult> PostToken(SSOTokenDTO tokendata)
         {
-            Log.Information("AuthController - Person logged in - Tokendata - ",tokendata);
+            Log.Verbose("AuthController-PostToken-Tokendata:{tokendata}",tokendata);
             try
             {
                 UserDTO user = await SSOHelper.GetSSOData(tokendata);
                 User databaseUserReturn = await _context.Users.FindAsync(user.Username.ToLower());
                 if (databaseUserReturn == null)
                 {
+                    Log.Verbose("AuthController-PostToken-new user: {username}", user.Username);
                     _context.Users.Add(await UserFactory.Create(user.Username, user.Mail, user.Gn, user.Sn));
                     await _context.SaveChangesAsync();
                     user.AccountType = nameof(Models.User.UserType.User);
                 }
                 else
                 {
+                    Log.Verbose("AuthController-PostToken-Existing user: {username}, Account type: {usertype}", user.Username, databaseUserReturn.AccountType.ToString());
                     if (databaseUserReturn.Mail == null) databaseUserReturn.Mail = user.Mail;
                     if (databaseUserReturn.GeneralName == null) databaseUserReturn.GeneralName = user.Gn;
                     if (databaseUserReturn.Surname == null) databaseUserReturn.Surname = user.Sn;
@@ -53,6 +55,7 @@ namespace ScalableTeaching.Controllers
             }
             catch (ArgumentException)
             {
+                Log.Verbose("Authcontroller-PostToken-Authentication Failed");
                 return Unauthorized("Authentication Failed");
             }
         }
