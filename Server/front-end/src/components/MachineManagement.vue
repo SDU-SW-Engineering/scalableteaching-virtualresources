@@ -164,6 +164,9 @@
           <ul>
             <li v-for="(value, key) in row.item" :key="key">{{ key }}: {{ value }}</li>
           </ul>
+          <b-button variant="warning" size="sm" @click="cancelDeletion(row.item.id)">
+
+          </b-button>
         </b-card>
       </template>
     </b-table>
@@ -237,6 +240,12 @@ export default {
     async reboot(machineId) {
       let response = await MachinesAPI.postRebootMachine(machineId);
       if (this.isDevelopment) window.console.log("Rebooted machine - Response: ", response);
+    },
+    async cancelDeletion(machineId){
+      let response = await MachinesAPI.undo_delete(machineId);
+      if (response.status >= 200 && response.status < 300){
+        await this.loadTableData();
+      }
     },
     async loadTableData() {
       this.tableIsBusy = true;
