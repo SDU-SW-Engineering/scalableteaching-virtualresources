@@ -1,0 +1,13 @@
+{
+    "recommendations": [
+        "redhat.vscode-xml",
+        "redhat.vscode-yaml",
+        "bierner.markdown-preview-github-styles",
+        "bierner.markdown-footnotes",
+        "bierner.markdown-emoji",
+        "bierner.markdown-checkbox",
+        "bierner.github-markdown-preview",
+        "github.vscode-pull-request-github",
+        "ms-azuretools.vscode-docker"
+    ]
+}
