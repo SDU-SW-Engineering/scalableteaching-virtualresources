@@ -8,6 +8,7 @@ using ScalableTeaching.Models;
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ScalableTeaching.Controllers.Extensions;
 using Serilog;
 
 namespace ScalableTeaching.Controllers
@@ -64,6 +65,7 @@ namespace ScalableTeaching.Controllers
         [Authorize(Policy = "UserLevel")]
         public ActionResult PostValidateUser()
         {
+            Log.Verbose("AuthController-PostValidateUser-UserValidatedAsUser: {Username}", this.GetUsername());
             return Ok("Valid - Your credentials are valid for this level of access");
         }
 
@@ -71,6 +73,7 @@ namespace ScalableTeaching.Controllers
         [Authorize(Policy = "EducatorLevel")]
         public ActionResult PostValidateEducator()
         {
+            Log.Verbose("AuthController-PostValidateUser-UserValidatedAsEducator: {Username}", this.GetUsername());
             return Ok("Valid - Your credentials are valid for this level of access");
         }
 
@@ -78,6 +81,7 @@ namespace ScalableTeaching.Controllers
         [Authorize(Policy = "AdministratorLevel")]
         public ActionResult PostValidateAdministrator()
         {
+            Log.Verbose("AuthController-PostValidateUser-UserValidatedAsAdministrator: {Username}", this.GetUsername());
             return Ok("Valid - Your credentials are valid for this level of access");
         }
 
