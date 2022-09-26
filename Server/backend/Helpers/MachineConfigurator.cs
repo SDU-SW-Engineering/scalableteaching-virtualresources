@@ -215,10 +215,15 @@ public class MachineConfigurator
         p_ssh.Start();
 
         var time = DateTime.Now;
+        string p_ssh_output = "";
+        string p_ssh_error = "";
         while (time + TimeSpan.FromMinutes(5) >= DateTime.Now)
         {
             var output = await p_ssh.StandardOutput.ReadLineAsync();
+            p_ssh_output += output;
+
             var err = await p_ssh.StandardError.ReadLineAsync();
+            p_ssh_error += err ?? "";
 
             if (err != null)
                 Log.Error("Configure Machine:{{{MachineId}}} - RunSSHProcessError - {Error}",
@@ -238,7 +243,7 @@ public class MachineConfigurator
                         machine.MachineID,
                         machine.HostName,
                         machine.MachineStatus.MachineIp);
-                    return true;
+                    return false;
                 }
             }
 
@@ -251,14 +256,14 @@ public class MachineConfigurator
                     machine.MachineID, remainingOutput);
                 Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess - Remaining Error Output: {Error}",
                     machine.MachineID, await p_ssh.StandardError.ReadToEndAsync());
-                return remainingOutput.Contains(randomDetectionString);
+                return !remainingOutput.Contains(randomDetectionString);
             }
         }
 
         Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess " +
                     "- Process timed out and was terminated",
             machine.MachineID);
-        return false;
+        return true;
     }
 
     private class MachineConfigurationUser
