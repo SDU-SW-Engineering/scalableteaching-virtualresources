@@ -24,17 +24,27 @@ namespace ScalableTeaching.Controllers
         }
 
         // GET: api/Course/Administrator
+        /// <summary>
+        /// Get all the courses as an administrator
+        /// </summary>
+        /// <returns>A list of courses</returns>
         [HttpGet("/api/administrator/courses")]
         [Authorize(Policy = "AdministratorLevel")]
         public async Task<ActionResult<IEnumerable<CourseDTO>>> GetCoursesAdministrator()
         {
+            
             var courses = await _context.Courses.Where(c=> c.Active).Select(course => (CourseDTO)course).ToListAsync();
 
             return courses.Any() ? Ok(courses) : NoContent();
         }
+        
+        /// <summary>
+        /// Get assigned courses
+        /// </summary>
+        /// <returns>Gets a list of courses where the user is assigned as the owner</returns>
         // GET: api/Course
         [HttpGet]
-        [Authorize(Policy = "")]
+        [Authorize(Policy = "EducatorLevel")]
         public async Task<ActionResult<IEnumerable<CourseDTO>>> GetCourses()
         {
             var courses = await _context.Courses.Where(course => course.UserUsername == this.GetUsername() && course.Active).Cast<CourseDTO>().ToListAsync();
@@ -42,10 +52,16 @@ namespace ScalableTeaching.Controllers
             return courses.Count > 0 ? Ok(courses) : NoContent();
         }
 
+        /// <summary>
+        /// Gets a specific course
+        /// </summary>
+        /// <param name="id">Gets a specific course</param>
+        /// <returns>400 on empty guid, 404 on non existant course, 200 on finding the item</returns>
         // GET: api/Course/5
         [HttpGet("{id}")]
         public async Task<ActionResult<CourseDTO>> GetCourse(Guid id)
         {
+            if (id == Guid.Empty) return BadRequest("The id was 0 or empty");
             var course = await _context.Courses.FindAsync(id);
 
             if (course == null)
@@ -53,24 +69,29 @@ namespace ScalableTeaching.Controllers
                 return NotFound();
             }
 
-            return (CourseDTO)course;
+            return Ok((CourseDTO)course);
         }
 
+        /// <summary>
+        /// Updates a course
+        /// </summary>
+        /// <param name="id">Course id</param>
+        /// <param name="courseDTO">Object representing the course</param>
+        /// <returns></returns>
         // PUT: api/Course/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCourse(Guid id, CourseDTO courseDTO)
         {
             //Validate Request
             if (id != courseDTO.CourseID)
             {
-                return BadRequest();
+                return BadRequest("Mismatch between ids");
             }
             
             //If the user enters a username that is the entire email, then shorten the username
-            if (courseDTO.OwnerUsername.Contains('@')) courseDTO.OwnerUsername = courseDTO.OwnerUsername.Split('@')[0];
+            if (courseDTO.OwnerUsername.Contains('@')) courseDTO.OwnerUsername = courseDTO.OwnerUsername.Split('@')[0].ToLower();
             
-            if (courseDTO.CourseName is null || courseDTO.ShortCourseName is null || courseDTO.SDUCourseID is null) return BadRequest("Field is null");
+            if (courseDTO.CourseName is null || courseDTO.ShortCourseName is null || courseDTO.SDUCourseID is null) return BadRequest("A field is null");
             if (await _context.Users.FindAsync(courseDTO.OwnerUsername) == null) return BadRequest("User Does not exist");
             if (!courseDTO.ShortCourseName.Any() || !courseDTO.CourseName.Any() || !courseDTO.SDUCourseID.Any()) return BadRequest("Field Empty");
 
@@ -109,8 +130,12 @@ namespace ScalableTeaching.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Create a new course
+        /// </summary>
+        /// <param name="courseDTO">object representing the course</param>
+        /// <returns></returns>
         // POST: api/Course
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Course>> PostCourse(CourseCreationDTO courseDTO)
         {
