@@ -75,6 +75,12 @@ public class MachineConfigurator
 
         var builder = new StringBuilder();
 
+        //Add shebang
+        builder.AppendLine("#!/bin/bash");
+
+        //Make the script output every command before they are run
+        builder.AppendLine("set -x #echo on");
+
         //Update Admin password to prevent lockout by ssh key mishap
         builder.AppendLine($"echo \"admin:{Environment.GetEnvironmentVariable("ADMIN_PASSWD")}\" | sudo chpasswd");
 
