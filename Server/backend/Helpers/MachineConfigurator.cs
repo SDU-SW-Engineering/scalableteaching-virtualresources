@@ -102,19 +102,22 @@ public class MachineConfigurator
             //User password hash save file
             Log.Verbose("Configure Machine:{{{MachineId}}} - Generating password hash for user: {UserUsername}",
                 machine.MachineID, user.Username);
+            var passwordSalt = StringHelper.RandomString(16);
             var p = new Process();
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.RedirectStandardOutput = true;
             p.StartInfo.RedirectStandardError = true;
             p.StartInfo.FileName = "openssl";
             p.StartInfo.Arguments =
-                $"passwd -6 -salt {StringHelper.RandomString(16)} '{user.UserPassword}'";
+                $"passwd -6 -salt {passwordSalt} '{user.UserPassword}'";
             p.Start();
             await p.WaitForExitAsync();
             var userPasswordHash = (await p.StandardOutput.ReadToEndAsync()).TrimEnd();
 
-            Log.Verbose("Configure Machine:{{{MachineId}}} - Generated hash is {GeneratedHash}", machine.MachineID,
-                userPasswordHash);
+            Log.Verbose(
+                "Configure Machine:{{{MachineId}}} - Generated hash is {GeneratedHash} Generated from openssl passwd -6 -salt {passwdSalt} '{password}'",
+                machine.MachineID,
+                userPasswordHash, passwordSalt, user.UserPassword);
 
             //Create User with password set
             builder.AppendLine($"useradd -s \"/usr/bin/bash\" -m -p '{userPasswordHash}' " +
