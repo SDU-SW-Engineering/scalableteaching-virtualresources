@@ -85,9 +85,14 @@ namespace ScalableTeaching.Controllers
             return Ok("Valid - Your credentials are valid for this level of access");
         }
 
+        /// <summary>
+        /// Get the public key for the Json Web Token
+        /// </summary>
+        /// <returns>Json serialised public key with a code 200</returns>
         [HttpGet]
         public ActionResult GetKey()
         {
+            Log.Verbose("AuthController-GetKey: Someone requested the public key for jwt authentication");
             var json = JsonSerializer.Serialize(new PubKey(CryptoHelper.Instance.GetPublicKeyPem()));
             return Ok(json);
         }
