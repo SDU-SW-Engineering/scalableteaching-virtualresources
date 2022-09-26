@@ -218,17 +218,13 @@ public class MachineConfigurator
             var err = await p_ssh.StandardError.ReadLineAsync();
 
             if (err != null)
-                Log.Error("Configure Machine:{{{MachineId}}} - RunSSHProcessError - {err}",
+                Log.Error("Configure Machine:{{{MachineId}}} - RunSSHProcessError - {Error}",
                     machine.MachineID, err);
-
-            if (p_scp.HasExited)
-                Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess " +
-                            "- Process terminated unexpectedly", machine.MachineID);
 
             if (output != null)
             {
                 Log.Verbose("Configure Machine:{{{MachineId}}} - RunSSHProcessOutput " +
-                            "- {output}", machine.MachineID,
+                            "- {Output}", machine.MachineID,
                     output);
                 if (output.Contains(randomDetectionString))
                 {
@@ -241,6 +237,18 @@ public class MachineConfigurator
                         machine.MachineStatus.MachineIp);
                     return true;
                 }
+            }
+
+            if (p_scp.HasExited)
+            {
+                var remainingOutput = await p_ssh.StandardOutput.ReadToEndAsync();
+                Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess " +
+                            "- Process terminated unexpectedly", machine.MachineID);
+                Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess - Remaining Output: {Output}",
+                    machine.MachineID, remainingOutput);
+                Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess - Remaining Error Output: {Error}",
+                    machine.MachineID, await p_ssh.StandardError.ReadToEndAsync());
+                return remainingOutput.Contains(randomDetectionString);
             }
         }
 
