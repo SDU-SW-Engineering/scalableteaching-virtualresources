@@ -319,6 +319,10 @@ namespace ScalableTeaching.Controllers
                     "There was an error while trying to delete the machine. Contact a Virtualresources administrator for help.");
             }
 
+            //Remove the status for the reset machine
+            var status = await _context.MachineStatuses.FindAsync(machine.MachineID);
+            _context.MachineStatuses.Remove(status);
+
             Log.Verbose("MachineController-ResetMachine-{id}: Machine Deleted", id);
             //Schedule machine for creation            
             machine.MachineCreationStatus = CreationStatus.REGISTERED;
