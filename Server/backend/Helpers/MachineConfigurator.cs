@@ -350,22 +350,24 @@ public class MachineConfigurator
             var err = await p_ssh.StandardError.ReadLineAsync();
 
             if (err != null)
-                Log.Verbose("Configure Machine:{{{MachineId}}} - RunSSHProcessError - {err}",
+                Log.Error("Configure Machine:{{{MachineId}}} - RunSSHProcessError - {err}",
                     machine.MachineID, err);
 
             if (p_scp.HasExited)
-                Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess - Process terminated unexpectedly",
-                    machine.MachineID);
+                Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess " +
+                            "- Process terminated unexpectedly", machine.MachineID);
 
             if (output != null)
             {
-                Log.Verbose("Configure Machine:{{{MachineId}}} - RunSSHProcessOutput - {output}", machine.MachineID,
+                Log.Verbose("Configure Machine:{{{MachineId}}} - RunSSHProcessOutput " +
+                            "- {output}", machine.MachineID,
                     output);
                 if (output.Contains(randomDetectionString))
                 {
                     p_ssh.Kill();
                     Log.Information(
-                        "Configure Machine:{{{MachineId}}} - Finished ssh: {MachineHostName}, {MachineStatusMachineIp}",
+                        "Configure Machine:{{{MachineId}}} " +
+                        "- Finished ssh: {MachineHostName}, {MachineStatusMachineIp}",
                         machine.MachineID,
                         machine.HostName,
                         machine.MachineStatus.MachineIp);
@@ -374,7 +376,8 @@ public class MachineConfigurator
             }
         }
 
-        Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess - Process timed out and was terminated",
+        Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess " +
+                    "- Process timed out and was terminated",
             machine.MachineID);
         return false;
     }
