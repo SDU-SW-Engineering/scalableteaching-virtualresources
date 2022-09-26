@@ -206,7 +206,7 @@ public class MachineConfigurator
         p_ssh.StartInfo.Arguments =
             $"-o StrictHostKeyChecking=no -i {SERVER_SCALABLE_TEACHING_PATH}/.ssh/id_rsa" +
             $" admin@{machine.MachineStatus.MachineIp} \"sudo chmod 777 /home/admin/configfile.sh;" +
-            " sudo sh -c '/home/admin/configfile.sh';" +
+            " sudo bash '/home/admin/configfile.sh';" +
 //            " sudo rm /home/admin/configfile.sh;" +
             $" touch /home/admin/ranConfig; echo {randomDetectionString}; exit\"";
         p_ssh.Start();
