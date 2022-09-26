@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using Renci.SshNet;
 using ScalableTeaching.Models;
 using ScalableTeaching.Services;
 using Serilog;
@@ -219,38 +218,37 @@ public class MachineConfigurator
 
         //Add groups
         foreach (var group in machine.LinuxGroups) builder.AppendLine($"sudo groupadd {group}");
-        
-        Log.Verbose("Configure Machine:{{{MachineId}}} - Configuration users count {ConfigurationUsersCount}", machine.MachineID, configurationUsers.Count);
-        
+
+        Log.Verbose("Configure Machine:{{{MachineId}}} - Configuration users count {ConfigurationUsersCount}",
+            machine.MachineID, configurationUsers.Count);
+
         //Add users
         foreach (var user in configurationUsers)
         {
             Log.Verbose("Configure Machine:{{{MachineId}}} -" +
-                            " Configuring user {UserUsername}",machine.MachineID, user.Username);
-            
+                        " Configuring user {UserUsername}", machine.MachineID, user.Username);
+
             //User password hash save file
-            Log.Verbose("Configure Machine:{{{MachineId}}} - Generating password hash for user: {UserUsername}", machine.MachineID, user.Username);
+            Log.Verbose("Configure Machine:{{{MachineId}}} - Generating password hash for user: {UserUsername}",
+                machine.MachineID, user.Username);
             var p = new Process();
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.RedirectStandardOutput = true;
             p.StartInfo.RedirectStandardError = true;
             p.StartInfo.FileName = "openssl";
-            p.StartInfo.Arguments = 
+            p.StartInfo.Arguments =
                 $"passwd -6 -salt {StringHelper.RandomString(16)} '{user.UserPassword}'";
             p.Start();
             await p.WaitForExitAsync();
-            var userPasswordHashUntrimmed = await p.StandardOutput.ReadToEndAsync();
-            var userPasswordHash = userPasswordHashUntrimmed.TrimEnd();
-            
-            Log.Verbose("Configure Machine:{{{MachineId}}} - Generated hash is {GeneratedHash} (untrimmed: {untrimmed})", machine.MachineID, userPasswordHash, userPasswordHashUntrimmed);
-            
-            
-            
-            //Create User with password set
-            builder.AppendLine($"useradd -s \"/usr/bin/bash\" -m -p '{userPasswordHash}' {user.Username.ToLower()}");
+            var userPasswordHash = (await p.StandardOutput.ReadToEndAsync()).TrimEnd();
 
-            //Add user to linux groups
-            builder.AppendLine($"usermod -aG {string.Join(",", user.Groups)} {user.Username.ToLower()}");
+            Log.Verbose("Configure Machine:{{{MachineId}}} - Generated hash is {GeneratedHash}", machine.MachineID,
+                userPasswordHash);
+
+            //Create User with password set
+            builder.AppendLine($"useradd -s \"/usr/bin/bash\" -m -p '{userPasswordHash}' " +
+                               $"{(user.Groups.Count > 0 ? "-G" + string.Join(",", user.Groups) : "")}" + // Conditionally add the groups 
+                               $" {user.Username.ToLower()}");
 
             //Prep authorized_keys
             builder.AppendLine(
@@ -315,21 +313,23 @@ public class MachineConfigurator
         p_scp.Start();
         await p_scp.WaitForExitAsync();
 
-        Log.Verbose("Configure Machine:{{{MachineId}}} - Starting ssh: Did scp into {MachineHostName} {MachineStatusMachineIp}, status:\n" +
-                        "Exit code: {ExitCode} \n" +
-                        "stdout: {Stdout} \n" +
-                        "stderr: {Stderr}",
+        Log.Verbose(
+            "Configure Machine:{{{MachineId}}} - Starting ssh: Did scp into {MachineHostName} {MachineStatusMachineIp}, status:\n" +
+            "Exit code: {ExitCode} \n" +
+            "stdout: {Stdout} \n" +
+            "stderr: {Stderr}",
             machine.MachineID,
-            machine.HostName, 
-            machine.MachineStatus.MachineIp, 
-            p_scp.ExitCode, 
-            p_scp.StandardOutput.ReadToEnd(), 
+            machine.HostName,
+            machine.MachineStatus.MachineIp,
+            p_scp.ExitCode,
+            p_scp.StandardOutput.ReadToEnd(),
             p_scp.StandardError.ReadToEnd());
-        
+
         //Run the command
-        Log.Verbose("Configure Machine:{{{MachineId}}} - Starting ssh: {MachineHostName}, {MachineStatusMachineIp}",machine.MachineID, machine.HostName, machine.MachineStatus.MachineIp);
+        Log.Verbose("Configure Machine:{{{MachineId}}} - Starting ssh: {MachineHostName}, {MachineStatusMachineIp}",
+            machine.MachineID, machine.HostName, machine.MachineStatus.MachineIp);
         var randomDetectionString = StringHelper.RandomString(10);
-        
+
         var p_ssh = new Process();
         p_ssh.StartInfo.UseShellExecute = false;
         p_ssh.StartInfo.RedirectStandardOutput = true;
@@ -349,14 +349,14 @@ public class MachineConfigurator
             var output = await p_ssh.StandardOutput.ReadLineAsync();
             var err = await p_ssh.StandardError.ReadLineAsync();
 
-            if (err != null) Log.Verbose("Configure Machine:{{{MachineId}}} - RunSSHProcessError - {err}",
-                machine.MachineID,err);
+            if (err != null)
+                Log.Verbose("Configure Machine:{{{MachineId}}} - RunSSHProcessError - {err}",
+                    machine.MachineID, err);
 
             if (p_scp.HasExited)
-            {
-                Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess - Process terminated unexpectedly", machine.MachineID);
-            }
-            
+                Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess - Process terminated unexpectedly",
+                    machine.MachineID);
+
             if (output != null)
             {
                 Log.Verbose("Configure Machine:{{{MachineId}}} - RunSSHProcessOutput - {output}", machine.MachineID,
@@ -371,9 +371,9 @@ public class MachineConfigurator
                         machine.MachineStatus.MachineIp);
                     return true;
                 }
-                    
             }
         }
+
         Log.Warning("Configure Machine:{{{MachineId}}} - RunSSHProcess - Process timed out and was terminated",
             machine.MachineID);
         return false;
