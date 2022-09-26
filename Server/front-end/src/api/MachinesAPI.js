@@ -49,6 +49,18 @@ async function deleteMachine(machineId) {
         return { status: response.status, body:await response.body };
     });
 }
+async function undo_delete(machineId) {
+    return await fetch(`${urlconfig.protocol}://${urlconfig.getBase()}/api/Machine/control/undo_delete/${machineId}`, {
+        method: "PATCH",
+        headers: new Headers({
+            'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': 'https://virtualresources.sdu.dk',
+        })
+    }).then(async response => {
+        return { status: response.status, body:await response.body};
+    });
+}
 
 function getZip() {
     return axios({
@@ -69,4 +81,5 @@ export default {
     getZip,
     deleteMachine,
     postResetMachine,
+    undo_delete
 };

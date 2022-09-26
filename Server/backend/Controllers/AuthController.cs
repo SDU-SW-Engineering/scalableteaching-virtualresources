@@ -8,6 +8,8 @@ using ScalableTeaching.Models;
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ScalableTeaching.Controllers.Extensions;
+using Serilog;
 
 namespace ScalableTeaching.Controllers
 {
@@ -26,19 +28,21 @@ namespace ScalableTeaching.Controllers
         [HttpPost]
         public async Task<ActionResult> PostToken(SSOTokenDTO tokendata)
         {
-            Console.WriteLine(tokendata);
+            Log.Verbose("AuthController-PostToken-Tokendata:{tokendata}",tokendata);
             try
             {
                 UserDTO user = await SSOHelper.GetSSOData(tokendata);
                 User databaseUserReturn = await _context.Users.FindAsync(user.Username.ToLower());
                 if (databaseUserReturn == null)
                 {
+                    Log.Verbose("AuthController-PostToken-new user: {username}", user.Username);
                     _context.Users.Add(await UserFactory.Create(user.Username, user.Mail, user.Gn, user.Sn));
                     await _context.SaveChangesAsync();
                     user.AccountType = nameof(Models.User.UserType.User);
                 }
                 else
                 {
+                    Log.Verbose("AuthController-PostToken-Existing user: {username}, Account type: {usertype}", user.Username, databaseUserReturn.AccountType.ToString());
                     if (databaseUserReturn.Mail == null) databaseUserReturn.Mail = user.Mail;
                     if (databaseUserReturn.GeneralName == null) databaseUserReturn.GeneralName = user.Gn;
                     if (databaseUserReturn.Surname == null) databaseUserReturn.Surname = user.Sn;
@@ -52,6 +56,7 @@ namespace ScalableTeaching.Controllers
             }
             catch (ArgumentException)
             {
+                Log.Verbose("Authcontroller-PostToken-Authentication Failed");
                 return Unauthorized("Authentication Failed");
             }
         }
@@ -60,6 +65,7 @@ namespace ScalableTeaching.Controllers
         [Authorize(Policy = "UserLevel")]
         public ActionResult PostValidateUser()
         {
+            Log.Verbose("AuthController-PostValidateUser-UserValidatedAsUser: {Username}", this.GetUsername());
             return Ok("Valid - Your credentials are valid for this level of access");
         }
 
@@ -67,6 +73,7 @@ namespace ScalableTeaching.Controllers
         [Authorize(Policy = "EducatorLevel")]
         public ActionResult PostValidateEducator()
         {
+            Log.Verbose("AuthController-PostValidateUser-UserValidatedAsEducator: {Username}", this.GetUsername());
             return Ok("Valid - Your credentials are valid for this level of access");
         }
 
@@ -74,12 +81,18 @@ namespace ScalableTeaching.Controllers
         [Authorize(Policy = "AdministratorLevel")]
         public ActionResult PostValidateAdministrator()
         {
+            Log.Verbose("AuthController-PostValidateUser-UserValidatedAsAdministrator: {Username}", this.GetUsername());
             return Ok("Valid - Your credentials are valid for this level of access");
         }
 
+        /// <summary>
+        /// Get the public key for the Json Web Token
+        /// </summary>
+        /// <returns>Json serialised public key with a code 200</returns>
         [HttpGet]
         public ActionResult GetKey()
         {
+            Log.Verbose("AuthController-GetKey: Someone requested the public key for jwt authentication");
             var json = JsonSerializer.Serialize(new PubKey(CryptoHelper.Instance.GetPublicKeyPem()));
             return Ok(json);
         }

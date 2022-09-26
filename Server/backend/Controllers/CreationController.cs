@@ -79,7 +79,7 @@ namespace ScalableTeaching.Controllers
                     MachineAssignmentID = Guid.NewGuid(),
                     GroupID = machine.Group,
                     MachineID = NewMachineID,
-                    OneTimePassword = new string(Enumerable.Repeat(chars, 12).Select(s => s[Randomizer.Next(s.Length)]).ToArray()),
+                    OneTimePassword = StringHelper.RandomString(8),
                     UserUsername = null
                 }); ;
             }
@@ -144,7 +144,7 @@ namespace ScalableTeaching.Controllers
                         MachineAssignmentID = Guid.NewGuid(),
                         GroupID = null,
                         MachineID = NewMachineID,
-                        OneTimePassword = new string(Enumerable.Repeat(chars, 12).Select(s => s[Randomizer.Next(s.Length)]).ToArray()),
+                        OneTimePassword = StringHelper.RandomString(8),
                         UserUsername = user
                     });
                 }

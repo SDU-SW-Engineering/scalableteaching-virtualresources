@@ -3,6 +3,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml;
+using Serilog;
 
 namespace ScalableTeaching.Helpers
 {
@@ -16,13 +17,13 @@ namespace ScalableTeaching.Helpers
                 var result = await client.GetAsync($"https://sso.sdu.dk/serviceValidate?ticket={tokendata.Token}&service={tokendata.ServiceEndpoint}");
                 result.EnsureSuccessStatusCode();
 
-                Console.WriteLine(await result.Content.ReadAsStringAsync());
+                Log.Information("GetSSOData - {ResultEndpoint}",await result.Content.ReadAsStringAsync());
                 return await ResolveSSOReponse(result);
             }
             catch (HttpRequestException e)
             {
-                Console.Out.WriteLine(e.StackTrace);
-                throw new ArgumentException("SSO Response not a sucess return code", e);
+                Log.Warning("GetSSOData - ", e.StackTrace);
+                throw new ArgumentException("SSO Response not a success return code", e);
             }
         }
         private async static Task<UserDTO> ResolveSSOReponse(HttpResponseMessage ResponseData)

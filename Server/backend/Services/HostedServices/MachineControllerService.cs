@@ -23,7 +23,7 @@ namespace ScalableTeaching.Services.HostedServices
         private Timer _StatusTimer;
         private Timer _CourseDeletionTimer;
 
-        
+
         //I am aware that i should use locks or semaphores. However i had issues and as such settled on this.
         private bool _StatusIsGoing = false;
         private bool _CreationQueueingIsGoing = false;
@@ -31,15 +31,16 @@ namespace ScalableTeaching.Services.HostedServices
         private bool _DeletionIsGoing = false;
         private bool _CourseDeletionIsGoing = false;
 
-        public MachineControllerService(IOpenNebulaAccessor accessor, MachineConfigurator machineConfigurator, IDbContextFactory factory)
+        public MachineControllerService(IOpenNebulaAccessor accessor, MachineConfigurator machineConfigurator,
+            IDbContextFactory factory)
         {
             _factory = factory;
             _accessor = accessor;
             _machineConfigurator = machineConfigurator;
         }
+
         public Task StartAsync(CancellationToken cancellationToken) //TODO: Return Timings to primes
         {
-
             //Reasonable times
             //_CreationQueueingTimer = new(CreationQueueingTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(3));
             //_CreatedTimer = new(CreatedTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(5));
@@ -49,10 +50,10 @@ namespace ScalableTeaching.Services.HostedServices
             _CreationQueueingTimer = new(CreationQueueingTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
             _CreatedTimer = new(CreatedTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
             _StatusTimer = new(StatusTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
-            _DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromHours(1));
-            _CourseDeletionTimer = new(CourseDeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromHours(1));
+            _DeletionTimer = new(DeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(2));
+            _CourseDeletionTimer = new(CourseDeletionTimerCallback, null, -TimeSpan.Zero, TimeSpan.FromMinutes(1));
 
-            Console.WriteLine("Machine Controller Service Started");
+            Log.Information("MachineControllerService - Machine Controller Service Started");
             return Task.CompletedTask;
         }
 
@@ -60,6 +61,7 @@ namespace ScalableTeaching.Services.HostedServices
         {
             throw new NotImplementedException();
         }
+
         public void Dispose()
         {
             _CreationQueueingTimer?.Dispose();
@@ -81,53 +83,57 @@ namespace ScalableTeaching.Services.HostedServices
                 _DeletionIsGoing = true;
                 var context = _factory.GetContext();
 
-                
+
                 var requests = await context.MachineDeletionRequests.ToListAsync();
-                foreach(var request in requests)
+                foreach (var request in requests)
                 {
                     var subcontext = _factory.GetContext();
-                    Console.WriteLine($"Checking Deletion Request: {request.MachineID}");
-                    Log.Information("Checking Deletion Request: {id}", request.MachineID);
+                    Log.Verbose(
+                        "MachineControllerService - Machine Deletion - {RequestMachineId}: Checking Deletion Request",
+                        request.MachineID);
                     if (DateTime.UtcNow.ToUniversalTime().CompareTo(request.DeletionDate.ToUniversalTime()) <= 0)
                         return;
-                    Console.WriteLine($"Deletion Request: {request.MachineID} has passed the deletion threshold");
-                    Log.Information("Deletion Request: {id} has passed the deletion threshold. Deletion will progress", request.MachineID);
-                    var machine = 
+                    Log.Verbose(
+                        "MachineControllerService - Machine Deletion - {RequestMachineId}: Machine has passed the deletion threshold",
+                        request.MachineID);
+                    var machine =
                         await subcontext.Machines.FirstOrDefaultAsync(m => m.MachineID == request.MachineID);
                     if (machine == null)
                     {
-                        Console.WriteLine($"Deletion Request: {request.MachineID} has no machine associated with it");
-                        Log.Error("Deletion Request: {id} has no machine associated with it", request.MachineID);
+                        Log.Error(
+                            "MachineControllerService - Machine Deletion - {RequestMachineId}: has no machine associated with it",
+                            request.MachineID);
                     }
-                    else switch (machine.OpenNebulaID)
-                    {
-                        case null:
-                            Console.WriteLine($"Deletion Requests machine: {request.MachineID} " +
-                                              $"has no OpenNebula ID associated with it");
-                            Log.Error("Deletion Request: {machineid}" +
-                                      "has no OpenNebula ID associated with it i.e. 0", request.MachineID);
-                            break;
-                        case 0:
-                            Console.WriteLine($"Deletion Requests machine: {request.MachineID} " +
-                                              $"has no OpenNebula ID associated with it ie 0");
-                            Log.Error("Deletion Request: {machineid}" +
-                                      "has no OpenNebula ID associated with it i.e. 0", request.MachineID);
-                            break;
-                    }
+                    else
+                        switch (machine.OpenNebulaID)
+                        {
+                            case null:
+                                Log.Error("MachineControllerService - Machine Deletion - {RequestMachineId}: " +
+                                          "Request has no OpenNebula ID associated with it i.e. 0", request.MachineID);
+                                break;
+                            case 0:
+                                Log.Error("MachineControllerService - Machine Deletion - {RequestMachineId}: " +
+                                          "Request has no OpenNebula ID associated with it i.e. 0", request.MachineID);
+                                break;
+                        }
 
                     if (!_accessor.PerformVirtualMachineAction(MachineActions.TERMINATE_HARD,
-                            (int)machine.OpenNebulaID))
+                            (int) machine.OpenNebulaID))
                     {
-                        Log.Error("MachineControllerService - Error while deleting machine machine_id:{machineid} OpenNebula_id:{opennebula_id} ", machine.MachineID.ToString(), machine.OpenNebulaID.ToString());
-                        Console.Error.WriteLineAsync("There was an error in terminating a machine. See log for more information.");
+                        Log.Error(
+                            "MachineControllerService - Machine Deletion - {RequestMachineId}: Error while deleting machine machine_id:{RequestMachineId} OpenNebula_id:{OpennebulaId} ",
+                            machine.MachineID.ToString(), machine.OpenNebulaID.ToString());
                     }
-                    
-                    Console.WriteLine($"Machine id: {request.MachineID}, and associated request has been deleted");
-                    Log.Information("Machine id: {id}, and associated request has been deleted", request.MachineID);
+
+                    Log.Information(
+                        "MachineControllerService - Machine Deletion - {RequestMachineId}: Machine and associated request has been deleted",
+                        request.MachineID);
                     subcontext.MachineDeletionRequests.Remove(request);
                     subcontext.Machines.Remove(machine);
                     await subcontext.SaveChangesAsync();
-                };
+                }
+
+                ;
                 CourseDeletionTimerCallback(null);
                 _DeletionIsGoing = false;
             }
@@ -142,23 +148,30 @@ namespace ScalableTeaching.Services.HostedServices
             if (_CourseDeletionIsGoing) return;
             try
             {
-                Log.Information("Testing for courses scheduled for deletion");
+                Log.Verbose("MachineControllerService - Course Deletion: Testing for courses scheduled for deletion");
                 _CourseDeletionIsGoing = true;
                 var context = _factory.GetContext();
                 var courses = await context.Courses.Where(c => c.Active == false).ToListAsync();
-                Log.Information("Found {count} courses scheduled for deletion.", courses.Count);
+                Log.Verbose("MachineControllerService - Course Deletion: Found {Count} courses scheduled for deletion",
+                    courses.Count);
                 foreach (var course in courses)
                 {
                     //If any machines are still associated with the course then skip this course.
                     if (await context.Machines.AnyAsync(m => m.CourseID == course.CourseID))
                     {
-                        Log.Information($"Not all machines associated machines have been deleted. Skipping deletion for course: {course.CourseID}.");
-                        Console.Out.WriteLineAsync($"Not all machines associated machines have been deleted. Skipping deletion for course: {course.CourseID}.");
+                        Log.Verbose(
+                            "MachineControllerService - Course Deletion - {CourseId}: Not all machines associated machines have been deleted. Skipping deletion for course: {CourseLongName}",
+                            course.CourseID, course.CourseName);
                         return;
                     }
+
                     //Delete the course
                     context.Courses.Remove(course);
+                    Log.Information(
+                        "MachineControllerService - Course Deletion - {CourseId}: No machines associated with course. Deleting course: {CourseLongName}",
+                        course.CourseID, course.CourseName);
                 }
+
                 await context.SaveChangesAsync();
                 _CourseDeletionIsGoing = false;
             }
@@ -183,22 +196,21 @@ namespace ScalableTeaching.Services.HostedServices
                     .Where(machine => machine.MachineCreationStatus == CreationStatus.REGISTERED).ToListAsync();
                 if (registeredMachines.Count != 0)
                 {
-                    Console.WriteLine($"MachineControllerService.CreationQueueingTimerCallback:Machines to be" +
-                                      $" Scheduled for creation: {String.Join(",\n", registeredMachines)}");
-                    Log.Information("MachineControllerService.CreationQueueingTimerCallback:Machines to be" +
-                    " Scheduled for creation: {machines}", String.Join(",\n", registeredMachines));
+                    Log.Information("MachineControllerService - Machine Creation Queuer: Machines to be" +
+                                    " Scheduled for creation: {Machines}", string.Join(",", registeredMachines));
                 }
 
                 registeredMachines.ForEach(machine =>
                 {
                     machine.MachineCreationStatus = CreationStatus.QUEUED_FOR_CREATION;
                     var creationResult = _accessor.CreateVirtualMachine(
-                        int.Parse(Environment.GetEnvironmentVariable("OpenNebulaDefaultTemplate") ?? "/ScalableTeaching"),
+                        int.Parse(
+                            Environment.GetEnvironmentVariable("OpenNebulaDefaultTemplate") ?? "/ScalableTeaching"),
                         machine.HostName,
                         machine.Memory,
                         machine.VCPU,
                         machine.Storage
-                        );
+                    );
                     machine.OpenNebulaID = creationResult.Item2;
                 });
                 context.Machines.UpdateRange(registeredMachines);
@@ -209,6 +221,7 @@ namespace ScalableTeaching.Services.HostedServices
             {
                 _CreationQueueingIsGoing = false;
             }
+
             return;
         }
 
@@ -223,35 +236,57 @@ namespace ScalableTeaching.Services.HostedServices
             {
                 _CreatedIsGoing = true;
                 VmDeploymentContext context = _factory.GetContext();
-                var machines = await context.Machines.Where(machine => machine.MachineCreationStatus == CreationStatus.QUEUED_FOR_CREATION).ToListAsync();
-                foreach (Machine machine in machines)
+
+                var machines = await context.Machines
+                    .Where(machine => machine.MachineCreationStatus == CreationStatus.QUEUED_FOR_CREATION)
+                    .ToListAsync();
+
+                var machineConfigurationTasks = machines.Select(machine => Task.Run(async () =>
                 {
+                    var subcontext = _factory.GetContext();
                     if (machine.MachineStatus?.MachineState == MachineStates.ACTIVE)
                     {
-                        Console.WriteLine($"MachineControllerService.CreatedTimerCallback: Machine Booted after creation: { machine.MachineID}");
-                        Log.Information("MachineControllerService.CreatedTimerCallback: Machine Booted after creation: {id}", machine.MachineID);
+                        Log.Information(
+                            "MachineControllerService - Machine Creation Configuration - {MachineId}: Machine Booted after creation",
+                            machine.MachineID);
                         try
                         {
                             if (machine.MachineStatus?.MachineIp == null)
                             {
-                                Console.WriteLine($"Error configuring machine: no ip");
-                                Log.Warning("Error configuring machine: {mid}. No ip assigned", machine.MachineID);
-                                continue;
+                                Log.Warning(
+                                    "MachineControllerService - Machine Creation Configuration - {MachineId}: No ip assigned",
+                                    machine.MachineID);
+                                return;
                             }
-                            await _machineConfigurator.ConfigureMachineWithFile(machine);//TODO: Return to using ssh based configuration
+
+                            if (await _machineConfigurator.ConfigureMachineWithFile(machine))
+                            {
+                                throw new Exception("Something went wrong while configuring machine");
+                            }
+                            else
+                            {
+                                //Keeping this despite being redundant to prevent future issues that could be introduced with changes to the error handling of misconfigured machines
+                                Log.Information(
+                                    "MachineControllerService - Machine Creation Configuration - {MachineId}: Machine Configured Successfully",
+                                    machine.MachineID);
+                            }
+
+
+                            machine.MachineCreationStatus = CreationStatus.CONFIGURED;
+                            subcontext.Machines.Update(machine);
+                            await subcontext.SaveChangesAsync();
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine($"Error occurred configuring machine: {machine.HostName}, {machine.MachineID}");
-                            Console.WriteLine($"Error: {e.Message}");
-                            Console.WriteLine(e.StackTrace);
-                            continue;
+                            Log.Error(e,
+                                "MachineControllerService - Machine Creation Configuration - {MachineId}: Error occurred configuring machine",
+                                machine.MachineID);
                         }
-                        machine.MachineCreationStatus = CreationStatus.CONFIGURED;
-                        context.Machines.Update(machine);
-                        await context.SaveChangesAsync();
                     }
-                }
+                })).ToList();
+
+                //Await the configuration of all machines
+                await Task.WhenAll(machineConfigurationTasks);
                 _CreatedIsGoing = false;
             }
             finally
@@ -266,7 +301,6 @@ namespace ScalableTeaching.Services.HostedServices
             try
             {
                 _StatusIsGoing = true;
-                //Console.WriteLine($"MachineControllerService.StatusTimerCallback: Callback Time: {DateTimeOffset.Now}");
                 var context = _factory.GetContext();
                 var pollTime = DateTimeOffset.UtcNow;
                 List<VmModel> vmModels = _accessor.GetAllVirtualMachineInfo(false, -3);
@@ -276,22 +310,27 @@ namespace ScalableTeaching.Services.HostedServices
                 {
                     machineStatusMap.Add(id, _accessor.GetVirtualMachineInformation(id));
                 }
-                //Dictionary<int, VmModel> MachineStatusMap = vmModels.ToDictionary(machine => { return machine.MachineId; });
-                var machines = await context.Machines.Where(machine => validMachineIDs.Contains((int)machine.OpenNebulaID)).ToListAsync();
-                //Console.WriteLine($"MachineControllerService.StatusTimerCallback: ON IDs {String.Join(", ", ValidMachineIDs)}");
+
+                var machines = await context.Machines
+                    .Where(machine => validMachineIDs.Contains((int) machine.OpenNebulaID)).ToListAsync();
                 foreach (var machine in machines)
                 {
                     if ((await context.MachineStatuses.FindAsync(machine.MachineID)) == null)
                     {
-                        context.MachineStatuses.Add(MachineStatus.MachineStatusFactory(machine.MachineID, machineStatusMap.GetValueOrDefault((int)machine.OpenNebulaID), pollTime));
+                        context.MachineStatuses.Add(MachineStatus.MachineStatusFactory(machine.MachineID,
+                            machineStatusMap.GetValueOrDefault((int) machine.OpenNebulaID), pollTime));
                     }
                     else
                     {
                         var status = await context.MachineStatuses.FindAsync(machine.MachineID);
-                        context.MachineStatuses.Update(status.Update(MachineStatus.MachineStatusFactory(machine.MachineID, machineStatusMap.GetValueOrDefault((int)machine.OpenNebulaID), pollTime)));
+                        context.MachineStatuses.Update(status.Update(MachineStatus.MachineStatusFactory(
+                            machine.MachineID, machineStatusMap.GetValueOrDefault((int) machine.OpenNebulaID),
+                            pollTime)));
                     }
+
                     await context.SaveChangesAsync();
                 }
+
                 _StatusIsGoing = false;
             }
             finally
