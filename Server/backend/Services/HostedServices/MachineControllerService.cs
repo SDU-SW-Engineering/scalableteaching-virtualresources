@@ -241,10 +241,11 @@ namespace ScalableTeaching.Services.HostedServices
                     .Where(machine => machine.MachineCreationStatus == CreationStatus.QUEUED_FOR_CREATION)
                     .ToListAsync();
 
-                foreach (var machine in machines)
+                var machineConfigurationTasks = machines.Select(machine => Task.Run(async () =>
                 {
                     var subcontext = _factory.GetContext();
-                    if (machine.MachineStatus?.MachineState == MachineStates.ACTIVE)
+                    if (subcontext.Machines.Find(machine.MachineID)?.MachineStatus?.MachineState ==
+                        MachineStates.ACTIVE)
                     {
                         Log.Information(
                             "MachineControllerService - Machine Creation Configuration - {MachineId}: Machine Booted after creation",
@@ -256,7 +257,7 @@ namespace ScalableTeaching.Services.HostedServices
                                 Log.Warning(
                                     "MachineControllerService - Machine Creation Configuration - {MachineId}: No ip assigned",
                                     machine.MachineID);
-                                continue;
+                                return;
                             }
 
                             if (await _machineConfigurator.ConfigureMachineWithFile(machine))
@@ -283,8 +284,10 @@ namespace ScalableTeaching.Services.HostedServices
                                 machine.MachineID);
                         }
                     }
-                }
+                })).ToList();
 
+                //Await the configuration of all machines
+                await Task.WhenAll(machineConfigurationTasks);
                 _CreatedIsGoing = false;
             }
             finally
