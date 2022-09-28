@@ -241,7 +241,7 @@ namespace ScalableTeaching.Services.HostedServices
                     .Where(machine => machine.MachineCreationStatus == CreationStatus.QUEUED_FOR_CREATION)
                     .ToListAsync();
 
-                var machineConfigurationTasks = machines.Select(machine => Task.Run(async () =>
+                foreach (var machine in machines)
                 {
                     var subcontext = _factory.GetContext();
                     if (machine.MachineStatus?.MachineState == MachineStates.ACTIVE)
@@ -283,10 +283,8 @@ namespace ScalableTeaching.Services.HostedServices
                                 machine.MachineID);
                         }
                     }
-                })).ToList();
+                }
 
-                //Await the configuration of all machines
-                await Task.WhenAll(machineConfigurationTasks);
                 _CreatedIsGoing = false;
             }
             finally
