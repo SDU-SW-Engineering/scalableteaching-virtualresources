@@ -241,10 +241,11 @@ namespace ScalableTeaching.Services.HostedServices
                     .Where(machine => machine.MachineCreationStatus == CreationStatus.QUEUED_FOR_CREATION)
                     .ToListAsync();
 
-                var machineConfigurationTasks = machines.Select(machine => Task.Run(async () =>
+                var machineConfigurationTasks = machines.Select(outer_machine => Task.Run(async () =>
                 {
                     var subcontext = _factory.GetContext();
-                    if (subcontext.Machines.Find(machine.MachineID)?.MachineStatus?.MachineState ==
+                    var machine = subcontext.Machines.Find(outer_machine.MachineID);
+                    if (machine?.MachineStatus?.MachineState ==
                         MachineStates.ACTIVE)
                     {
                         Log.Information(
