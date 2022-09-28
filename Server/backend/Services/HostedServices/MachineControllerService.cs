@@ -256,7 +256,7 @@ namespace ScalableTeaching.Services.HostedServices
                                 Log.Warning(
                                     "MachineControllerService - Machine Creation Configuration - {MachineId}: No ip assigned",
                                     machine.MachineID);
-                                return;
+                                continue;
                             }
 
                             if (await _machineConfigurator.ConfigureMachineWithFile(machine))
