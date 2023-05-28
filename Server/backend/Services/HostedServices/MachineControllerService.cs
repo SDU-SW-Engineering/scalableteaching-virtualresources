@@ -17,11 +17,11 @@ namespace ScalableTeaching.Services.HostedServices
         private readonly MachineConfigurator _machineConfigurator;
         private readonly IDbContextFactory _factory;
 
-        private Timer _CreationQueueingTimer;
-        private Timer _CreatedTimer;
-        private Timer _DeletionTimer;
-        private Timer _StatusTimer;
-        private Timer _CourseDeletionTimer;
+        private Timer _CreationQueueingTimer = null!;
+        private Timer _CreatedTimer = null!;
+        private Timer _DeletionTimer = null!;
+        private Timer _StatusTimer = null!;
+        private Timer _CourseDeletionTimer = null!;
 
 
         //I am aware that i should use locks or semaphores. However i had issues and as such settled on this.
@@ -118,7 +118,7 @@ namespace ScalableTeaching.Services.HostedServices
                         }
 
                     if (!_accessor.PerformVirtualMachineAction(MachineActions.TERMINATE_HARD,
-                            (int) machine.OpenNebulaID))
+                            (int) machine!.OpenNebulaID!))
                     {
                         Log.Error(
                             "MachineControllerService - Machine Deletion - {RequestMachineId}: Error while deleting machine machine_id:{RequestMachineId} OpenNebula_id:{OpennebulaId} ",
@@ -306,7 +306,7 @@ namespace ScalableTeaching.Services.HostedServices
                 var context = _factory.GetContext();
                 var pollTime = DateTimeOffset.UtcNow;
                 List<VmModel> vmModels = _accessor.GetAllVirtualMachineInfo(false, -3);
-                var validMachineIDs = vmModels.AsEnumerable().Select(model => model.MachineId);
+                var validMachineIDs = vmModels.AsEnumerable().Select(model => model.MachineId).ToList();
                 Dictionary<int, VmModel> machineStatusMap = new();
                 foreach (var id in validMachineIDs)
                 {
@@ -314,19 +314,19 @@ namespace ScalableTeaching.Services.HostedServices
                 }
 
                 var machines = await context.Machines
-                    .Where(machine => validMachineIDs.Contains((int) machine.OpenNebulaID)).ToListAsync();
+                    .Where(machine => validMachineIDs!.Contains((int) machine.OpenNebulaID!)).ToListAsync();
                 foreach (var machine in machines)
                 {
                     if ((await context.MachineStatuses.FindAsync(machine.MachineID)) == null)
                     {
                         context.MachineStatuses.Add(MachineStatus.MachineStatusFactory(machine.MachineID,
-                            machineStatusMap.GetValueOrDefault((int) machine.OpenNebulaID), pollTime));
+                            machineStatusMap.GetValueOrDefault((int) machine.OpenNebulaID!), pollTime));
                     }
                     else
                     {
                         var status = await context.MachineStatuses.FindAsync(machine.MachineID);
                         context.MachineStatuses.Update(status.Update(MachineStatus.MachineStatusFactory(
-                            machine.MachineID, machineStatusMap.GetValueOrDefault((int) machine.OpenNebulaID),
+                            machine.MachineID, machineStatusMap.GetValueOrDefault((int) machine.OpenNebulaID!),
                             pollTime)));
                     }
 
