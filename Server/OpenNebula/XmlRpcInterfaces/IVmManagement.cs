@@ -54,6 +54,17 @@ namespace ScalableTeaching.OpenNebula.XmlRpcInterfaces
         /// <returns></returns>
         [XmlRpcMethod("one.vmpool.infoextended")]
         Object[] VmPoolInfoExtended(string Session, int OwnerFilterFlag, int IdLowerBound, int IdUpperBound, int StateFilterFlag);
+        
+        /// <summary>
+        /// Resizes a disk of a virtual machine
+        /// </summary>
+        /// <param name="Session">username:password</param>
+        /// <param name="VirtualMachineId">Id of the virtualmachine</param>
+        /// <param name="DiskId">The disk ID as stated in OpenNebula (Default 0 for the relevant machines)</param>
+        /// <param name="NewSize">The size in bytes represented as a string</param>
+        /// <returns></returns>
+        [XmlRpcMethod("one.vm.diskresize")]
+        Object[] VmDiskResize(string Session, int VirtualMachineId, int DiskId, string NewSize);
     }
 
 
