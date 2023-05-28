@@ -189,6 +189,58 @@ namespace ScalableTeaching.Controllers
             return returnValue ? Ok("Machine reboot initialised") : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
+        [Authorize(Policy = "EducatorLevel")]
+        [HttpPatch]
+        [Route("control/resize/{id}")]
+        public async Task<ActionResult> PatchResizeMachine(Guid id, int bytes)
+        {
+            //Validate id
+            if (id == Guid.Empty) return BadRequest("Invalid ID");
+            
+            //Validate machine existence
+            var machine = await _context.Machines.FindAsync(id);
+            if (machine == null) return NotFound("Machine Not Found");
+            
+            //Validate new size
+            if (bytes < 0) return BadRequest("Invalid size");
+            if (bytes <= machine.Storage) return BadRequest("New size must be larger than current size");
+            
+            //Validate machine creation status
+            if (machine.MachineCreationStatus != CreationStatus.CONFIGURED)
+                return BadRequest("Machine must be configured before resizing");
+            
+            //Validate machine "ownership"
+            bool isOwner = machine.UserUsername != this.GetUsername();
+            if (isOwner && !IsAdmin())
+            {
+                return Forbid("You are not assigned to this machine");
+            }
+            
+            //Make call to set new size
+            var returnValue = _accessor.ResizeVirtualMachine((int) machine.OpenNebulaID, bytes);
+            
+            //If successful, update database
+            if(!returnValue.Item1)
+            {
+                Console.WriteLine($"Failed to resize machine({id}), old size {machine.Storage}, new size {bytes}");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        
+            machine.Storage = bytes;
+            _context.Update(machine);
+            await _context.SaveChangesAsync();
+            
+            //Return result
+            return Ok("Machine resize completed, restart the machine for the change to take effect");
+        }
+
+        private bool IsAdmin()
+        {
+            var username = this.GetUsername();
+            var user = _context.Users.First(user => user.Username == username);
+            return user.AccountType == Models.User.UserType.Administrator;
+        }
+
         /// <summary>
         /// Schedules a machine for deletion. This deletion will happen in the number of days specified by <see cref="MachineDeletionTiming">MachineDeletionTiming</see>
         /// </summary>
