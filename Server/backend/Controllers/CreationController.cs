@@ -55,7 +55,7 @@ namespace ScalableTeaching.Controllers
                 if (machine.Memory != null && (machine.Memory < 1024 || machine.Memory > 8192)) return BadRequest($"Machine memory amount out of bounds: {machine.Storage}, Memory must be greater that 1023 and less than 8193");
                 if (machine.Memory != null && machine.Memory % 1024 != 0) return BadRequest($"Invalid memory amount: {machine.Storage}, Memory must be a multiple of 1024");
 
-                if (machine.Storage != null && (machine.Storage < 30720 || machine.Storage > 51200)) return BadRequest($"Machine storage amount out of bounds: {machine.Storage}, Memmory must be greater that 30719 and less than 51201");
+                if (machine.Storage != null && (machine.Storage < 16384 || machine.Storage > 51200)) return BadRequest($"Machine storage amount out of bounds: {machine.Storage}, Memmory must be greater that 30719 and less than 51201");
                 if (machine.Storage != null && machine.Storage % 1024 != 0) return BadRequest($"Invalid memmory amount: {machine.Storage}, Memmory must be a multiple of 1024");
 
                 var NewMachineID = Guid.NewGuid();
