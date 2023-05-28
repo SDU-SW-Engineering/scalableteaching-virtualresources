@@ -99,7 +99,8 @@ namespace ScalableTeaching.Controllers
                     MachineID = machine.MachineID,
                     Ports = machine.Ports,
                     Status = returnStatus, //machine.MachineStatus?.MachineState.ToString() ?? "Unconfigured",
-                    Users = usernames
+                    Users = usernames,
+                    Size = machine.Storage
                 });
             }
 
