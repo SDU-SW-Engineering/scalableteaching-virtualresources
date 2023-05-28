@@ -124,9 +124,14 @@ namespace ScalableTeaching.Controllers
 
             //Reboot Machine
             // ReSharper disable once PossibleInvalidOperationException
-            return _accessor.PerformVirtualMachineAction(MachineActions.REBOOT, (int) machine.OpenNebulaID)
-                ? Ok()
-                : StatusCode(StatusCodes.Status500InternalServerError);
+            var returnValue = _accessor.PerformVirtualMachineAction(MachineActions.REBOOT, (int) machine.OpenNebulaID);
+            //If the machine is off, then a reboot will not work, so we try to start it
+            if (!returnValue)
+            {
+                returnValue = _accessor.PerformVirtualMachineAction(MachineActions.RESUME, (int) machine.OpenNebulaID);
+            }
+            
+            return returnValue ? Ok("Machine reboot initialised") : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
         /// <summary>
@@ -173,11 +178,15 @@ namespace ScalableTeaching.Controllers
                 return Forbid("You are not assigned to this machine");
             }
 
-            //Reboot Machine
-            // ReSharper disable once PossibleInvalidOperationException
-            return _accessor.PerformVirtualMachineAction(MachineActions.REBOOT_HARD, (int) machine.OpenNebulaID)
-                ? Ok("Machine reboot initialised")
-                : StatusCode(StatusCodes.Status500InternalServerError);
+            var returnValue =
+                _accessor.PerformVirtualMachineAction(MachineActions.REBOOT_HARD, (int) machine.OpenNebulaID);
+            //If the machine is off, then a reboot will not work, so we try to start it
+            if (!returnValue)
+            {
+                returnValue = _accessor.PerformVirtualMachineAction(MachineActions.RESUME, (int) machine.OpenNebulaID);
+            }
+            
+            return returnValue ? Ok("Machine reboot initialised") : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
         /// <summary>
