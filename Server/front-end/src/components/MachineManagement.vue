@@ -4,19 +4,19 @@
     <b-row>
       <b-col lg="6" class="my-1">
         <b-form-group
-            label="Filter"
-            label-for="filter-input"
-            label-cols-sm="3"
-            label-align-sm="right"
-            label-size="sm"
-            class="mb-0"
+                label="Filter"
+                label-for="filter-input"
+                label-cols-sm="3"
+                label-align-sm="right"
+                label-size="sm"
+                class="mb-0"
         >
           <b-input-group size="sm">
             <b-form-input
-                id="filter-input"
-                v-model="filter"
-                type="search"
-                placeholder="Type to Search"
+                    id="filter-input"
+                    v-model="filter"
+                    type="search"
+                    placeholder="Type to Search"
             ></b-form-input>
 
             <b-input-group-append>
@@ -28,19 +28,19 @@
 
       <b-col lg="6" class="my-1">
         <b-form-group
-            v-model="sortDirection"
-            label="Filter On"
-            description="Leave all unchecked to filter on all data"
-            label-cols-sm="3"
-            label-align-sm="right"
-            label-size="sm"
-            class="mb-0"
-            v-slot="{ ariaDescribedby }"
+                v-model="sortDirection"
+                label="Filter On"
+                description="Leave all unchecked to filter on all data"
+                label-cols-sm="3"
+                label-align-sm="right"
+                label-size="sm"
+                class="mb-0"
+                v-slot="{ ariaDescribedby }"
         >
           <b-form-checkbox-group
-              v-model="filterOn"
-              :aria-describedby="ariaDescribedby"
-              class="mt-1"
+                  v-model="filterOn"
+                  :aria-describedby="ariaDescribedby"
+                  class="mt-1"
           >
             <b-form-checkbox value="machine_name">Machine Name</b-form-checkbox>
             <b-form-checkbox value="class_name">Class Name</b-form-checkbox>
@@ -52,58 +52,58 @@
     <b-row>
       <b-col sm="5" md="6" class="my-1">
         <b-form-group
-            label="Number of machines shown"
-            label-for="per-page-select"
-            label-cols-sm="6"
-            label-cols-md="4"
-            label-cols-lg="3"
-            label-align-sm="right"
-            label-size="sm"
-            class="mb-0"
+                label="Number of machines shown"
+                label-for="per-page-select"
+                label-cols-sm="6"
+                label-cols-md="4"
+                label-cols-lg="3"
+                label-align-sm="right"
+                label-size="sm"
+                class="mb-0"
         >
           <b-form-select
-              id="per-page-select"
-              v-model="perPage"
-              :options="pageOptions"
-              size="sm"
+                  id="per-page-select"
+                  v-model="perPage"
+                  :options="pageOptions"
+                  size="sm"
           ></b-form-select>
         </b-form-group>
       </b-col>
 
       <b-col sm="5" md="6">
         <b-button
-            :disabled="selected == null"
-            title="Turn the selected machines on and off again"
-            v-b-tooltip.hover
-            class="mr-1 mb-1"
-            variant="warning"
-            @click="onRebootSelectedClicked"
+                :disabled="selected == null"
+                title="Turn the selected machines on and off again"
+                v-b-tooltip.hover
+                class="mr-1 mb-1"
+                variant="warning"
+                @click="onRebootSelectedClicked"
         >Reboot Selected Machines
         </b-button>
         <b-button
-            :disabled="selected == null"
-            title="Deselect the selected machines."
-            class="mr-1 mb-1"
-            @click="onDeselectClicked"
-            variant="outline-secondary"
+                :disabled="selected == null"
+                title="Deselect the selected machines."
+                class="mr-1 mb-1"
+                @click="onDeselectClicked"
+                variant="outline-secondary"
         >Deselect Selected Machines
         </b-button>
         <b-button
-            :disabled="selected == null"
-            title="Schedule the selected machines for deletion"
-            v-b-tooltip.hover
-            class="mr-1 mb-1"
-            variant="danger"
-            @click="onDeleteSelectedClicked"
+                :disabled="selected == null"
+                title="Schedule the selected machines for deletion"
+                v-b-tooltip.hover
+                class="mr-1 mb-1"
+                variant="danger"
+                @click="onDeleteSelectedClicked"
         >Delete Selected Machines
         </b-button>
         <b-button
-            :disabled="selected == null"
-            title="Immediately delete and recreate the selected machines."
-            v-b-tooltip.hover
-            class="mr-1 mb-1"
-            variant="danger"
-            @click="onResetSelectedClicked"
+                :disabled="selected == null"
+                title="Immediately delete and recreate the selected machines."
+                v-b-tooltip.hover
+                class="mr-1 mb-1"
+                variant="danger"
+                @click="onResetSelectedClicked"
         >Reset Selected Machines
         </b-button>
       </b-col>
@@ -121,24 +121,24 @@
 
     <!-- Main table element -->
     <b-table
-        ref="ManagementMachinesTable"
-        :items="items"
-        :fields="fields"
-        :current-page="currentPage"
-        :per-page="perPage"
-        :filter="filter"
-        :filter-included-fields="filterOn"
-        :sort-by.sync="sortBy"
-        :sort-desc.sync="sortDesc"
-        :sort-direction="sortDirection"
-        :busy="tableIsBusy"
-        stacked="md"
-        show-empty
-        small
-        selectable
-        select-mode="range"
-        @filtered="onFiltered"
-        @row-selected="onRowSelected"
+            ref="ManagementMachinesTable"
+            :items="items"
+            :fields="fields"
+            :current-page="currentPage"
+            :per-page="perPage"
+            :filter="filter"
+            :filter-included-fields="filterOn"
+            :sort-by.sync="sortBy"
+            :sort-desc.sync="sortDesc"
+            :sort-direction="sortDirection"
+            :busy="tableIsBusy"
+            stacked="md"
+            show-empty
+            small
+            selectable
+            select-mode="range"
+            @filtered="onFiltered"
+            @row-selected="onRowSelected"
     >
       <template #table-busy>
         <div class="text-center text-danger my-2">
@@ -154,6 +154,9 @@
         <b-button variant="warning" size="sm" @click="reboot(row.item.id)" class="mr-1">
           Reboot
         </b-button>
+        <b-button variant="outline-info" size="sm" @click="promptResize(row.item)" class="mr-1">
+          Resize
+        </b-button>
         <b-button variant="outline-secondary" size="sm" @click="row.toggleDetails">
           {{ row.detailsShowing ? 'Hide' : 'Show' }} Details
         </b-button>
@@ -164,12 +167,36 @@
           <ul>
             <li v-for="(value, key) in row.item" :key="key">{{ key }}: {{ value }}</li>
           </ul>
-          <b-button v-if="isScheduledForDeletion(row.item)" variant="warning" size="sm" @click="cancelDeletion(row.item.id)">
+          <b-button v-if="isScheduledForDeletion(row.item)" variant="warning" size="sm"
+                    @click="cancelDeletion(row.item.id)">
             Cancel Deletion
           </b-button>
         </b-card>
       </template>
     </b-table>
+    <b-modal
+            id="resize_modal_id"
+            @ok="resize"
+            @cancel="cancelResize"
+    >
+      <template #modal-title>
+        Resize Machine Storage
+      </template>
+      <div>
+        <b-form-input
+                type="range"
+                v-model="resizeModal.machine_new_size"
+                :min="resizeModal.machine.size"
+                :max="resizeModal.machine_max_size"
+                :step="resizeModal.machine_step_size"></b-form-input>
+      </div>
+      Current Size: [{{resizeModal.machine.size}}] Selected Size: [{{resizeModal.machine_new_size}}]
+      <template #modal-footer="{ ok, cancel }">
+        <b-button size="sm" variant="warning" @click="ok()">Resize</b-button>
+        <b-button size="sm" variant="secondary" @click="cancel()">Cancel</b-button>
+      </template>
+    </b-modal>
+
 
     <!--&lt;!&ndash; Reboot verification &ndash;&gt;-->
     <!--<b-modal :id="infoModal.id" :title="infoModal.title" ok-only @hide="resetInfoModal">-->
@@ -221,6 +248,14 @@ export default {
         title: '',
         content: ''
       },
+      resizeModal: {
+        machine: null,
+        machine_original_size: 16384,
+        machine_new_size: 16384,
+        machine_max_size: 51200,
+        machine_step_size: 1024,
+        selected_value: 16384
+      },
       tableIsBusy: false,
       isDevelopment: process.env.NODE_ENV === 'development',
     };
@@ -229,24 +264,23 @@ export default {
     sortOptions() {
       // Create an options list from our fields
       return this.fields
-          .filter(f => f.sortable)
-          .map(f => {
-            return {text: f.label, value: f.key};
-          });
+        .filter(f => f.sortable)
+        .map(f => {
+          return {text: f.label, value: f.key};
+        });
     }
   },
-
   methods: {
-    isScheduledForDeletion(machine){
+    isScheduledForDeletion(machine) {
       return machine.status.includes("deletion");
     },
     async reboot(machineId) {
       let response = await MachinesAPI.postRebootMachine(machineId);
       if (this.isDevelopment) window.console.log("Rebooted machine - Response: ", response);
     },
-    async cancelDeletion(machineId){
+    async cancelDeletion(machineId) {
       let response = await MachinesAPI.undo_delete(machineId);
-      if (response.status >= 200 && response.status < 300){
+      if (response.status >= 200 && response.status < 300) {
         await this.loadTableData();
       }
     },
@@ -265,12 +299,29 @@ export default {
             class_name: m.course.courseName,
             ports: m.ports,
             id: m.machineID,
+            users: m.users,
+            size: m.size
             //TODO: Fix backend return users
             //TODO: Fix backend return mac
           };
         });
       }
       this.tableIsBusy = false;
+    },
+    promptResize(machineItem) {
+      this.resizeModal.machine = machineItem;
+      this.$bvModal.show("resize_modal_id");
+    },
+    cancelResize(){
+      this.$bvModal.hide("resize_modal_id");
+      this.resizeModal.machine = null;
+    },
+    resize(){
+      this.$bvModal.hide("resize_modal_id");
+      if(this.resizeModal.machine_new_size === this.resizeModal.machine.size){
+        return;
+      }
+
     },
     info(item, index, button) {
       this.infoModal.title = `Row index: ${index}`;
@@ -291,28 +342,28 @@ export default {
       if (this.selected.length < 1) this.selected = null;
       if (this.isDevelopment) window.console.log("Selected Items: ", this.selected);
     },
-    onRebootSelectedClicked(){
+    onRebootSelectedClicked() {
       if (this.selected.length < 1) return;
       for (let i = 0; i < this.selected.length; i++) {
         this.reboot(this.selected[i].id);
       }
       this.loadTableData();
     },
-    onResetSelectedClicked(){
+    onResetSelectedClicked() {
       if (this.selected.length < 1) return;
       for (let i = 0; i < this.selected.length; i++) {
         MachinesAPI.postResetMachine(this.selected[i].id);
       }
       this.loadTableData();
     },
-    onDeleteSelectedClicked(){
+    onDeleteSelectedClicked() {
       if (this.selected.length < 1) return;
       for (let i = 0; i < this.selected.length; i++) {
         MachinesAPI.deleteMachine(this.selected[i].id);
       }
       this.loadTableData();
     },
-    onDeselectClicked(){
+    onDeselectClicked() {
       this.selected = null;
       this.$refs.ManagementMachinesTable.clearSelected();
     },
