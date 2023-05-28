@@ -205,6 +205,7 @@ namespace ScalableTeaching.Controllers
             //Validate new size
             if (bytes < 0) return BadRequest("Invalid size");
             if (bytes <= machine.Storage) return BadRequest("New size must be larger than current size");
+            if (bytes > 51200) return BadRequest("New size must be less than 50GiB");
             
             //Validate machine creation status
             if (machine.MachineCreationStatus != CreationStatus.CONFIGURED)
