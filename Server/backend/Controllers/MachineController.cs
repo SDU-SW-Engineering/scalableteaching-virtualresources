@@ -193,7 +193,7 @@ namespace ScalableTeaching.Controllers
         [Authorize(Policy = "EducatorLevel")]
         [HttpPatch]
         [Route("control/resize/{id}")]
-        public async Task<ActionResult> PatchResizeMachine(Guid id, int bytes)
+        public async Task<ActionResult> PatchResizeMachine(Guid id, [FromBody] int bytes)
         {
             //Validate id
             if (id == Guid.Empty) return BadRequest("Invalid ID");
