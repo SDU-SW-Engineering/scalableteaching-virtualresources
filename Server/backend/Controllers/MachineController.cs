@@ -318,6 +318,8 @@ namespace ScalableTeaching.Controllers
 
             var deletionRequest = await _context.MachineDeletionRequests.FirstAsync(request => request.MachineID == id);
             _context.MachineDeletionRequests.Remove(deletionRequest);
+            machine.MachineCreationStatus = CreationStatus.CONFIGURED;
+            _context.Machines.Update(machine);
             await _context.SaveChangesAsync();
             return Ok($"Machine({id}) no longer scheduled for deletion");
         }
