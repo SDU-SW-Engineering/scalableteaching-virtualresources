@@ -19,7 +19,7 @@ namespace ScalableTeaching.OpenNebula.Containers
 
 #nullable enable
             //Critical fields
-            string? machineIdInnerText = VmNode.SelectSingleNode("ID").InnerText;
+            string? machineIdInnerText = VmNode.SelectSingleNode("ID")!.InnerText;
             if (machineIdInnerText == null) throw new FieldNotFoundException("ID field not found");
             int machineId = int.Parse(machineIdInnerText);
 
@@ -38,7 +38,7 @@ namespace ScalableTeaching.OpenNebula.Containers
             string? lcmStateInnerText = VmNode.SelectSingleNode("LCM_STATE")?.InnerText;
             LCMStates? lCMState = lcmStateInnerText == null ? null : (LCMStates)int.Parse(lcmStateInnerText);
 
-            string? machineCpuUtilizationPercentInnerText = monitoringNode.SelectSingleNode("CPU")?.InnerText;
+            string? machineCpuUtilizationPercentInnerText = monitoringNode!.SelectSingleNode("CPU")?.InnerText;
             decimal? machineCpuUtilizationPercent = machineCpuUtilizationPercentInnerText == null ? null 
                 : decimal.Parse(machineCpuUtilizationPercentInnerText);
 

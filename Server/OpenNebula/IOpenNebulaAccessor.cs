@@ -48,7 +48,17 @@ namespace ScalableTeaching.OpenNebula
         /// <param name="memory">Specifies the amount of ram for the machine to be allocated</param>
         /// <param name="vcpu">Specifies the number of vcpu that the machine is allocated</param>
         /// <returns>Touple of success and new machine id</returns>
-        public (bool, int) CreateVirtualMachine(int TemplateId, string VirtualMachineName, int memory = 1024, int vcpu = 1, int storage = 30720);
+        public (bool, int) CreateVirtualMachine(int TemplateId, string VirtualMachineName, int memory = 1024, int vcpu = 1, int storage = 16384);
+        
+        /// <summary>
+        /// Resize the disk of a virtual machine
+        /// Should only be used to increase the size of the disk
+        /// Machines have to be rebooted after this operation for it to take effect
+        /// </summary>
+        /// <param name="VirtualMachineId">Id of the desired virtual machine</param>
+        /// <param name="Bytes">Size of the disk after expansion in bytes</param>
+        /// <returns>Touple of success and any error message if relevant</returns>
+        public (bool, string) ResizeVirtualMachine(int VirtualMachineId, int Bytes = 16384);
 
     }
 }

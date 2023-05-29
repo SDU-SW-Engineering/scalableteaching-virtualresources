@@ -1,12 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>ScalableTeaching.OpenNebula</RootNamespace>
+    <LangVersion>10</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Kveer.XmlRPC" Version="1.1.1" />
+    <PackageReference Include="Kveer.XmlRPC" Version="1.2.0" />
   </ItemGroup>
 
 </Project>

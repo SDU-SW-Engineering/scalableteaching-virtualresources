@@ -3,10 +3,10 @@ const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
 
 module.exports = {
     devServer: {
-        disableHostCheck: true,
+        allowedHosts: "all",
         proxy: 'https://test.virtualresources.sdu.dk',
-        port:8080,
-        public: '0.0.0.0:8080'
+        port:8080//,
+        //public: '0.0.0.0:8080'
     },
     transpileDependencies:true,
     configureWebpack: {

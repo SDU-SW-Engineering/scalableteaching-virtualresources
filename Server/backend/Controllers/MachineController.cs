@@ -99,7 +99,8 @@ namespace ScalableTeaching.Controllers
                     MachineID = machine.MachineID,
                     Ports = machine.Ports,
                     Status = returnStatus, //machine.MachineStatus?.MachineState.ToString() ?? "Unconfigured",
-                    Users = usernames
+                    Users = usernames,
+                    Size = machine.Storage
                 });
             }
 
@@ -124,9 +125,14 @@ namespace ScalableTeaching.Controllers
 
             //Reboot Machine
             // ReSharper disable once PossibleInvalidOperationException
-            return _accessor.PerformVirtualMachineAction(MachineActions.REBOOT, (int) machine.OpenNebulaID)
-                ? Ok()
-                : StatusCode(StatusCodes.Status500InternalServerError);
+            var returnValue = _accessor.PerformVirtualMachineAction(MachineActions.REBOOT, (int) machine.OpenNebulaID);
+            //If the machine is off, then a reboot will not work, so we try to start it
+            if (!returnValue)
+            {
+                returnValue = _accessor.PerformVirtualMachineAction(MachineActions.RESUME, (int) machine.OpenNebulaID);
+            }
+            
+            return returnValue ? Ok("Machine reboot initialised") : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
         /// <summary>
@@ -173,11 +179,68 @@ namespace ScalableTeaching.Controllers
                 return Forbid("You are not assigned to this machine");
             }
 
-            //Reboot Machine
-            // ReSharper disable once PossibleInvalidOperationException
-            return _accessor.PerformVirtualMachineAction(MachineActions.REBOOT_HARD, (int) machine.OpenNebulaID)
-                ? Ok("Machine reboot initialised")
-                : StatusCode(StatusCodes.Status500InternalServerError);
+            var returnValue =
+                _accessor.PerformVirtualMachineAction(MachineActions.REBOOT_HARD, (int) machine.OpenNebulaID);
+            //If the machine is off, then a reboot will not work, so we try to start it
+            if (!returnValue)
+            {
+                returnValue = _accessor.PerformVirtualMachineAction(MachineActions.RESUME, (int) machine.OpenNebulaID);
+            }
+            
+            return returnValue ? Ok("Machine reboot initialised") : StatusCode(StatusCodes.Status500InternalServerError);
+        }
+
+        [Authorize(Policy = "EducatorLevel")]
+        [HttpPatch]
+        [Route("control/resize/{id}")]
+        public async Task<ActionResult> PatchResizeMachine(Guid id, int bytes)
+        {
+            //Validate id
+            if (id == Guid.Empty) return BadRequest("Invalid ID");
+            
+            //Validate machine existence
+            var machine = await _context.Machines.FindAsync(id);
+            if (machine == null) return NotFound("Machine Not Found");
+            
+            //Validate new size
+            if (bytes < 0) return BadRequest("Invalid size");
+            if (bytes <= machine.Storage) return BadRequest("New size must be larger than current size");
+            if (bytes > 51200) return BadRequest("New size must be less than 50GiB");
+            
+            //Validate machine creation status
+            if (machine.MachineCreationStatus != CreationStatus.CONFIGURED)
+                return BadRequest("Machine must be configured before resizing");
+            
+            //Validate machine "ownership"
+            bool isOwner = machine.UserUsername != this.GetUsername();
+            if (isOwner && !IsAdmin())
+            {
+                return Forbid("You are not assigned to this machine");
+            }
+            
+            //Make call to set new size
+            var returnValue = _accessor.ResizeVirtualMachine((int) machine.OpenNebulaID, bytes);
+            
+            //If successful, update database
+            if(!returnValue.Item1)
+            {
+                Console.WriteLine($"Failed to resize machine({id}), old size {machine.Storage}, new size {bytes}");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        
+            machine.Storage = bytes;
+            _context.Update(machine);
+            await _context.SaveChangesAsync();
+            
+            //Return result
+            return Ok("Machine resize completed, restart the machine for the change to take effect");
+        }
+
+        private bool IsAdmin()
+        {
+            var username = this.GetUsername();
+            var user = _context.Users.First(user => user.Username == username);
+            return user.AccountType == Models.User.UserType.Administrator;
         }
 
         /// <summary>
