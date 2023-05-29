@@ -13,5 +13,7 @@ namespace ScalableTeaching.DTO
         public CourseDTO Course { get; set; }
         public List<string> Users { get; set; }
         public List<int> Ports { get; set; }
+
+        public int Size { get; set; }
     }
 }

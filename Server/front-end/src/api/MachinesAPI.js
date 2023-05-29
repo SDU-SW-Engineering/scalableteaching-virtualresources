@@ -74,6 +74,21 @@ function getZip() {
     });
 }
 
+function resizeMachine(id, size) {
+    return axios({
+        url: `${urlconfig.protocol}://${urlconfig.getBase()}${urlconfig.machine}/control/resize/${id}`,
+        method: 'PATCH',
+        headers: new Headers({
+            'Authorization': 'Bearer ' + StorageHelper.get("login-token"),
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': 'https://virtualresources.sdu.dk',
+        }),
+        body: JSON.stringify({size: size})
+    }).then(async response => {
+        return { status: response.status, body: await response.body};
+    });
+}
+
 
 export default {
     getUsersMachines,
@@ -81,5 +96,6 @@ export default {
     getZip,
     deleteMachine,
     postResetMachine,
-    undo_delete
+    undo_delete,
+    resizeMachine
 };
