@@ -178,7 +178,6 @@
             id="resize_modal_id"
             @ok="resize"
             @cancel="cancelResize"
-            v-if="resizeModal.machine === ''"
     >
       <template #modal-title>
         Resize Machine Storage
