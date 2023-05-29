@@ -189,12 +189,13 @@ namespace ScalableTeaching.Controllers
             
             return returnValue ? Ok("Machine reboot initialised") : StatusCode(StatusCodes.Status500InternalServerError);
         }
-
+        
         [Authorize(Policy = "EducatorLevel")]
         [HttpPatch]
         [Route("control/resize/{id}")]
-        public async Task<ActionResult> PatchResizeMachine(Guid id, [FromBody] int bytes)
+        public async Task<ActionResult> PatchResizeMachine(Guid id, ResizeDTO dto)
         {
+            var bytes = dto.Bytes;
             //Validate id
             if (id == Guid.Empty) return BadRequest("Invalid ID");
             
