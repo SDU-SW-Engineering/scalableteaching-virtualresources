@@ -311,6 +311,7 @@ export default {
     promptResize(machineItem) {
       console.log("promptResize");
       this.resizeModal.machine = machineItem;
+      this.resizeModal.machine_new_size = machineItem.size
       this.$bvModal.show("resize_modal_id");
 
     },
