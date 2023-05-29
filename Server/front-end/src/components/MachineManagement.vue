@@ -178,6 +178,7 @@
             id="resize_modal_id"
             @ok="resize"
             @cancel="cancelResize"
+            v-if="resizeModal.machine === ''"
     >
       <template #modal-title>
         Resize Machine Storage
@@ -249,7 +250,7 @@ export default {
         content: ''
       },
       resizeModal: {
-        machine: null,
+        machine: "",
         machine_original_size: 16384,
         machine_new_size: 16384,
         machine_max_size: 51200,
@@ -314,20 +315,20 @@ export default {
     },
     cancelResize() {
       this.$bvModal.hide("resize_modal_id");
-      this.resizeModal.machine = null;
+      this.resizeModal.machine = "";
     },
     resize() {
       this.$bvModal.hide("resize_modal_id");
       if(this.resizeModal.machine_new_size === this.resizeModal.machine.size){
-        this.resizeModal.machine = null;
+        this.resizeModal.machine = "";
         return;
       }
       if(this.resizeModal.machine_new_size > this.resizeModal.machine_max_size){
-        this.resizeModal.machine = null;
+        this.resizeModal.machine = "";
         return;
       }
       MachinesAPI.resizeMachine(this.resizeModal.machine.id, this.resizeModal.machine_new_size)
-      this.resizeModal.machine = null;
+      this.resizeModal.machine = "";
     },
     info(item, index, button) {
       this.infoModal.title = `Row index: ${index}`;
