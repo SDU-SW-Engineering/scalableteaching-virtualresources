@@ -312,16 +312,22 @@ export default {
       this.resizeModal.machine = machineItem;
       this.$bvModal.show("resize_modal_id");
     },
-    cancelResize(){
+    cancelResize() {
       this.$bvModal.hide("resize_modal_id");
       this.resizeModal.machine = null;
     },
-    resize(){
+    resize() {
       this.$bvModal.hide("resize_modal_id");
       if(this.resizeModal.machine_new_size === this.resizeModal.machine.size){
+        this.resizeModal.machine = null;
         return;
       }
-
+      if(this.resizeModal.machine_new_size > this.resizeModal.machine_max_size){
+        this.resizeModal.machine = null;
+        return;
+      }
+      MachinesAPI.resizeMachine(this.resizeModal.machine.id, this.resizeModal.machine_new_size)
+      this.resizeModal.machine = null;
     },
     info(item, index, button) {
       this.infoModal.title = `Row index: ${index}`;
