@@ -316,12 +316,12 @@ export default {
 
     },
     cancelResize() {
-      console.log("promptResize");
+      console.log("promptResizeCancel");
       this.$bvModal.hide("resize_modal_id");
       this.resizeModal.machine = "";
     },
     resize() {
-      console.log("promptResize");
+      console.log("promptResizeAccept");
       this.$bvModal.hide("resize_modal_id");
       if(this.resizeModal.machine_new_size === this.resizeModal.machine.size){
         this.resizeModal.machine = "";
