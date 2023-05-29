@@ -84,7 +84,7 @@ async function resizeMachine(id, size) {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': 'https://virtualresources.sdu.dk',
       }),
-      body: JSON.stringify({size: size})
+      body: JSON.stringify({bytes: size})
     }).then(async response => {
     return {status: response.status, body: await response.body};
   });
