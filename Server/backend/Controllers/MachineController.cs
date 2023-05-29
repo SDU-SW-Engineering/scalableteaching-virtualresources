@@ -189,12 +189,13 @@ namespace ScalableTeaching.Controllers
             
             return returnValue ? Ok("Machine reboot initialised") : StatusCode(StatusCodes.Status500InternalServerError);
         }
-
+        
         [Authorize(Policy = "EducatorLevel")]
         [HttpPatch]
         [Route("control/resize/{id}")]
-        public async Task<ActionResult> PatchResizeMachine(Guid id, int bytes)
+        public async Task<ActionResult> PatchResizeMachine(Guid id, ResizeDTO dto)
         {
+            var bytes = dto.Bytes;
             //Validate id
             if (id == Guid.Empty) return BadRequest("Invalid ID");
             
@@ -204,7 +205,11 @@ namespace ScalableTeaching.Controllers
             
             //Validate new size
             if (bytes < 0) return BadRequest("Invalid size");
-            if (bytes <= machine.Storage) return BadRequest("New size must be larger than current size");
+            if (bytes <= machine.Storage)
+            {
+                Log.Verbose($"Resize request for machine({id}) failed, new size {bytes} is smaller than current size {machine.Storage}");
+                return BadRequest("New size must be larger than current size");
+            }
             if (bytes > 51200) return BadRequest("New size must be less than 50GiB");
             
             //Validate machine creation status
@@ -313,6 +318,8 @@ namespace ScalableTeaching.Controllers
 
             var deletionRequest = await _context.MachineDeletionRequests.FirstAsync(request => request.MachineID == id);
             _context.MachineDeletionRequests.Remove(deletionRequest);
+            machine.MachineCreationStatus = CreationStatus.CONFIGURED;
+            _context.Machines.Update(machine);
             await _context.SaveChangesAsync();
             return Ok($"Machine({id}) no longer scheduled for deletion");
         }
