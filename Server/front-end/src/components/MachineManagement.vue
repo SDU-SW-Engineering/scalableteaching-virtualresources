@@ -309,19 +309,16 @@ export default {
       this.tableIsBusy = false;
     },
     promptResize(machineItem) {
-      console.log("promptResize");
       this.resizeModal.machine = machineItem;
       this.resizeModal.machine_new_size = machineItem.size
       this.$bvModal.show("resize_modal_id");
 
     },
     cancelResize() {
-      console.log("promptResizeCancel");
       this.$bvModal.hide("resize_modal_id");
       this.resizeModal.machine = "";
     },
     resize() {
-      console.log("promptResizeAccept");
       this.$bvModal.hide("resize_modal_id");
       if(this.resizeModal.machine_new_size === this.resizeModal.machine.size){
         this.resizeModal.machine = "";
